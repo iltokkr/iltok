@@ -1,0 +1,42 @@
+.pager {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+  }
+  
+  .pages {
+    display: flex;
+    align-items: center;
+  }
+  
+  .pages a {
+    display: inline-block;
+    padding: 5px 10px;
+    margin: 0 2px;
+    border: 1px solid #ddd;
+    color: #333;
+    text-decoration: none;
+    font-size: 14px;
+  }
+  
+  .pages a:hover {
+    background-color: #f5f5f5;
+  }
+  
+  .pages a.current {
+    background-color: #ff5205;
+    color: white;
+    border-color: #ff5205;
+  }
+  
+  .pages a.next {
+    font-weight: bold;
+  }
+  
+  /* 반응형 디자인을 위한 미디어 쿼리 */
+  @media (max-width: 768px) {
+    .pages a {
+      padding: 4px 8px;
+      font-size: 12px;
+    }
+  }

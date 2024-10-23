@@ -1,0 +1,71 @@
+.container {
+    min-height: 100vh;
+    padding: 0 0.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .main {
+    padding: 5rem 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .indexWrap {
+    width: 800px;
+    margin: 0 auto;
+    padding: 130px 0 0;
+  }
+  
+  .indexLogo {
+    font-size: 60px;
+    line-height: 1.2;
+    text-align: center;
+    font-weight: normal;
+    font-family: "Times New Roman", Times;
+  }
+  
+  .indexLogo em {
+    color: #ff5205;
+    font-style:normal; 
+  }
+  
+  .indexPromote {
+    padding: 0 0 18px;
+    text-align: center;
+  }
+  
+  .indexNav {
+    background: #eee;
+    border: 1px solid #ccc;
+    padding: 20px 3px 20px 20px;
+  }
+  
+  .tit {
+    font-weight: bold;
+  }
+  
+  .menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+  }
+  
+  .menu li {
+    padding: 8px 19px 0 0;
+  }
+  
+  .menu a {
+    color: #333;
+    text-decoration: none;
+  }
+  
+  .menu a:hover {
+    text-decoration: underline;
+  }

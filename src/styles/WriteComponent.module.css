@@ -1,0 +1,139 @@
+.layout {
+    padding: 15px 0 30px;
+  }
+  
+.formGroup {
+    line-height: 22px;
+    padding: 0 0 15px 15px;
+    overflow: hidden;
+  }
+
+.form dl {
+  display: inline-block;
+}
+
+.formGroup dd {
+    margin-left: 65px;
+  }
+
+  
+.formGroup dt {
+    width: 65px;
+    float: left;
+    clear: left;
+  }
+  
+.formGroup.hd {
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #ccc;
+  }
+  
+.formGroup.ft {
+    border-top: 1px solid #ccc;
+    padding-top: 10px;
+  }
+  
+.chooseType {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+}
+
+.chooseType li {
+    padding: 0 24px 0 0;
+    float: left;
+  }
+  
+  .radio,
+  .checkbox {
+    vertical-align: middle;
+    margin: 0 3px 0 0;
+    padding: 0;
+    font-size: 16px;
+  }
+  
+  .chooseType li label,
+  .formGroup label {
+    vertical-align: middle;
+    cursor: pointer;
+  }
+  
+  .selectBox {
+    margin: 0 5px 0 0;
+    float: left;
+  }
+  
+  .input,
+  .select {
+    font-size: 12px;
+    height: 22px;
+    line-height: 22px;
+    width: 115px;
+    padding: 0 5px;
+    border: 1px solid #ccc;
+    margin: 0 5px 0 0;
+  }
+  
+  .input.title {
+    width: 785px;
+  }
+  
+  .textarea {
+    display: block;
+    width: 785px;
+    height: 300px;
+    padding: 5px;
+    resize: vertical;
+    border: 1px solid #ccc;
+  }
+  
+  .textTips {
+    display: inline;
+    color: #aaa;
+  }
+  
+  .submitButton {
+    height: 26px;
+    padding: 0 25px;
+    background: #ff3900;
+    border: 0;
+    font-weight: bold;
+    cursor: pointer;
+    color: #fff;
+  }
+  
+  .submitButton:hover {
+    background: #DD3100;
+  }
+  
+  .fileButton {
+    border: 1px solid #ccc;
+    background: #eee;
+    text-align: center;
+    cursor: pointer;
+  }
+  
+  .fileList {
+    padding: 8px 0 0;
+  }
+  
+  .fileList li {
+    line-height: 1.5;
+  }
+  
+  .fileList .deleteIcon {
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    background-position: 0 -76px;
+    margin: 0 3px 0 0;
+    vertical-align: middle;
+  }
+  
+  .fileList .fileName {
+    display: inline;
+    vertical-align: middle;
+    color: #aaa;
+  }

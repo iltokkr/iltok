@@ -1,0 +1,19 @@
+.mainMenu {
+    list-style-type: none;
+    margin: 0;
+    display: flex;
+    justify-content: left;
+    padding: 10px 10px;
+  }
+  
+  .mainMenu li {
+    margin-right: 50px;
+  }
+  .mainMenu a {
+    font-size: 13px;
+
+  }
+  .mainMenu .focus {
+    font-weight: bold;
+    color: #ff5205;
+  }

@@ -1,0 +1,6 @@
+{
+    "importMap": "./import_map.json",
+    "imports": {
+        "https://deno.land/x/deno_dom/": "https://deno.land/x/deno_dom@v0.1.38/"
+    }
+}
