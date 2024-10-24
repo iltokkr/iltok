@@ -71,7 +71,7 @@ const Header: React.FC = () => {
                 <li><a href="#" onClick={handleLogout}> 로그아웃</a></li>
               </>
             ) : (
-              <li><a href="#" onClick={() => setShowLoginPopup(true)}><FaUser size={20} /> 로그인</a></li>
+              <li><a href="#" onClick={() => setShowLoginPopup(true)}> 로그인</a></li>
             )}
           </ul>
         </div>
