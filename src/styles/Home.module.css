@@ -16,9 +16,10 @@
   }
   
   .indexWrap {
-    width: 800px;
+    width: 100%;
+    max-width: 800px;
     margin: 0 auto;
-    padding: 130px 0 0;
+    padding: 130px 20px 0;
   }
   
   .indexLogo {
@@ -42,11 +43,12 @@
   .indexNav {
     background: #eee;
     border: 1px solid #ccc;
-    padding: 20px 3px 20px 20px;
+    padding: 20px;
   }
   
   .tit {
     font-weight: bold;
+    margin-bottom: 15px;
   }
   
   .menu {
@@ -69,3 +71,34 @@
   .menu a:hover {
     text-decoration: underline;
   }
+
+@media (max-width: 768px) {
+  .indexWrap {
+    padding: 50px 15px 0;
+  }
+
+  .indexNav {
+    padding: 15px;
+  }
+
+  .menu {
+    flex-direction: column;
+  }
+
+  .menu li {
+    padding: 0;
+    margin-bottom: 10px;
+  }
+
+  .menu a {
+    display: block;
+    padding: 10px;
+    background-color: #f8f8f8;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+  }
+
+  .menu a:hover {
+    background-color: #e8e8e8;
+  }
+}

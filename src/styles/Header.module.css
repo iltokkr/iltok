@@ -1,4 +1,5 @@
 .topbar {
+  width: 100%;
   background: #eee;
   border-bottom: 1px solid #ccc;
   padding: 6px 0;
@@ -6,7 +7,8 @@
 }
 
 .layout {
-  width: 980px;
+  width: 100%;
+  max-width: 980px;
   margin: 0 auto;
   display: flex;
   justify-content: space-between;
@@ -91,4 +93,106 @@
 .nav li.current a {
   font-weight: bold;
   color: #ff3900;
+}
+
+.mobileMenuButton {
+  display: none; 
+  z-index: 1000;
+  font-size: 24px;
+  color: #fff;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.closeButton {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 24px;
+  background: none;
+  border: none;
+  color: #333;
+  cursor: pointer;
+}
+
+@media (max-width: 980px) {
+  .layout {
+    position: relative;
+  }
+
+  .mobileMenuButton {
+    display: block;
+    color: black;
+  }
+
+  .topr {
+    display: none;
+    position: fixed;
+    top: 0;
+    right: -80%;
+    width: 80%;
+    height: 100vh;
+    background-color: #fff;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+    transition: right 0.3s ease-in-out;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px 0;
+    z-index: 999;
+    padding-top: 50px; 
+  }
+
+  .showMobileMenu {
+    display: flex;
+    right: 0;
+  }
+
+  .topr li {
+    width: 100%;
+    padding: 0;
+    border-bottom: 1px solid #eee;
+    gap: 5px;
+  }
+
+  .topr li:last-child {
+    border-bottom: none;
+  }
+
+  .topr li a {
+    width: 100%;
+    padding: 15px 20px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+  }
+
+  .topr li a i,
+  .topr li a svg {
+    margin-right: 15px;
+    font-size: 20px;
+    min-width: 24px;
+  }
+
+  .focus {
+    background: #ff3900;
+    color: #fff;
+    margin: 0;
+  }
+}
+
+/* 새로운 스타일 추가 */
+.overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+  z-index: 998;
+}
+
+.showOverlay {
+  display: block;
 }

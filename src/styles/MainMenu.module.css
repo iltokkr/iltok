@@ -4,6 +4,7 @@
     display: flex;
     justify-content: left;
     padding: 10px 10px;
+    text-align: center;
   }
   
   .mainMenu li {
@@ -16,4 +17,11 @@
   .mainMenu .focus {
     font-weight: bold;
     color: #ff5205;
+  }
+
+  @media screen and (max-width: 768px) {
+    .mainMenu li {
+      margin-right: auto;
+    }
+    
   }

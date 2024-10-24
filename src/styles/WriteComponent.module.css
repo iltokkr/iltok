@@ -62,7 +62,7 @@
   
   .selectBox {
     margin: 0 5px 0 0;
-    float: left;
+    display: inline-block;  /* float 대신 inline-block 사용 */
   }
   
   .input,
@@ -137,3 +137,57 @@
     vertical-align: middle;
     color: #aaa;
   }
+
+/* 모바일 반응형 스타일 */
+@media screen and (max-width: 768px) {
+  .layout {
+    padding: 10px 0 20px;
+  }
+
+  .formGroup {
+    padding: 0 0 10px 10px;
+  }
+
+  .formGroup dd {
+    margin-left: 0;
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .formGroup dt {
+    width: 100%;
+    float: none;
+    margin-bottom: 5px;
+  }
+
+  .chooseType li {
+    padding: 0 15px 10px 0;
+  }
+
+  .selectBox {
+    flex: 1 1 45%;  /* 두 개의 선택 박스를 한 줄에 배치 */
+    margin-bottom: 10px;
+  }
+
+  .input,
+  .select {
+    width: 100%;
+    margin: 0;
+  }
+
+  .input.title {
+    width: 100%;
+    margin-right: 10px;
+  }
+
+  .textarea {
+    width: 100%;
+    height: 200px;
+    margin-right: 10px;
+  }
+
+  .submitButton {
+    width: 100%;
+    margin-right: 10px;
+  }
+}

@@ -1,0 +1,171 @@
+.popWrap {
+  line-height: 1.5em;
+  width: 350px;
+  background-color: #fff;
+  box-shadow: 1px 1px 4px rgba(0,0,0,.2);
+  position: fixed;
+  z-index: 100006;
+  font-size: 12px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.popbox {
+  padding: 18px 20px;
+}
+
+
+.close {
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.cont {
+  padding: 10px 0;
+}
+
+.notice {
+  margin-bottom: 15px;
+}
+
+.inputAuth {
+  width: 100%;
+  height: 30px;
+  line-height: 30px;
+  padding: 0 10px;
+  border: 1px solid #ccc;
+  margin-bottom: 10px;
+  box-sizing: border-box;
+}
+
+.radioGroup {
+  margin-bottom: 15px;
+}
+
+.radioGroup label {
+  margin-right: 10px;
+}
+
+.vipgo {
+  display: block;
+  width: calc(100% - 20px);
+  padding: 10px;
+  background-color: #ed4335;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  text-align: center;
+  font-size: 16px;
+  font-weight: bold;
+  margin: 20px auto;
+}
+
+.notice ul {
+  padding-left: 20px;
+}
+
+.notice li {
+  list-style: none;
+  line-height: 1.8em;
+  padding-left: 10px;
+  color: #999;
+}
+
+.cont dl {
+  margin: 0;
+  padding: 0;
+}
+
+.cont dt {
+  float: left;
+  clear: left;
+  width: 60px;
+}
+
+@media screen and (max-width: 767px) {
+  .popWrap {
+    width: 90%;
+    max-width: 320px;
+  }
+}
+
+.inputDiv {
+    padding-top: 10px;
+}
+
+.btnAuth {
+    width: 80px;
+    height: 39px;
+    cursor: pointer;
+}
+
+.popbox .title {
+    display: flex;
+    justify-content: space-between;
+}
+
+.popbox .tit {
+    height: 40px;
+    line-height: 40px;
+    padding: 0 15px;
+    color: #ed4335;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.popbox .close {
+    font-size: 24px;
+    padding: 10px 10px 7px 7px;
+    opacity: 1;
+    font-weight: bold;
+}
+
+.popbox .close i {
+    color: #FFFFFF;
+}
+
+.popbox .cont {
+    padding: 10px;
+    background-color: #ffffff;
+}
+
+.popbox .contM {
+    padding-top: 15px;
+    background-color: #ffffff;
+}
+
+.popbox .cont dl {
+    padding: 0;
+}
+
+.popbox .cont dt {
+    line-height: 30px;
+    float: left;
+}
+
+.popbox .cont dd {
+    line-height: 30px;
+}
+
+.popbox .cont dd.link {
+    text-decoration: underline;
+}
+
+.popbox .noticeTit {
+    height: 35px;
+    line-height: 35px;
+    border-top: 1px solid #eee;
+    color: #999;
+}
+
+.popbox .notice {
+    background-color: #fffcf5;
+}
+
+.popbox .notice li {
+    height: 22px;
+    line-height: 22px;
+    color: #999;
+}

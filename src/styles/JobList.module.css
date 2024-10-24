@@ -2,6 +2,11 @@
     margin-top: 20px;
   }
 
+  .btnTop {
+    font-size: 1em;
+    margin-left: 10px;
+  }
+
   .layout{
     width: 980px;
     margin: 0 auto;
@@ -170,4 +175,108 @@
 .listPA {
   text-decoration: underline;
   color: #999999;
+}
+
+.jobItem {
+  display: flex;
+  align-items: flex-start;
+}
+
+.time {
+  flex: 0 0 30px;
+  padding-top: 3px;
+}
+
+.jobContent {
+  display: flex;
+  align-items: flex-start;
+}
+
+.jobContent p{
+  margin-left: 5px;
+}
+
+.title {
+  margin: 0 0 5px 0;
+}
+
+.jobDetails {
+  font-size: 0.9em;
+  color: #989898;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.jobDetails span {
+  margin-left: 5px;
+}
+
+/* 반응형 스타일 */
+@media (max-width: 768px) {
+  .listText li {
+    width: 100%;
+    margin: 0 0 3px;
+    height: 25px;
+    line-height: 25px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .topTitle {
+    font-size: 13px;
+    font-weight: bold;
+    color: #ff5205;
+  }
+
+  .layout {
+    width: 100%;
+  }
+
+  .jobItem {
+    font-size: 1em;
+  }
+
+  .jobDetails {
+    font-size: 0.8em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+@media (max-width: 480px) {
+  .listText li {
+    width: 100%;
+    margin: 0 0 3px;
+    height: 25px;
+    line-height: 25px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .topTitle {
+    font-size: 13px;
+    font-weight: bold;
+    color: #ff5205;
+  }
+  .jobItem {
+    font-size: 0.9em;
+  }
+
+  .jobDetails {
+    font-size: 1em;
+  }
+
+  .topDiv {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .btnTop {
+    font-size: 0.9em;
+  }
 }

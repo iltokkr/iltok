@@ -8,20 +8,29 @@
 
 
 .filterBar {
-  display: inline-block; /* float 대신 inline-block 사용 */
-  vertical-align: top; /* 상단 정렬 */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .selectBox {
-  margin: 1px 5px 0 0;
-  float: left;
-}
-.selectBox select{
-  width: 100px;
+  margin: 0;
+  flex: 1 1 calc(50% - 5px);
+  min-width: 100px;
 }
 
-.selectBoxMar {
-  margin: 1px 20px 0 0;
+.selectBox select {
+  width: 100%;
+}
+
+@media (min-width: 769px) {
+  .filterBar {
+    flex-wrap: nowrap;
+  }
+
+  .selectBox {
+    flex: 0 0 auto;
+  }
 }
 
 .searchForm {

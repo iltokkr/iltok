@@ -3,6 +3,9 @@ import { useRouter } from 'next/router';
 import style from '@/styles/WriteComponent.module.css';
 import { createClient } from '@supabase/supabase-js';
 import Modal from '@/components/Modal';
+import { addHours, format, subHours } from 'date-fns';
+import { toZonedTime } from 'date-fns-tz';
+import Link from 'next/link';
 
 // Supabase 클라이언트 설정
 const supabase = createClient(
@@ -18,6 +21,7 @@ interface JobForm {
   '1depth_category': string;
   '2depth_category': string;
   contents: string;
+  board_type: string; // Add this line
 }
 
 const WritePage: React.FC = () => {
@@ -29,7 +33,8 @@ const WritePage: React.FC = () => {
     '2depth_region': '',
     '1depth_category': '',
     '2depth_category': '',
-    contents: ''
+    contents: '',
+    board_type: '0' // Add this line with default value '0' for 구인정보
   });
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -43,6 +48,7 @@ const WritePage: React.FC = () => {
   useEffect(() => {
     if (id && currentUserId) {
       setIsEditing(true);
+      console.log('Editing mode activated. ID:', id);
       fetchJobData(Number(id));
     }
   }, [id, currentUserId]);
@@ -61,6 +67,7 @@ const WritePage: React.FC = () => {
 
   const fetchJobData = async (jobId: number) => {
     try {
+      console.log('Fetching job data for ID:', jobId);
       const { data, error } = await supabase
         .from('jd')
         .select('*, uploader_id')
@@ -70,8 +77,8 @@ const WritePage: React.FC = () => {
       if (error) throw error;
 
       if (data) {
-        console.log('Fetched data:', data); // 디버깅용
-        console.log('Current user ID:', currentUserId); // 디버깅용
+        console.log('Fetched data:', data);
+        console.log('Current user ID:', currentUserId);
 
         if (data.uploader_id === null) {
           setErrorMessage('이 게시글의 작성자 정보가 없습니다. 관리자에게 문의해주세요.');
@@ -87,6 +94,7 @@ const WritePage: React.FC = () => {
           return;
         }
         setFormData(data);
+        console.log('Form data set:', data);
       }
     } catch (error) {
       console.error('Error fetching job data:', error);
@@ -106,6 +114,23 @@ const WritePage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
+
+    // 필수 필드 검증
+    if (!formData.board_type || !formData.title || !formData.contents) {
+      setErrorMessage('모든 필드를 채워주세요.');
+      setIsModalOpen(true);
+      return;
+    }
+
+    if (formData.board_type === '0' || formData.board_type === '1') {
+      if (!formData['1depth_region'] || !formData['2depth_region'] || 
+          !formData['1depth_category']) {
+        setErrorMessage('모든 필드를 채워주세요.');
+        setIsModalOpen(true);
+        return;
+      }
+    }
+
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -114,35 +139,59 @@ const WritePage: React.FC = () => {
         return;
       }
 
+      console.log('Submitting form. Is editing:', isEditing);
+      console.log('Current form data:', formData);
+
       if (isEditing) {
-        // 기존 데이터 업데이트 전 작성자 확인
-        const { data, error } = await supabase
-          .from('jd')
-          .select('uploader_id')
-          .eq('id', id)
-          .single();
+        console.log('Updating existing data for ID:', id);
+        console.log('Form data before update:', formData);
 
-        if (error) throw error;
-
-        if (data.uploader_id === null) {
-          setErrorMessage('이 게시글의 작성자 정보가 없습니다. 관리자에게 문의해주세요.');
-          setIsModalOpen(true);
-          return;
-        }
-
-        if (data.uploader_id !== user.id) {
-          setErrorMessage('자신이 작성한 글만 수정할 수 있습니다.');
-          setIsModalOpen(true);
-          return;
-        }
+        // 현재 KST 시간 계산
+        const now = new Date();
+        const koreaTime = addHours(now, 9);
+  
 
         // 기존 데이터 업데이트
-        const { error: updateError } = await supabase
+        const { data: updatedData, error: updateError, count } = await supabase
           .from('jd')
-          .update(formData)
-          .eq('id', id);
+          .update({
+            title: formData.title,
+            '1depth_region': formData['1depth_region'],
+            '2depth_region': formData['2depth_region'],
+            '1depth_category': formData['1depth_category'],
+            '2depth_category': formData['2depth_category'],
+            contents: formData.contents,
+            updated_time: koreaTime // 현재 KST 시간 추가
+          })
+          .eq('id', id)
+          .select();
 
-        if (updateError) throw updateError;
+        if (updateError) {
+          console.error('Update error:', updateError);
+          throw updateError;
+        }
+
+        console.log('Data updated successfully. Updated data:', updatedData);
+        console.log('Number of rows affected:', count);
+
+        if (!updatedData || updatedData.length === 0) {
+          console.error('No data returned after update');
+          setErrorMessage('데이터 업데이트 후 반환된 데이터가 없습니다.');
+          setIsModalOpen(true);
+          return;
+        }
+
+        // 업데이트된 데이터로 폼 상태 갱신
+        setFormData(updatedData[0]);
+
+        // 수정 후 users.is_upload를 true로 변경
+        const { error: updateUserError } = await supabase
+          .from('users')
+          .update({ is_upload: true })
+          .eq('id', user.id);
+
+        if (updateUserError) throw updateUserError;
+
       } else {
         // 새 데이터 생성
         const { data: userData, error: userError } = await supabase
@@ -176,6 +225,7 @@ const WritePage: React.FC = () => {
       }
 
       // 성공 시 목록 페이지로 이동
+      console.log('Redirecting to board page');
       router.push('/board');
     } catch (error) {
       console.error('Error processing data:', error);
@@ -195,7 +245,7 @@ const WritePage: React.FC = () => {
     세종: [""],
     경기: ["수원시", "성남시", "고양시", "용인시", "부천시", "안산시", "안양시", "남양주시", "화성시", "평택시", "의정부시", "시흥시", "파주시", "광명시", "김포시", "군포시", "광주시", "이천시", "양주시", "오산시", "구리시", "안성시", "포천시", "의왕시", "하남시", "여주시", "여주군", "양평군", "동두천시", "과천시", "가평군", "연천군"],
     강원: ["춘천시", "원주시", "강릉시", "동해시", "태백시", "속초시", "삼척시", "홍천군", "횡성군", "영월군", "평창군", "정선군", "철원군", "화천군", "양구군", "제군", "고성군", "양양군"],
-    충북: ["청주시", "충주시", "제천시", "청원군", "보은군", "옥천군", "영동군", "진천군", "괴산군", "음성군", "단양군", "증평군"],
+    충북: ["청주시", "충주시", "제천시", "청원군", "보은군", "옥천군", "영동군", "진천군", "괴산군", "음성군", "단양군", "증군"],
     충남: ["천안시", "공주시", "보령시", "아산시", "서산시", "논산시", "계룡시", "당진시", "당진군", "금산군", "연기군", "부여군", "서천군", "청양군", "홍성군", "예산군", "태안군"],
     전북: ["전주시", "군산시", "익산시", "정읍시", "남원시", "김제", "완주군", "진안군", "무주군", "장수군", "임실군", "순창군", "고창군", "부안군"],
     전남: ["목포시", "여수시", "순천시", "나주시", "광양시", "담양군", "곡성군", "구례군", "고흥군", "보성군", "화순군", "장흥군", "강진군", "해남군", "영암군", "무안군", "함평군", "영광군", "장성군", "완도군", "진도군", "신안군"],
@@ -214,6 +264,8 @@ const WritePage: React.FC = () => {
     "운전": ["택시", "버스", "화물", "배달"]
   };
 
+  const showLocationAndCategory = formData.board_type === '0' || formData.board_type === '1';
+
   return (
     <div className={style.layout}>
       <form onSubmit={handleSubmit}>
@@ -225,82 +277,122 @@ const WritePage: React.FC = () => {
               <li>
                 <input
                   className={style.radio}
-                  id="type_1"
-                  name="boardType"
+                  id="type_0"
+                  name="board_type"
                   type="radio"
-                  value="job"
+                  value="0"
+                  checked={formData.board_type === '0'}
                   onChange={handleInputChange}
                 />
-                <label htmlFor="type_1">구인정보</label>
+                <label htmlFor="type_0">구인정보</label>
               </li>
-              {/* 다른 게시판 유형들... */}
+              <li>
+                <input
+                  className={style.radio}
+                  id="type_1"
+                  name="board_type"
+                  type="radio"
+                  value="1"
+                  checked={formData.board_type === '1'}
+                  onChange={handleInputChange}
+                />
+                <label htmlFor="type_1">구직정보</label>
+              </li>
+              <li>
+                <input
+                  className={style.radio}
+                  id="type_2"
+                  name="board_type"
+                  type="radio"
+                  value="2"
+                  checked={formData.board_type === '2'}
+                  onChange={handleInputChange}
+                />
+                <label htmlFor="type_2">중고시장</label>
+              </li>
+              <li>
+                <input
+                  className={style.radio}
+                  id="type_3"
+                  name="board_type"
+                  type="radio"
+                  value="3"
+                  checked={formData.board_type === '3'}
+                  onChange={handleInputChange}
+                />
+                <label htmlFor="type_3">부동산정보</label>
+              </li>
             </ul>
           </dd>
         </dl>
         
-        <dl className={style.formGroup}>
-          <dt>지역:</dt>
-          <dd>
-            <div className={style.selectBox}>
-              <select
-                name="1depth_region"
-                value={formData['1depth_region']}
-                onChange={handleInputChange}
-                className={style.select}
-              >
-                <option value="">시/도</option>
-                {Object.keys(locations).map((city, index) => (
-                  <option key={index} value={city}>{city}</option>
-                ))}
-              </select>
-            </div>
-            <div className={style.selectBox}>
-              <select
-                name="2depth_region"
-                value={formData['2depth_region']}
-                onChange={handleInputChange}
-                className={style.select}
-              >
-                <option value="">시/구/군</option>
-                {formData['1depth_region'] && locations[formData['1depth_region']].map((district, index) => (
-                  <option key={index} value={district}>{district}</option>
-                ))}
-              </select>
-            </div>
-          </dd>
-        </dl>
+        {showLocationAndCategory && (
+          <>
+            <dl className={style.formGroup}>
+              <dt>지역:</dt>
+              <dd>
+                <div className={style.selectBox}>
+                  <select
+                    name="1depth_region"
+                    value={formData['1depth_region']}
+                    onChange={handleInputChange}
+                    className={style.select}
+                  >
+                    <option value="">시/도</option>
+                    {Object.keys(locations).map((city, index) => (
+                      <option key={index} value={city}>{city}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className={style.selectBox}>
+                  <select
+                    name="2depth_region"
+                    value={formData['2depth_region']}
+                    onChange={handleInputChange}
+                    className={style.select}
+                  >
+                    <option value="">시/구/군</option>
+                    {formData['1depth_region'] && locations[formData['1depth_region']].map((district, index) => (
+                      <option key={index} value={district}>{district}</option>
+                    ))}
+                  </select>
+                </div>
+              </dd>
+            </dl>
 
-        <dl className={style.formGroup}>
-          <dt>분류:</dt>
-          <dd>
-            <div className={style.selectBox}>
-              <select
-                name="1depth_category"
-                value={formData['1depth_category']}
-                onChange={handleInputChange}
-                className={style.select}
-              >
-                <option value="">대분류</option>
-                {Object.keys(categories).map((category, index) => (
-                  <option key={index} value={category}>{category}</option>
-                ))}
-              </select>
-            </div>
-            <div className={style.selectBox}>
-              <select
-                name="2depth_category"
-                value={formData['2depth_category']}
-                onChange={handleInputChange}
-                className={style.select}
-              >
-                <option value="">소분류</option>
-                {formData['1depth_category'] && categories[formData['1depth_category']].map((subCategory, index) => (
-                  <option key={index} value={subCategory}>{subCategory}</option>
-                ))}
-              </select>
-            </div>
-          </dd>
-        </dl>
+            <dl className={style.formGroup}>
+              <dt>분류:</dt>
+              <dd>
+                <div className={style.selectBox}>
+                  <select
+                    name="1depth_category"
+                    value={formData['1depth_category']}
+                    onChange={handleInputChange}
+                    className={style.select}
+                  >
+                    <option value="">대분류</option>
+                    {Object.keys(categories).map((category, index) => (
+                      <option key={index} value={category}>{category}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className={style.selectBox}>
+                  <select
+                    name="2depth_category"
+                    value={formData['2depth_category']}
+                    onChange={handleInputChange}
+                    className={style.select}
+                  >
+                    <option value="">소분류</option>
+                    {formData['1depth_category'] && categories[formData['1depth_category']].map((subCategory, index) => (
+                      <option key={index} value={subCategory}>{subCategory}</option>
+                    ))}
+                  </select>
+                </div>
+              </dd>
+            </dl>
+          </>
+        )}
 
         <dl className={style.formGroup}>
           <dt>제목:</dt>

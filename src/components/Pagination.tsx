@@ -8,8 +8,13 @@ interface PaginationProps {
 }
 
 const Pagination: React.FC<PaginationProps> = ({ currentPage, pageCount, onPageChange }) => {
+  const pagesPerSet = 10;
+  const currentSet = Math.ceil(currentPage / pagesPerSet);
+  const lastPageInCurrentSet = currentSet * pagesPerSet;
+  const firstPageInCurrentSet = lastPageInCurrentSet - pagesPerSet + 1;
+
   const pageNumbers = [];
-  for (let i = 1; i <= pageCount; i++) {
+  for (let i = firstPageInCurrentSet; i <= Math.min(lastPageInCurrentSet, pageCount); i++) {
     pageNumbers.push(i);
   }
 
@@ -30,10 +35,10 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, pageCount, onPageC
             {number}
           </a>
         ))}
-        {currentPage < pageCount && (
+        {lastPageInCurrentSet < pageCount && (
           <a
             className={styles.next}
-            onClick={() => handlePageChange(currentPage + 1)}
+            onClick={() => handlePageChange(lastPageInCurrentSet + 1)}
           >
             &gt;
           </a>

@@ -1,3 +1,4 @@
+import Head from 'next/head';
 import React, { useEffect, useState, useContext } from 'react';
 import { createClient, User } from '@supabase/supabase-js'
 import Header from '@/components/Header';
@@ -69,6 +70,22 @@ const My: React.FC = () => {
 
   return (
     <div className={styles.container}>
+      <Head>
+        <title>내 정보 | 114114KR</title>
+        <meta name="description" content="114114KR에서 내 정보를 확인하고 관리하세요. 등록한 구인 공고와 개인 설정을 한눈에 볼 수 있습니다." />
+        <meta name="keywords" content="내 정보, 마이페이지, 구인공고 관리, 114114KR, 개인설정" />
+        <meta property="og:title" content="내 정보 | 114114KR" />
+        <meta property="og:description" content="114114KR 마이페이지에서 내 구인 공고와 계정 정보를 관리하세요. 간편하고 효율적인 정보 관리를 경험해보세요." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://114114KR.com/my" />
+        <meta property="og:image" content="https://114114KR.com/og-image.jpg" />
+        <meta property="og:site_name" content="114114KR" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="내 정보 | 114114KR" />
+        <meta name="twitter:description" content="114114KR 마이페이지에서 내 구인 공고와 계정 정보를 관리하세요. 간편하고 효율적인 정보 관리를 경험해보세요." />
+        <meta name="twitter:image" content="https://114114KR.com/og-image.jpg" />
+      </Head>
+
       <Header />
       <main className={styles.main}>
         <Mylist posts={myPosts} isAccept={isAccept} />

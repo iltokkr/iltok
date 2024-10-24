@@ -5,7 +5,7 @@ import { parseISO, format, subHours } from 'date-fns';
 
 interface JobDetailType {
   id: number;
-  created_at: string;
+  updated_time: string;
   title: string;
   contents: string;
   uploader: {
@@ -42,7 +42,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail }) => {
   const formatDate = (dateString: string) => {
     const date = parseISO(dateString);
     const koreaTime = subHours(date, 9);
-    
+
     return format(koreaTime, 'MM-dd HH:mm');
   };
 
@@ -53,7 +53,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail }) => {
         <h1>{jobDetail.title}</h1>
       </div>
       <ul className={style.articleMeta}>
-        <li>등록일: {formatDate(jobDetail.created_at)}</li>
+        <li>등록일: {formatDate(jobDetail.updated_time)}</li>
         <li>글번호: {jobDetail.id}</li>
 
 

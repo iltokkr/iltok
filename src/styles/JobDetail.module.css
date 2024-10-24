@@ -1,8 +1,11 @@
 .layout {
-  width: 980px;
-  font-family: 'Arial', sans-serif;
+  max-width: 980px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
-
 /* ======================
    article content
 */
@@ -122,4 +125,17 @@
 
 .shareBar {
   padding: 8px 15px;
+}
+
+@media (max-width: 980px) {
+  .layout {
+    width: 100%;
+    gap: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .layout {
+    width: 100%;
+  }
 }
