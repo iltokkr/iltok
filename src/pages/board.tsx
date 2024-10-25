@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Header from '@/components/Header';
 import MainMenu from '@/components/MainMenu';
@@ -58,6 +58,11 @@ const BoardPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [boardType, setBoardType] = useState<string>('0'); // 기본값을 '0'으로 설정
+  const scrollPositionRef = useRef<number | null>(null);
+  const isBackRef = useRef<boolean>(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [isPaginationChange, setIsPaginationChange] = useState(false);
 
   const handleFilterChange = useCallback((newFilters: FilterOptions) => {
     // city1이 변경되었는지 확인
@@ -147,7 +152,53 @@ const BoardPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    const handleRouteChangeStart = () => {
+      if (!isPaginationChange) {
+        const currentPosition = window.pageYOffset;
+        sessionStorage.setItem('boardScrollPosition', currentPosition.toString());
+        console.log('Board: Route change start. Saving scroll position:', currentPosition);
+      } else {
+        console.log('Board: Pagination change. Not saving scroll position.');
+      }
+    };
+
+    const handleRouteChangeComplete = () => {
+      console.log('Board: Route change complete. Attempting to restore scroll position.');
+      if (!isInitialLoad && !isPaginationChange) {
+        restoreScrollPosition();
+      } else if (isPaginationChange) {
+        window.scrollTo(0, 0);
+        console.log('Board: Pagination change. Scrolling to top.');
+        setIsPaginationChange(false);
+      }
+    };
+
+    router.events.on('routeChangeStart', handleRouteChangeStart);
+    router.events.on('routeChangeComplete', handleRouteChangeComplete);
+
+    return () => {
+      router.events.off('routeChangeStart', handleRouteChangeStart);
+      router.events.off('routeChangeComplete', handleRouteChangeComplete);
+    };
+  }, [router, isInitialLoad, isPaginationChange]);
+
+  const restoreScrollPosition = useCallback(() => {
+    const savedPosition = sessionStorage.getItem('boardScrollPosition');
+    if (savedPosition !== null) {
+      console.log('Restoring scroll position:', savedPosition);
+      requestAnimationFrame(() => {
+        window.scrollTo(0, parseInt(savedPosition));
+        console.log('Scroll position restored');
+      });
+    } else {
+      console.log('No saved scroll position found.');
+    }
+  }, []);
+
+  useEffect(() => {
     if (!router.isReady) return;
+
+    console.log('Router is ready. Current query:', router.query);
 
     const { city1, city2, cate1, cate2, keyword, page, board_type } = router.query;
     let newFilters = {
@@ -158,16 +209,31 @@ const BoardPage: React.FC = () => {
       keyword: keyword as string || ''
     };
 
-    const newBoardType = board_type as string || '0'; // 기본값을 '0'으로 설정
+    const newBoardType = board_type as string || '0';
     const newPage = page ? parseInt(page as string) : 1;
     
+    console.log('Setting new filters:', newFilters);
+    console.log('Setting new board type:', newBoardType);
+    console.log('Setting new page:', newPage);
+
     setFilters(newFilters);
     setBoardType(newBoardType);
     setCurrentPage(newPage);
     fetchJobs(newFilters, newPage, newBoardType);
   }, [router.isReady, router.query, fetchJobs]);
 
+  useEffect(() => {
+    if (contentRef.current && regularJobs.length > 0) {
+      if (isInitialLoad) {
+        console.log('Initial load complete. Attempting to restore scroll position.');
+        restoreScrollPosition();
+        setIsInitialLoad(false);
+      }
+    }
+  }, [restoreScrollPosition, regularJobs, isInitialLoad]);
+
   const handlePageChange = (newPage: number) => {
+    setIsPaginationChange(true);
     const query = {
       ...filters,
       page: newPage.toString(),
@@ -195,8 +261,8 @@ const BoardPage: React.FC = () => {
     <div className={styles.container}>
       <Head>
         <title>구인구직 게시판 | 114114KR</title>
-        <meta name="description" content="다양한 직종의 구인구직 정보를 찾아보세요. 지역별, 카테고리별로 필터링하여 원하는 일자��를 쉽게 찾을 수 있습니다." />
-        <meta name="keywords" content="114114, 114114코리아, 114114korea, 114114kr, 114114구인구직, 조선동포, 교포, 재외동포, 해외교포, 동포 구인구직, 일자리 정보, 구직자, 구인업체, 경력직 채용, 구인구직, 기업 채용, 단기 알바, 드림 구인구직, 무료 채용 공고, 아르바이트, 알바, 알바 구인구직, 월급, 일당, 주급, 채용 정보, 취업 정보, 직업 정보 제공, 지역별 구인구직, 헤드헌팅 서비스, 신입 채용 공고, 동포 취업, 동포 일자리" />
+        <meta name="description" content="다양한 직종의 구인구직 정보를 찾아보세요. 지역별, 카테고리별로 필터링하여 원하는 일자리를 쉽게 찾을 수 있습니다." />
+        <meta name="keywords" content="114114, 114114코리아, 114114korea, 114114kr, 114114구인구직, 조선동포, 교포, 재외동포, 해외교포, 동포 구인구직, 일자리 정보, 구직자, 구인업체, 경력직 채용, 구인구직, 기업 채용, 단기 알바, 드림 구인구직, 무료 채용 공고, 아르바이트, 알바, 알바 구인구직, 월급, 일당, 주급, 채용 정보, 취업 정보, 직업 정보 제공, 지역별 구인구직, 헤드헌팅 비스, 신입 채용 공고, 동포 취업, 동포 일자리" />
         <meta property="og:title" content="구인구직 게시판 | 114114KR" />
         <meta property="og:description" content="다양한 직종의 구인구직 정보를 찾아보세요. 지역별, 카테고리별로 필터링하여 원하는 일자리를 쉽게 찾을 수 있습니다." />
         <meta property="og:type" content="website" />
@@ -205,7 +271,7 @@ const BoardPage: React.FC = () => {
       </Head>
 
       <Header/>
-      <div className={styles.layout}>
+      <div className={styles.layout} ref={contentRef}>
         <MainMenu currentBoardType={boardType} />
         <JobFilter
           filters={filters}

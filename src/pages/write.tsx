@@ -51,10 +51,6 @@ const Write: React.FC = () => {
     checkUserAcceptance();
   }, [authContext?.user]);
 
-  if (!authContext?.isLoggedIn) {
-    return <div>Please log in to access this page.</div>;
-  }
-
   return (
     <div className={styles.container}>
       <Head>
@@ -77,7 +73,6 @@ const Write: React.FC = () => {
         <WritePage />
       </main>
       <Footer />
-      {showModal && <BusinessVerificationModal onClose={() => setShowModal(false)} />}
     </div>
   );
 };

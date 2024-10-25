@@ -93,7 +93,7 @@ const AdPopup: React.FC<AdPopupProps> = ({ onClose }) => {
     <div className={styles.popWrap}>
       <div className={styles.popbox}>
         <div className={styles.title}>
-          <div className={styles.tit}>PREMIUM 등록안내</div>
+          <div className={styles.tit}>TOP 광고 등록 안내</div>
           <div className={styles.close} onClick={onClose}>X</div>
         </div>
         <div className={styles.cont}>
@@ -104,12 +104,14 @@ const AdPopup: React.FC<AdPopupProps> = ({ onClose }) => {
             <dd>30일/22만원(VAT포함)</dd>
             <dt>계좌번호 :</dt>
             <dd>
-              <span id="account-number">국민은행 602437-04-005892</span>
+              <span id="account-number">국민은행 630301-01-270341</span>
             </dd>
             <dt>입금자명 :</dt>
-            <dd>디플에이치알</dd>
+            <dd>주식회사 일톡</dd>
             <dt>등록절차 :</dt>
             <dd>입금 후 신청</dd>
+            <dt>등록문의 :</dt>
+            <dd><a href="https://open.kakao.com/me/114114KR" target="_blank" rel="noopener noreferrer">https://open.kakao.com/me/114114KR</a></dd>
           </dl>
         </div>
         <form onSubmit={handleSubmit} className={styles.formContainer}>

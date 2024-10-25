@@ -22,13 +22,9 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail }) => {
   const router = useRouter();
 
   const handleListClick = () => {
-    router.push('/jobs');
+    router.push('/board');
   };
 
-  const handleReportClick = () => {
-    console.log('신고 버튼 클릭');
-    // 신고 기능 로직 추가
-  };
 
   const renderContent = (contents: string) => {
     return contents.split('\n').map((line, index) => (
@@ -72,7 +68,6 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail }) => {
       <div className={style.articleFoot}>
         <ul className={style.acts}>
           <li><a href="#" onClick={handleListClick}>목록</a></li>
-          <li><a href="#" onClick={handleReportClick}>신고</a></li>
         </ul>
         <div className={style.txt}>
           ※ 위 내용에 대한 오류와 사용자가 이를 신뢰하여 취한 조치에 대해 114114korea는 책임을 지지 않습니다.

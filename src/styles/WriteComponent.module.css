@@ -65,6 +65,13 @@
     display: inline-block;  /* float 대신 inline-block 사용 */
   }
   
+  .uploadNotice {
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 15px;
+    text-align: center;
+  }
+
   .input,
   .select {
     font-size: 12px;

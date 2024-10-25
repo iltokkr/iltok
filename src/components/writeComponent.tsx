@@ -6,6 +6,8 @@ import Modal from '@/components/Modal';
 import { addHours, format, subHours } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
 import Link from 'next/link';
+import BusinessVerificationModal from '@/components/BusinessVerificationModal';
+import LoginPopup from '@/components/LoginPopup';
 
 // Supabase 클라이언트 설정
 const supabase = createClient(
@@ -40,9 +42,11 @@ const WritePage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [showBusinessVerificationModal, setShowBusinessVerificationModal] = useState(false);
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
 
   useEffect(() => {
-    getCurrentUser();
+    checkLoginStatus();
   }, []);
 
   useEffect(() => {
@@ -53,15 +57,12 @@ const WritePage: React.FC = () => {
     }
   }, [id, currentUserId]);
 
-  const getCurrentUser = async () => {
+  const checkLoginStatus = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (user) {
       setCurrentUserId(user.id);
     } else {
-      // 로그인되지 않은 경우 처리
-      setErrorMessage('로그인이 필요합니다.');
-      setIsModalOpen(true);
-      router.push('/login'); // 또는 적절한 로그인 페이지로 리다이렉트
+      setShowLoginPopup(true);
     }
   };
 
@@ -139,6 +140,36 @@ const WritePage: React.FC = () => {
         return;
       }
 
+      // 제목 중복 체크
+      const { data: existingPosts, error: titleCheckError } = await supabase
+        .from('jd')
+        .select('id')
+        .eq('title', formData.title)
+        .neq('id', id || 0); // 현재 편집 중인 게시물은 제외
+
+      if (titleCheckError) throw titleCheckError;
+
+      if (existingPosts && existingPosts.length > 0) {
+        setErrorMessage('이미 존재하는 제목입니다. 다른 제목을 입력해주세요.');
+        setIsModalOpen(true);
+        return;
+      }
+
+      // Check if the user is accepted
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('is_accept, is_upload')
+        .eq('id', user.id)
+        .single();
+
+      if (userError) throw userError;
+
+      if (userData.is_upload) {
+        setErrorMessage('공고는 하루에 하나만 올릴 수 있습니다.');
+        setIsModalOpen(true);
+        return;
+      }
+
       console.log('Submitting form. Is editing:', isEditing);
       console.log('Current form data:', formData);
 
@@ -194,25 +225,14 @@ const WritePage: React.FC = () => {
 
       } else {
         // 새 데이터 생성
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('is_upload')
-          .eq('id', user.id)
-          .single();
-
-        if (userError) throw userError;
-
-        if (userData.is_upload) {
-          setErrorMessage('공고는 하루에 하나만 올릴 수 있습니다.');
-          setIsModalOpen(true);
-          return;
-        }
-
+        let newJobId: number; // Add this line
         const { data, error } = await supabase
           .from('jd')
-          .insert([{ ...formData, uploader_id: user.id, ad: false }]);
+          .insert([{ ...formData, uploader_id: user.id, ad: false }])
+          .select();
 
         if (error) throw error;
+        newJobId = data[0].id;
 
         const { error: updateError } = await supabase
           .from('users')
@@ -220,13 +240,16 @@ const WritePage: React.FC = () => {
           .eq('id', user.id);
 
         if (updateError) throw updateError;
-
-        console.log('Data inserted successfully:', data);
       }
 
-      // 성공 시 목록 페이지로 이동
-      console.log('Redirecting to board page');
-      router.push('/board');
+      // Check if the user is accepted after submitting the job
+      if (!userData.is_accept) {
+        setShowBusinessVerificationModal(true);
+      } else {
+        // Redirect to board page if accepted
+        router.push('/board');
+      }
+
     } catch (error) {
       console.error('Error processing data:', error);
       setErrorMessage('데이터 처리 중 오류가 발생했습니다.');
@@ -422,6 +445,11 @@ const WritePage: React.FC = () => {
           </dd>
         </dl>
 
+        {/* 새로운 문구 추가 */}
+        <p className={style.uploadNotice}>
+          ** 모든 게시글은 하루에 1개 업로드 가능하며, 매일 00시 초기화됩니다. (재등록도 동일)
+        </p>
+
         <dl className={`${style.formGroup} ${style.ft}`}>
           <dd>
             <button type="submit" className={style.submitButton}>
@@ -433,6 +461,18 @@ const WritePage: React.FC = () => {
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <p>{errorMessage}</p>
       </Modal>
+      {showBusinessVerificationModal && (
+        <BusinessVerificationModal onClose={() => {
+          setShowBusinessVerificationModal(false);
+          router.push('/board');
+        }} />
+      )}
+      {showLoginPopup && (
+        <LoginPopup onClose={() => {
+          setShowLoginPopup(false);
+          checkLoginStatus(); // 로그인 팝업이 닫힌 후 다시 로그인 상태 확인
+        }} />
+      )}
     </div>
   );
 };

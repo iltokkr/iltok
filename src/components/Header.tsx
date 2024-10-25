@@ -65,7 +65,7 @@ const Header: React.FC = () => {
               </button>
             )}
             <li><a href="/my" onClick={(e) => handleAuthRequiredAction(e, '내가쓴글')}> 내가쓴글</a></li>
-            <li><a className={styles.focus} href="/write" onClick={(e) => handleAuthRequiredAction(e, '정보등록')}>정보등록</a></li>
+            <li><a className={styles.focus} href="/write"> 정보등록</a></li>
             {isLoggedIn && (
               <li><a href="#" onClick={handleLogout}> 로그아웃</a></li>
             )}

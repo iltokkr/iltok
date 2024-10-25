@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { createClient } from '@supabase/supabase-js';
 import Header from '@/components/Header';
@@ -26,6 +26,41 @@ const JobDetailPage: React.FC = () => {
   const router = useRouter();
   const { id } = router.query;
   const [jobDetail, setJobDetail] = useState<JobDetailType | null>(null);
+  const scrollPositionRef = useRef<number>(0);
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      sessionStorage.setItem('scrollPosition', window.pageYOffset.toString());
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleRouteChangeStart = () => {
+      scrollPositionRef.current = window.pageYOffset;
+    };
+
+    const handleRouteChangeComplete = () => {
+      if (router.asPath === '/board') {
+        setTimeout(() => {
+          window.scrollTo(0, scrollPositionRef.current);
+        }, 0);
+      }
+    };
+
+    router.events.on('routeChangeStart', handleRouteChangeStart);
+    router.events.on('routeChangeComplete', handleRouteChangeComplete);
+
+    return () => {
+      router.events.off('routeChangeStart', handleRouteChangeStart);
+      router.events.off('routeChangeComplete', handleRouteChangeComplete);
+    };
+  }, [router]);
 
   useEffect(() => {
     const fetchJobDetail = async () => {

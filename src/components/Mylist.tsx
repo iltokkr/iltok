@@ -40,7 +40,7 @@ const Mylist: React.FC<MylistProps> = ({ posts, isAccept }) => {
           <li key={post.id}>
             <div className={styles.postInfo}>
             <span className={styles.recall}>
-              <a href={`/write?id=${post.id}`}>[수정 및 재업로드]</a>
+              <a href={`/write?id=${post.id}`}>[재업로드]</a>
             </span>
               <span className={styles.time}>{formatDate(post.created_at)}</span>
               <a href={`/JobDetailPage/${post.id}`} className={styles.title}>
