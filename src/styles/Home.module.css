@@ -41,14 +41,13 @@
 }
 
 .indexNav {
-  background: #fff;
+  background: #eee;
   border: 1px solid #ccc;
   padding: 20px;
 }
 
 .tit {
   font-weight: bold;
-  margin-bottom: 15px;
 }
 
 .menu {

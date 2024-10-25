@@ -15,12 +15,12 @@ const Header: React.FC = () => {
 
   const { isLoggedIn, logout } = auth;
 
-  const handleWriteClick = (e: React.MouseEvent) => {
+  const handleAuthRequiredAction = (e: React.MouseEvent, action: string) => {
     e.preventDefault();
     if (!isLoggedIn) {
       setShowLoginPopup(true);
     } else {
-      router.push('/write');
+      router.push(action === '정보등록' ? '/write' : '/my');
     }
   };
 
@@ -64,14 +64,10 @@ const Header: React.FC = () => {
                 <FaTimes />
               </button>
             )}
-            {isLoggedIn ? (
-              <>
-                <li><a href="/my"> 내가쓴글</a></li>
-                <li><a className={styles.focus} href="/write" onClick={handleWriteClick}>정보등록</a></li>
-                <li><a href="#" onClick={handleLogout}> 로그아웃</a></li>
-              </>
-            ) : (
-              <li><a href="#" onClick={() => setShowLoginPopup(true)}> 로그인</a></li>
+            <li><a href="/my" onClick={(e) => handleAuthRequiredAction(e, '내가쓴글')}> 내가쓴글</a></li>
+            <li><a className={styles.focus} href="/write" onClick={(e) => handleAuthRequiredAction(e, '정보등록')}>정보등록</a></li>
+            {isLoggedIn && (
+              <li><a href="#" onClick={handleLogout}> 로그아웃</a></li>
             )}
           </ul>
         </div>
