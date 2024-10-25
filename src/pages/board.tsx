@@ -196,12 +196,12 @@ const BoardPage: React.FC = () => {
       <Head>
         <title>구인구직 게시판 | 114114KR</title>
         <meta name="description" content="다양한 직종의 구인구직 정보를 찾아보세요. 지역별, 카테고리별로 필터링하여 원하는 일자��를 쉽게 찾을 수 있습니다." />
-        <meta name="keywords" content="구인구직, 채용정보, 일자리, 취업" />
-        <meta property="og:title" content="구인구직 게시판 | 당신의 회사 이름" />
-        <meta property="og:description" content="다양한 직종의 구구직 정보를 찾아세요. 지역별, 카테고리별로 필터링하여 원하는 일자리를 쉽게 찾을 수 있습니다." />
+        <meta name="keywords" content="114114, 114114코리아, 114114korea, 114114kr, 114114구인구직, 조선동포, 교포, 재외동포, 해외교포, 동포 구인구직, 일자리 정보, 구직자, 구인업체, 경력직 채용, 구인구직, 기업 채용, 단기 알바, 드림 구인구직, 무료 채용 공고, 아르바이트, 알바, 알바 구인구직, 월급, 일당, 주급, 채용 정보, 취업 정보, 직업 정보 제공, 지역별 구인구직, 헤드헌팅 서비스, 신입 채용 공고, 동포 취업, 동포 일자리" />
+        <meta property="og:title" content="구인구직 게시판 | 114114KR" />
+        <meta property="og:description" content="다양한 직종의 구인구직 정보를 찾아보세요. 지역별, 카테고리별로 필터링하여 원하는 일자리를 쉽게 찾을 수 있습니다." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://114114KR.com/board" />
-        <meta property="og:image" content="https://114114KR.com/og-image.jpg" />
+        <meta property="og:image" content="https://114114KR.com/ogimage.png" />
       </Head>
 
       <Header/>
