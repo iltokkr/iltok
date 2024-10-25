@@ -13,6 +13,7 @@
 @media (max-width: 980px) {
   .layout {
     width: 100%;
+    gap: 10px;
   }
 }
 

@@ -235,11 +235,11 @@
   }
 
   .jobItem {
-    font-size: 1em;
+    font-size: 14px;
   }
 
   .jobDetails {
-    font-size: 0.8em;
+    font-size: 1em;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -263,11 +263,11 @@
     color: #ff5205;
   }
   .jobItem {
-    font-size: 0.9em;
+    font-size: 1em;
   }
 
   .jobDetails {
-    font-size: 1em;
+    font-size: 0.9em;
   }
 
   .topDiv {

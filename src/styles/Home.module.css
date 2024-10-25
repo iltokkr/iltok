@@ -1,104 +1,143 @@
 .container {
-    min-height: 100vh;
-    padding: 0 0.5rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .main {
-    padding: 5rem 0;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .indexWrap {
-    width: 100%;
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 130px 20px 0;
-  }
-  
-  .indexLogo {
-    font-size: 60px;
-    line-height: 1.2;
-    text-align: center;
-    font-weight: normal;
-    font-family: "Times New Roman", Times;
-  }
-  
-  .indexLogo em {
-    color: #ff5205;
-    font-style:normal; 
-  }
-  
-  .indexPromote {
-    padding: 0 0 18px;
-    text-align: center;
-  }
-  
-  .indexNav {
-    background: #eee;
-    border: 1px solid #ccc;
-    padding: 20px;
-  }
-  
-  .tit {
-    font-weight: bold;
-    margin-bottom: 15px;
-  }
-  
-  .menu {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-wrap: wrap;
-  }
-  
-  .menu li {
-    padding: 8px 19px 0 0;
-  }
-  
-  .menu a {
-    color: #333;
-    text-decoration: none;
-  }
-  
-  .menu a:hover {
-    text-decoration: underline;
-  }
+  min-height: 100vh;
+  padding: 0 0.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.main {
+  padding: 5rem 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.indexWrap {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 130px 20px 0;
+}
+
+.indexLogo {
+  font-size: 60px;
+  line-height: 1.2;
+  text-align: center;
+  font-weight: normal;
+  font-family: "Times New Roman", Times;
+}
+
+.indexLogo em {
+  color: #ff5205;
+  font-style: normal; 
+}
+
+.indexPromote {
+  padding: 0 0 18px;
+  text-align: center;
+}
+
+.indexNav {
+  background: #fff;
+  border: 1px solid #ccc;
+  padding: 20px;
+}
+
+.tit {
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.menu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.menu li {
+  padding: 8px 19px 0 0;
+}
+
+.menu a {
+  color: #333;
+  text-decoration: none;
+}
+
+.menu a:hover {
+  text-decoration: underline;
+}
 
 @media (max-width: 768px) {
+  .container {
+    padding: 0;
+  }
+  .main{
+    width: 100%;
+    padding: 30px 0;
+  }
+
   .indexWrap {
-    padding: 50px 15px 0;
+    padding: 20px 0 0;
+    width: 100%; /* 전체 너비를 사용하도록 설정 */
+  }
+
+  .indexLogo {
+    font-size: 50px;
+    margin-bottom: 10px;
+  }
+
+  .indexPromote {
+    font-size: 14px;
+    padding: 0 20px 18px;
   }
 
   .indexNav {
-    padding: 15px;
+    padding: 0;
+    border: none;
+    background: none;
+    width: 100%; /* 전체 너비를 사용하도록 설정 */
+  }
+
+  .tit {
+    padding: 10px 20px;
+    margin-bottom: 0px;
+    background: #e8e8e8;
   }
 
   .menu {
     flex-direction: column;
+    width: 100%; /* 전체 너비를 사용하도록 설정 */
   }
 
   .menu li {
     padding: 0;
-    margin-bottom: 10px;
+    margin: 0;
+    border-bottom: 1px solid #e0e0e0;
+    width: 100%; /* 전체 너비를 사용하도록 설정 */
+  }
+
+  .menu li:last-child {
+    border-bottom: none;
   }
 
   .menu a {
     display: block;
-    padding: 10px;
-    background-color: #f8f8f8;
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
+    padding: 10px 20px;
+    background-color: #fff;
+    position: relative;
+    width: 100%; /* 전체 너비를 사용하도록 설정 */
+    box-sizing: border-box; /* 패딩을 너비에 포함 */
   }
 
-  .menu a:hover {
-    background-color: #e8e8e8;
+  .menu a::after {
+    content: '>';
+    position: absolute;
+    right: 20px;
+    color: #ccc;
   }
 }
