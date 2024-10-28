@@ -42,46 +42,85 @@ interface AdJob extends Job {
 function InstallPWA() {
   const [supportsPWA, setSupportsPWA] = useState(false);
   const [promptInstall, setPromptInstall] = useState<any>(null);
+  const [installStatus, setInstallStatus] = useState<string>('');
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    // 모바일 기기 체크
+    const checkMobile = () => {
+      return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      );
+    };
+
+    setIsMobile(checkMobile());
+
     const handler = (e: any) => {
-      console.log('beforeinstallprompt 이벤트 발생!'); // 디버깅 로그
+      console.log('beforeinstallprompt 이벤트 발생!');
       e.preventDefault();
       setSupportsPWA(true);
       setPromptInstall(e);
+      setInstallStatus('설치 가능');
     };
-    
-    // 디버깅을 위한 로그
-    console.log('PWA 컴포넌트 마운트됨');
-    
-    window.addEventListener('beforeinstallprompt', handler);
 
-    // PWA가 이미 설치되어 있는지 확인
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      console.log('PWA가 이미 설치되어 있습니다.');
-      setSupportsPWA(false);
+    // iOS Safari 체크
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    if (isIOS && !window.matchMedia('(display-mode: standalone)').matches) {
+      setSupportsPWA(true);
+      setInstallStatus('iOS에서 설치하려면 공유 버튼을 눌러주세요');
     }
 
+    // 이미 설치되어 있는지 확인
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      console.log('이미 설치됨');
+      setInstallStatus('이미 설치됨');
+      setSupportsPWA(false);
+      return;
+    }
+
+    window.addEventListener('beforeinstallprompt', handler);
     return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
 
-  const onClick = (evt: any) => {
+  const onClick = async (evt: any) => {
     evt.preventDefault();
-    if (!promptInstall) {
-      console.log('promptInstall이 없습니다.'); // 디버깅 로그
+
+    // iOS Safari의 경우
+    if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
+      alert('Safari에서 "공유" 버튼을 누른 후 "홈 화면에 추가"를 선택해주세요.');
       return;
     }
-    console.log('설치 프롬프트 표시 시도'); // 디버깅 로그
-    promptInstall.prompt();
+
+    if (!promptInstall) {
+      console.log('설치 프롬프트 없음');
+      return;
+    }
+    
+    try {
+      const result = await promptInstall.prompt();
+      console.log('설치 프롬프트 결과:', result);
+      setInstallStatus('설치 완료');
+      setSupportsPWA(false);
+    } catch (err) {
+      console.error('설치 중 에러:', err);
+      setInstallStatus('설치 실패');
+    }
   };
 
-  // 강제로 버튼 표시 (테스트용)
+  // 설치 불가능하거나 이미 설치된 경우 버튼을 숨김
+  if (!supportsPWA) {
+    return null;
+  }
+
   return (
     <button
       className={styles.installButton}
       onClick={onClick}
     >
-      앱 설치하기 {supportsPWA ? '(설치 가능)' : '(설치 불가)'}
+      {isMobile && /iPad|iPhone|iPod/.test(navigator.userAgent)
+        ? '앱 설치 방법 보기'
+        : '앱 설치하기'}
+      {installStatus && ` (${installStatus})`}
     </button>
   );
 }
