@@ -39,6 +39,53 @@ interface AdJob extends Job {
   ad: true;
 }
 
+function InstallPWA() {
+  const [supportsPWA, setSupportsPWA] = useState(false);
+  const [promptInstall, setPromptInstall] = useState<any>(null);
+
+  useEffect(() => {
+    const handler = (e: any) => {
+      console.log('beforeinstallprompt 이벤트 발생!'); // 디버깅 로그
+      e.preventDefault();
+      setSupportsPWA(true);
+      setPromptInstall(e);
+    };
+    
+    // 디버깅을 위한 로그
+    console.log('PWA 컴포넌트 마운트됨');
+    
+    window.addEventListener('beforeinstallprompt', handler);
+
+    // PWA가 이미 설치되어 있는지 확인
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      console.log('PWA가 이미 설치되어 있습니다.');
+      setSupportsPWA(false);
+    }
+
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const onClick = (evt: any) => {
+    evt.preventDefault();
+    if (!promptInstall) {
+      console.log('promptInstall이 없습니다.'); // 디버깅 로그
+      return;
+    }
+    console.log('설치 프롬프트 표시 시도'); // 디버깅 로그
+    promptInstall.prompt();
+  };
+
+  // 강제로 버튼 표시 (테스트용)
+  return (
+    <button
+      className={styles.installButton}
+      onClick={onClick}
+    >
+      앱 설치하기 {supportsPWA ? '(설치 가능)' : '(설치 불가)'}
+    </button>
+  );
+}
+
 const BoardPage: React.FC = () => {
 
   const router = useRouter();
@@ -261,7 +308,7 @@ const BoardPage: React.FC = () => {
     <div className={styles.container}>
       <Head>
         <title>구인구직 게시판 | 114114KR</title>
-        <meta name="description" content="다양한 직종의 구인구직 정보를 찾아보세요. 지역별, 카테고리별로 필터링하여 원하는 일자리를 쉽게 찾을 수 있습니다." />
+        <meta name="description" content="다양한 직종의 구인구직 정보를 찾아보세요. 지역별, 카테고리별로 필터링하여 원하는 일자리를 쉽게 을 수 있습니다." />
         <meta name="keywords" content="114114, 114114코리아, 114114korea, 114114kr, 114114구인구직, 조선동포, 교포, 재외동포, 해외교포, 동포 구인구직, 일자리 정보, 구직자, 구인업체, 경력직 채용, 구인구직, 기업 채용, 단기 알바, 드림 구인구직, 무료 채용 공고, 아르바이트, 알바, 알바 구인구직, 월급, 일당, 주급, 채용 정보, 취업 정보, 직업 정보 제공, 지역별 구인구직, 헤드헌팅 비스, 신입 채용 공고, 동포 취업, 동포 일자리" />
         <meta property="og:title" content="구인구직 게시판 | 114114KR" />
         <meta property="og:description" content="다양한 직종의 구인구직 정보를 찾아보세요. 지역별, 카테고리별로 필터링하여 원하는 일자리를 쉽게 찾을 수 있습니다." />
@@ -289,6 +336,7 @@ const BoardPage: React.FC = () => {
       </div>
       <Footer />
       {error && <div className={styles.error}>{error}</div>}
+      <InstallPWA /> {/* PWA 설치 버튼 추가 */}
     </div>
   );
 };
