@@ -66,12 +66,15 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail }) => {
           </div>
       </div>
       <div className={style.articleFoot}>
-        <ul className={style.acts}>
-          <li><a href="#" onClick={handleListClick}>목록</a></li>
-        </ul>
         <div className={style.txt}>
           ※ 위 내용에 대한 오류와 사용자가 이를 신뢰하여 취한 조치에 대해 114114KR은 책임을 지지 않습니다.
         </div>
+        <div className={style.txt}>
+          ※ 114114KR 통해서 연락한다고 말씀해주세요.
+        </div>
+        <ul className={style.acts}>
+          <li><a href="#" onClick={handleListClick}>목록</a></li>
+        </ul>
       </div>
     </div>
   );
