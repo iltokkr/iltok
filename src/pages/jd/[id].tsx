@@ -109,27 +109,27 @@ const JobDetailPage: React.FC = () => {
   return (
     <div className={styles.container}>
       <Head>
-        <title>{jobDetail ? `${jobDetail.title} | 114114KR` : '채용 상세 | 114114KR'}</title>
+        <title>{jobDetail ? `${jobDetail.title} - ${jobDetail.uploader.company_name} | 114114KR` : '채용 상세 | 114114KR'}</title>
+        
+        {/* SEO 메타 태그 */}
         <meta name="description" content={jobDetail ? `${jobDetail.title} - ${jobDetail.uploader.company_name}의 채용 정보를 확인하세요. ${jobDetail.contents.substring(0, 150)}...` : '114114KR에서 다양한 채용 정보를 확인하세요.'} />
         <meta name="keywords" content={`채용정보, 구인구직, ${jobDetail?.title}, ${jobDetail?.uploader.company_name}, 114114KR`} />
-        <meta property="og:title" content={jobDetail ? `${jobDetail.title} | 114114KR` : '채용 상세 | 114114KR'} />
-        <meta property="og:description" content={jobDetail ? `${jobDetail.title} - ${jobDetail.uploader.company_name}의 채용 정보를 확인하세요. ${jobDetail.contents.substring(0, 150)}...` : '114114KR에서 다양한 채용 정보를 확인하세요.'} />
-        <meta property="og:type" content="website" />
+        
+        {/* Open Graph 태그 */}
+        <meta property="og:title" content={jobDetail ? `${jobDetail.title} - ${jobDetail.uploader.company_name} | 114114KR` : '채용 상세 | 114114KR'} />
+        <meta property="og:description" content={jobDetail ? `${jobDetail.contents.substring(0, 200)}...` : '114114KR에서 다양한 채용 정보를 확인하세요.'} />
+        <meta property="og:type" content="article" />
         <meta property="og:url" content={canonicalUrl} />
-        <meta property="og:image" content="https://114114KR.com/og-image.jpg" />
+        <meta property="og:image" content="https://114114kr.com/ogimage.png" />
         <meta property="og:site_name" content="114114KR" />
+        
+        {/* Twitter 카드 */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={jobDetail ? `${jobDetail.title} | 114114KR` : '채용 상세 | 114114KR'} />
-        <meta name="twitter:description" content={jobDetail ? `${jobDetail.title} - ${jobDetail.uploader.company_name}의 채용 정보를 확인하세요. ${jobDetail.contents.substring(0, 150)}...` : '114114KR에서 다양한 채용 정보를 확인하세요.'} />
-        <meta name="twitter:image" content="https://114114KR.com/og-image.jpg" />
-        <meta name="robots" content="index, follow" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="twitter:title" content={jobDetail ? `${jobDetail.title} - ${jobDetail.uploader.company_name} | 114114KR` : '채용 상세 | 114114KR'} />
+        <meta name="twitter:description" content={jobDetail ? `${jobDetail.contents.substring(0, 200)}...` : '114114KR에서 다양한 채용 정보를 확인하세요.'} />
+        <meta name="twitter:image" content="https://114114kr.com/ogimage.png" />
+        
         <link rel="canonical" href={canonicalUrl} />
-        {structuredData && (
-          <script type="application/ld+json">
-            {JSON.stringify(structuredData)}
-          </script>
-        )}
       </Head>
 
       <Header/>

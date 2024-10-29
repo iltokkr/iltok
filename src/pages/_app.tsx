@@ -11,23 +11,10 @@ function MyApp({ Component, pageProps }: AppProps) {
     <AuthProvider>
       <Head>
         <meta charSet="utf-8" />
-        <title>114114KR - 조선동포 및 교포 구인구직 서비스</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta httpEquiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
         <meta httpEquiv="Pragma" content="no-cache" />
         <meta httpEquiv="Expires" content="0" />
-        
-        {/* SEO 메타 태그 */}
-        <meta name="author" content="114114KR" />
-        <meta name="description" content="114114KR은 조선동포와 교포를 위한 구인구직 플랫폼입니다. 아르바이트부터 정규직까지 다양한 일자리 정보를 제공합니다." />
-        <meta name="keywords" content="114114, 114114코리아, 114114korea, 114114kr, 114114구인구직, 조선동포, 교포, 재외동포, 해외교포, 동포 구인구직, 일자리 정보" />
-        
-        {/* Open Graph 태그 */}
-        <meta property="og:title" content="114114KR - 조선동포 및 교포 구인구직 서비스" />
-        <meta property="og:description" content="114114KR은 조선동포와 교포를 위한 구인구직 플랫폼입니다. 아르바이트부터 정규직까지 다양한 일자리 정보를 제공합니다." />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://114114kr.com" />
-        <meta property="og:image" content="/icons/icon-192x192.png" />
         
         {/* PWA 관련 메타 태그 */}
         <meta name="theme-color" content="#000000" />
