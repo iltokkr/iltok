@@ -19,6 +19,7 @@ interface JobDetailType {
   uploader: {
     company_name: string;
     name: string;
+    number: string;
   };
 }
 
@@ -29,7 +30,7 @@ export const getServerSideProps = async (context: any) => {
     .from('jd')
     .select(`
       *,
-      uploader:users (company_name, name)
+      uploader:users (company_name, name, number)
     `)
     .eq('id', id)
     .single();
