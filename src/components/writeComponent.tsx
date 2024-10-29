@@ -243,10 +243,10 @@ const WritePage: React.FC = () => {
       }
 
       // Check if the user is accepted after submitting the job
-      if (!userData.is_accept) {
+      if (formData.board_type === '0' && !userData.is_accept) {
         setShowBusinessVerificationModal(true);
       } else {
-        // Redirect to board page if accepted
+        // Redirect to board page if accepted or not a job posting
         router.push('/board');
       }
 
