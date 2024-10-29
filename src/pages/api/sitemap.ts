@@ -43,7 +43,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     // 동적 페이지 (JobDetailPage) 추가
     jobs.forEach((job) => {
       stream.write({
-        url: `/JobDetailPage/${job.id}`,
+        url: `/jd/${job.id}`,
         changefreq: 'daily',
         priority: 1,
       })
