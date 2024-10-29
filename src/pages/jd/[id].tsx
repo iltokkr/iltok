@@ -22,10 +22,43 @@ interface JobDetailType {
   };
 }
 
-const JobDetailPage: React.FC = () => {
+export const getServerSideProps = async (context: any) => {
+  const { id } = context.params;
+  
+  const { data, error } = await supabase
+    .from('jd')
+    .select(`
+      *,
+      uploader:users (company_name, name)
+    `)
+    .eq('id', id)
+    .single();
+
+  if (error) {
+    console.error('Error fetching job detail:', error);
+    return {
+      props: {
+        initialJobDetail: null
+      }
+    };
+  }
+
+  const processedData = {
+    ...data,
+    uploader: data.uploader || { company_name: "정보 없음", name: "정보 없음" }
+  };
+
+  return {
+    props: {
+      initialJobDetail: processedData
+    }
+  };
+};
+
+const JobDetailPage: React.FC<{ initialJobDetail: JobDetailType | null }> = ({ initialJobDetail }) => {
   const router = useRouter();
   const { id } = router.query;
-  const [jobDetail, setJobDetail] = useState<JobDetailType | null>(null);
+  const [jobDetail, setJobDetail] = useState<JobDetailType | null>(initialJobDetail);
   const scrollPositionRef = useRef<number>(0);
 
   useEffect(() => {
@@ -61,34 +94,6 @@ const JobDetailPage: React.FC = () => {
       router.events.off('routeChangeComplete', handleRouteChangeComplete);
     };
   }, [router]);
-
-  useEffect(() => {
-    const fetchJobDetail = async () => {
-      if (id) {
-        const { data, error } = await supabase
-          .from('jd')
-          .select(`
-            *,
-            uploader:users (company_name, name)
-          `)
-          .eq('id', id)
-          .single();
-
-        if (error) {
-          console.error('Error fetching job detail:', error);
-        } else {
-          // uploader가 null인 경우 기본값 설정
-          const processedData = {
-            ...data,
-            uploader: data.uploader || { company_name: "정보 없음", name: "정보 없음" }
-          };
-          setJobDetail(processedData);
-        }
-      }
-    };
-
-    fetchJobDetail();
-  }, [id]);
 
   const canonicalUrl = `https://114114KR.com/JobDetailPage/${id}`;
 
