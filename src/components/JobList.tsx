@@ -79,7 +79,7 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
               <span className={styles.time}>{formatDate(job.updated_time)}</span>
               <div className={styles.jobContent}>
                 <p className={styles.title}>
-                  <Link href={`/JobDetailPage/${job.id}`}>
+                  <Link href={`/jd/${job.id}`}>
                     {job.title}
                   </Link>
                 </p>
