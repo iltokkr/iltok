@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import style from '@/styles/JobDetail.module.css';
 import { parseISO, format, subHours } from 'date-fns';
@@ -22,6 +22,20 @@ interface JobDetailProps {
 const JobDetail: React.FC<JobDetailProps> = ({ jobDetail }) => {
   const router = useRouter();
   const [copySuccess, setCopySuccess] = useState(false);
+  const [isFloating, setIsFloating] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsFloating(window.innerHeight < document.body.scrollHeight);
+    };
+
+    window.addEventListener('resize', handleResize);
+    handleResize();
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   const handleListClick = () => {
     router.push('/board');
@@ -59,6 +73,12 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail }) => {
     return number;
   };
 
+  const handleApplyButtonClick = (number: string) => {
+    const message = `114114KR에서 ${jobDetail.title} 보고 연락드립니다`;
+    const url = `sms:${number}?body=${encodeURIComponent(message)}`;
+    window.open(url);
+  };
+
   return (
     <div className={style.layout}>
       {copySuccess && <div className={style.copyAlert}>전화번호가 복사되었습니다!</div>}
@@ -69,6 +89,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail }) => {
       <ul className={style.articleMeta}>
         <li>등록일: {formatDate(jobDetail.updated_time)}</li>
         <li>글번호: {jobDetail.id}</li>
+
         <li></li>
       </ul>
       <ul className={`${style.articleMeta} ${style.bold}`}>
@@ -83,12 +104,26 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail }) => {
             <li>
               <span 
                 onClick={() => handleCopyPhoneNumber(formatPhoneNumber(jobDetail.uploader.number))} 
-               >
-                전화번호: <span style={{ cursor: 'pointer', color: 'orange', textDecoration: 'underline' }}
+              >
+                전화번호: <span style={{ cursor: 'pointer', color: '#ff3900', textDecoration: 'underline' }}
                 >{formatPhoneNumber(jobDetail.uploader.number)}</span>
               </span>
+              {isFloating ? (
+                <button 
+                  className={style.applyButton} 
+                  onClick={() => handleApplyButtonClick(formatPhoneNumber(jobDetail.uploader.number))}
+                >
+                  문자 지원하기
+                </button>
+              ) : (
+                <button 
+                  className={style.applyButton} 
+                  onClick={() => handleApplyButtonClick(formatPhoneNumber(jobDetail.uploader.number))}
+                >
+                  문자 지원하기
+                </button>
+              )}
             </li>
-      
           )}
           <li>*114114KR 통해서 연락한다고 말씀해주세요.</li>
       </div>

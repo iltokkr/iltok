@@ -365,6 +365,7 @@ const BoardPage: React.FC = () => {
           city2Options={city2Options}
           cate2Options={cate2Options}
         />
+        {/*<img src="/image.png" alt="Job List Banner" className={styles.bannerImage} />*/}
         <JobList 
           jobs={regularJobs}
           adJobs={adJobs}

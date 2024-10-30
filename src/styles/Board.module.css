@@ -51,3 +51,12 @@
     width: 100%;
   }
 }
+
+/* Add this style for the banner image */
+.bannerImage {
+  width: 100%; /* Make the image responsive */
+  height: auto; /* Maintain aspect ratio */
+  max-width: 980px; /* Limit the maximum width */
+  aspect-ratio: 980 / 70;
+  border-radius: 5px; /* Maintain the aspect ratio */ /* Add some space below the image */
+}
