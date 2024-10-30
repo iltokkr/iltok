@@ -27,6 +27,18 @@ function MyApp({ Component, pageProps }: AppProps) {
         
         {/* 네이버 사이트 인증 */}
         <meta name="naver-site-verification" content="2664c9542e7774437c1d026345f3ef09733c9ae5" />
+      
+      
+        <Script async src="https://www.googletagmanager.com/gtag/js?id=AW-16758883524" />
+        <Script id="google-tag" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'AW-16758883524');
+          `}
+        </Script>
       </Head>
 
       {/* Google Analytics */}
