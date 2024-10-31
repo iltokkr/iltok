@@ -15,7 +15,7 @@ const Carousel: React.FC<CarouselProps> = ({ images }) => {
 
   // 5초마다 자동으로 다음 슬라이드로 이동
   useEffect(() => {
-    const interval = setInterval(nextSlide, 7000); // 5000ms = 5초
+    const interval = setInterval(nextSlide, 5000); // 5000ms = 5초
     return () => clearInterval(interval); // 컴포넌트 언마운트 시 인터벌 클리어
   }, []);
 
