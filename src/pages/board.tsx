@@ -6,6 +6,7 @@ import JobFilter from '@/components/JobFilter';
 import JobList from '@/components/JobList';
 import Pagination from '@/components/Pagination';
 import Footer from '@/components/Footer';
+import MainCarousel from '@/components/MainCarousel';
 import styles from '@/styles/Board.module.css';
 import { createClient } from '@supabase/supabase-js'
 import Head from 'next/head'// 사용자에게 알림을 표시하기 위해 추가
@@ -347,7 +348,7 @@ const BoardPage: React.FC = () => {
     <div className={styles.container}>
       <Head>
         <title>구인구직 게시판 | 114114KR</title>
-        <meta name="description" content="다양한 직종의 구인구직 정보를 찾아보세요. 지역별, 카테고리별로 필터링하여 원하는 일자리를 쉽게 을 수 있습니다." />
+        <meta name="description" content="다양한 직종의 구인구직 정보를 찾아보세요." />
         <meta name="keywords" content="114114, 114114코리아, 114114korea, 114114kr, 114114구인구직, 조선동포, 교포, 재외동포, 해외교포, 동포 구인구직, 일자리 정보, 구직자, 구인업체, 경력직 채용, 구인구직, 기업 채용, 단기 알바, 드림 구인구직, 무료 채용 공고, 아르바이트, 알바, 알바 구인구직, 월급, 일당, 주급, 채용 정보, 취업 정보, 직업 정보 제공, 지역별 구인구직, 헤드헌팅 비스, 신입 채용 공고, 동포 취업, 동포 일자리" />
         <meta property="og:title" content="구인구직 게시판 | 114114KR" />
         <meta property="og:description" content="다양한 직종의 구인구직 정보를 찾아보세요. 지역별, 카테고리별로 필터링하여 원하는 일자리를 쉽게 찾을 수 있습니다." />
@@ -365,7 +366,23 @@ const BoardPage: React.FC = () => {
           city2Options={city2Options}
           cate2Options={cate2Options}
         />
-        {/*<img src="/image.png" alt="Job List Banner" className={styles.bannerImage} />*/}
+        
+        <MainCarousel 
+          images={[
+            { 
+              src: '/image copy.png', 
+              link: 'https://open.kakao.com/me/114114KR',
+              mobileSrc: '/image copy_mo.png'
+            },
+            { 
+              src: '/image.png', 
+              link: '/jd/6599',
+              mobileSrc: '/image_mo.png'
+            }
+            // 추가 이미지와 링크를 여기에 추가
+          ]}
+        />
+
         <JobList 
           jobs={regularJobs}
           adJobs={adJobs}

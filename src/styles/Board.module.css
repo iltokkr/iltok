@@ -4,7 +4,7 @@
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 10px;
 }
 
 /* Floating 버튼 스타일 추가 */
@@ -49,6 +49,7 @@
 @media (max-width: 768px) {
   .layout {
     width: 100%;
+    gap: 5px;
   }
 }
 

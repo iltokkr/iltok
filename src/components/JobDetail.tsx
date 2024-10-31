@@ -49,19 +49,9 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail }) => {
       .catch(err => console.error('Failed to copy: ', err));
   };
 
-  const renderContent = (contents: string) => {
-    return contents.split('\n').map((line, index) => (
-      <React.Fragment key={index}>
-        {line}
-        <br />
-      </React.Fragment>
-    ));
-  };
-
   const formatDate = (dateString: string) => {
     const date = parseISO(dateString);
     const koreaTime = subHours(date, 9);
-
     return format(koreaTime, 'MM-dd HH:mm');
   };
 
@@ -89,8 +79,6 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail }) => {
       <ul className={style.articleMeta}>
         <li>등록일: {formatDate(jobDetail.updated_time)}</li>
         <li>글번호: {jobDetail.id}</li>
-
-        <li></li>
       </ul>
       <ul className={`${style.articleMeta} ${style.bold}`}>
         <li>업체명: {jobDetail.uploader.company_name || "정보없음"}</li>
@@ -98,34 +86,40 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail }) => {
       </ul>
       <div className={style.articleDetail}>
         <div className={style.content}>
-            {renderContent(jobDetail.contents)}
-          </div>
-          {jobDetail.uploader.number && (
-            <li>
-              <span 
-                onClick={() => handleCopyPhoneNumber(formatPhoneNumber(jobDetail.uploader.number))} 
-              >
-                전화번호: <span style={{ cursor: 'pointer', color: '#ff3900', textDecoration: 'underline' }}
-                >{formatPhoneNumber(jobDetail.uploader.number)}</span>
-              </span>
-              {isFloating ? (
-                <button 
-                  className={style.applyButton} 
-                  onClick={() => handleApplyButtonClick(formatPhoneNumber(jobDetail.uploader.number))}
-                >
-                  문자 지원하기
-                </button>
-              ) : (
-                <button 
-                  className={style.applyButton} 
-                  onClick={() => handleApplyButtonClick(formatPhoneNumber(jobDetail.uploader.number))}
-                >
-                  문자 지원하기
-                </button>
-              )}
-            </li>
-          )}
-          <li>*114114KR 통해서 연락한다고 말씀해주세요.</li>
+           {jobDetail.id === 6599 ? ( 
+             <img 
+               src="/landing_ad.png" 
+               alt="Landing Ad" 
+               style={{ maxWidth: '980px', width: '100%', height: 'auto' }} // 최대 너비 980px, 비율에 맞게 조정
+             /> 
+           ) : ( 
+            <>
+              {jobDetail.contents.split('\n').map((line: string, index: number) => (
+                <React.Fragment key={index}>
+                  {line}
+                  <br />
+                </React.Fragment>
+              ))}
+            </>
+           )} 
+        </div>
+        {jobDetail.uploader.number && (
+          <li>
+            <span 
+              onClick={() => handleCopyPhoneNumber(formatPhoneNumber(jobDetail.uploader.number))} 
+            >
+              전화번호: <span style={{ cursor: 'pointer', color: '#ff3900', textDecoration: 'underline' }}
+              >{formatPhoneNumber(jobDetail.uploader.number)}</span>
+            </span>
+            <button 
+              className={style.applyButton} 
+              onClick={() => handleApplyButtonClick(formatPhoneNumber(jobDetail.uploader.number))}
+            >
+              문자 지원하기
+            </button>
+          </li>
+        )}
+        <li>*114114KR 통해서 연락한다고 말씀해주세요.</li>
       </div>
       <div className={style.articleFoot}>
         <div className={style.txt}>
