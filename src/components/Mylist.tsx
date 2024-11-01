@@ -43,7 +43,7 @@ const Mylist: React.FC<MylistProps> = ({ posts, isAccept }) => {
               <a href={`/write?id=${post.id}`}>[재업로드]</a>
             </span>
               <span className={styles.time}>{formatDate(post.created_at)}</span>
-              <a href={`/JobDetailPage/${post.id}`} className={styles.title}>
+              <a href={`/jd/${post.id}`} className={styles.title}>
                 {post.title}
               </a>
               <em>({post['1depth_region']} {post['2depth_region']}) - {post['1depth_category']} {post['2depth_category']}</em>
