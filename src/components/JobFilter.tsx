@@ -1,5 +1,6 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import styles from '@/styles/JobFilter.module.css';
+import { gtag } from '@/lib/gtag';
 
 interface FilterOptions {
   city1: string;
@@ -7,6 +8,7 @@ interface FilterOptions {
   cate1: string;
   cate2: string;
   keyword: string;
+  searchType: 'title' | 'contents' | 'both';
 }
 
 interface JobFilterProps {
@@ -42,9 +44,70 @@ const JobFilter: React.FC<JobFilterProps> = ({
   city2Options, 
   cate2Options 
 }) => {
-  const handleChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+  const [searchInput, setSearchInput] = useState({
+    keyword: filters.keyword || '',
+    searchType: filters.searchType || 'both'
+  });
+
+  useEffect(() => {
+    setSearchInput({
+      keyword: filters.keyword || '',
+      searchType: filters.searchType || 'both'
+    });
+  }, [filters.keyword, filters.searchType]);
+
+  const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
+    gtag('event', 'filter_change', {
+      event_category: 'filter',
+      event_label: `${name}_change`,
+      value: value
+    });
     onFilterChange({ ...filters, [name]: value });
+  };
+
+  const handleSearchInputChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setSearchInput(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSearchToggle = () => {
+    gtag('event', 'search_toggle_click', {
+      event_category: 'search',
+      event_label: isSearchExpanded ? 'close' : 'open'
+    });
+    setIsSearchExpanded(!isSearchExpanded);
+  };
+
+  const handleSearch = (e: React.MouseEvent) => {
+    e.preventDefault();
+    gtag('event', 'search_button_click', {
+      event_category: 'search',
+      event_label: searchInput.searchType,
+      value: searchInput.keyword
+    });
+    onFilterChange({
+      ...filters,
+      keyword: searchInput.keyword,
+      searchType: searchInput.searchType
+    });
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      gtag('event', 'search_button_click', {
+        event_category: 'search',
+        event_label: 'enter_key',
+        value: searchInput.keyword
+      });
+      onFilterChange({
+        ...filters,
+        keyword: searchInput.keyword,
+        searchType: searchInput.searchType
+      });
+    }
   };
 
   const city1Options = useMemo(() => Object.keys(locations), []);
@@ -55,13 +118,13 @@ const JobFilter: React.FC<JobFilterProps> = ({
 
   return (
     <div className={styles.searchBar}>
-      <form name="search_form" id="search_form" action="/board" method="get">
+      <form name="search_form" id="search_form" action="/board" method="get" onSubmit={(e) => e.preventDefault()}>
         <input name="bo_mode" type="hidden" id="bo_mode" value="list" />
         <input name="bo_table" type="hidden" id="bo_table" value="job" />
         
         <ul className={styles.filterBar}>
           <li className={styles.selectBox}>       
-            <select name="city1" id="city1" value={filters.city1} onChange={handleChange}>
+            <select name="city1" id="city1" value={filters.city1} onChange={handleFilterChange}>
               <option value="">전국</option>
               {city1Options.map((city, index) => (
                 <option key={index} value={city}>{city}</option>
@@ -69,7 +132,7 @@ const JobFilter: React.FC<JobFilterProps> = ({
             </select>
           </li>
           <li className={styles.selectBox}>
-            <select name="city2" id="city2" value={filters.city2} onChange={handleChange}>
+            <select name="city2" id="city2" value={filters.city2} onChange={handleFilterChange}>
               <option value="">시/구/군</option>
               {currentCity2Options.map((city, index) => (
                 <option key={index} value={city}>{city}</option>
@@ -77,7 +140,7 @@ const JobFilter: React.FC<JobFilterProps> = ({
             </select>
           </li>
           <li className={styles.selectBox}>
-            <select name="cate1" id="cate1" value={filters.cate1} onChange={handleChange}>
+            <select name="cate1" id="cate1" value={filters.cate1} onChange={handleFilterChange}>
               <option value="">분류선택</option>
               <option value="교육·강사">교육·강사</option>
               <option value="사무직">사무직</option>
@@ -89,25 +152,54 @@ const JobFilter: React.FC<JobFilterProps> = ({
             </select>
           </li>
           <li className={styles.selectBox}>
-            <select name="cate2" id="cate2" value={filters.cate2} onChange={handleChange}>
+            <select name="cate2" id="cate2" value={filters.cate2} onChange={handleFilterChange}>
               <option value="">소분류선택</option>
               {cate2Options.map((option, index) => (
                 <option key={index} value={option}>{option}</option>
               ))}
             </select>
           </li>
+          <li className={styles.toggleBox}>
+            <button 
+              type="button"
+              onClick={handleSearchToggle}
+              className={styles.toggleButton}
+            >
+              {isSearchExpanded ? '상세검색 접기' : '상세검색 열기'}
+            </button>
+          </li>
         </ul>
-        <div className={styles.searchForm} style={{display: 'none'}}>
-          <input 
-            className={styles.searchIpt} 
-            type="text" 
-            id="keyword" 
-            name="keyword" 
-            value={filters.keyword}
-            onChange={handleChange}
-          />
-          <button className={styles.searchBtn} type="button" onClick={() => {/* 검색 로직 추가 */}}>검색</button>
-        </div>
+
+        {isSearchExpanded && (
+          <div className={styles.searchForm}>
+            <select
+              name="searchType"
+              value={searchInput.searchType}
+              onChange={handleSearchInputChange}
+              className={styles.searchType}
+            >
+              <option value="both">제목+내용</option>
+              <option value="title">제목만</option>
+              <option value="contents">내용만</option>
+            </select>
+            <input 
+              className={styles.searchInput} 
+              type="text" 
+              name="keyword" 
+              value={searchInput.keyword}
+              onChange={handleSearchInputChange}
+              placeholder="검색어를 입력하세요"
+              onKeyPress={handleKeyPress}
+            />
+            <button 
+              className={styles.searchButton} 
+              type="button" 
+              onClick={handleSearch}
+            >
+              검색
+            </button>
+          </div>
+        )}
       </form>
     </div>
   );

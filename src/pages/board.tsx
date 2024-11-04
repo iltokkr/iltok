@@ -23,12 +23,14 @@ interface FilterOptions {
   cate1: string;
   cate2: string;
   keyword: string;
+  searchType: 'title' | 'contents' | 'both';
 }
 
 interface Job {
   id: number;
   updated_time: string;
   title: string;
+  contents: string;
   '1depth_region': string;
   '2depth_region': string;
   '1depth_category': string;
@@ -68,7 +70,7 @@ function InstallPWA() {
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     if (isIOS && !window.matchMedia('(display-mode: standalone)').matches) {
       setSupportsPWA(true);
-      setInstallStatus('iOS에서 설치하려면 공유 버튼을 눌러주세요');
+      setInstallStatus('iOS에서 설하려면 공유 버튼을 눌러주세요');
     }
 
     // 이미 설치되어 있는지 확인
@@ -138,7 +140,8 @@ const BoardPage: React.FC = () => {
     city2: '',
     cate1: '',
     cate2: '',
-    keyword: ''
+    keyword: '',
+    searchType: 'both'
   });
   const [city2Options, setCity2Options] = useState<string[]>([]);
   const [cate2Options, setCate2Options] = useState<string[]>([]);
@@ -163,38 +166,54 @@ const BoardPage: React.FC = () => {
     
     const query = {
       ...newFilters,
-      page: '1'  // 페이지를 1로 설정
+      page: '1',  // 페이지를 1로 설정
+      board_type: boardType  // board_type을 쿼리에 추가
     };
     router.push({
       pathname: router.pathname,
       query: query
     }, undefined, { shallow: true });
-  }, [filters, router]);
+  }, [filters, router, boardType]);
 
   const fetchJobs = useCallback(async (currentFilters: FilterOptions, page: number, currentBoardType: string) => {
     setIsLoading(true);
     try {
-      const { city1, city2, cate1, cate2, keyword } = currentFilters;
-      const pageSize = 50; // 페이지당 항목 수
+      const { city1, city2, cate1, cate2, keyword, searchType } = currentFilters;
+      const pageSize = 50;
 
-      // Fetch regular jobs
       let regularQuery = supabase
         .from('jd')
         .select('*', { count: 'exact' })
         .eq('ad', false)
-        .eq('board_type', currentBoardType) // board_type으로 필터링
+        .eq('board_type', currentBoardType)
         .order('updated_time', { ascending: false });
 
       if (city1) regularQuery = regularQuery.eq('1depth_region', city1);
       if (city2) regularQuery = regularQuery.eq('2depth_region', city2);
       if (cate1) regularQuery = regularQuery.eq('1depth_category', cate1);
       if (cate2) regularQuery = regularQuery.eq('2depth_category', cate2);
-      if (keyword) regularQuery = regularQuery.ilike('title', `%${keyword}%`);
+      
+      if (keyword) {
+        switch (searchType) {
+          case 'title':
+            regularQuery = regularQuery.ilike('title', `%${keyword}%`);
+            break;
+          case 'contents':
+            regularQuery = regularQuery.ilike('contents', `%${keyword}%`);
+            break;
+          case 'both':
+            regularQuery = regularQuery.or(
+              `or(title.ilike.%${keyword}%,contents.ilike.%${keyword}%)`
+            );
+            break;
+        }
+      }
 
       const offset = (page - 1) * pageSize;
       regularQuery = regularQuery.range(offset, offset + pageSize - 1);
 
       const { data: regularData, error: regularError, count } = await regularQuery;
+
 
       if (regularError) {
         throw new Error(`Error fetching regular jobs: ${regularError.message}`);
@@ -209,14 +228,29 @@ const BoardPage: React.FC = () => {
           .from('jd')
           .select('*')
           .eq('ad', true)
-          .eq('board_type', currentBoardType) // board_type으로 필터링
+          .eq('board_type', currentBoardType)
           .order('updated_time', { ascending: false });
 
         if (city1) adQuery = adQuery.eq('1depth_region', city1);
         if (city2) adQuery = adQuery.eq('2depth_region', city2);
         if (cate1) adQuery = adQuery.eq('1depth_category', cate1);
         if (cate2) adQuery = adQuery.eq('2depth_category', cate2);
-        if (keyword) adQuery = adQuery.ilike('title', `%${keyword}%`);
+        
+        if (keyword) {
+          switch (searchType) {
+            case 'title':
+              adQuery = adQuery.ilike('title', `%${keyword}%`);
+              break;
+            case 'contents':
+              adQuery = adQuery.ilike('contents', `%${keyword}%`);
+              break;
+            case 'both':
+              adQuery = adQuery.or(
+                `or(title.ilike.%${keyword}%,contents.ilike.%${keyword}%)`
+              );
+              break;
+          }
+        }
 
         const { data: adData, error: adError } = await adQuery;
 
@@ -287,13 +321,14 @@ const BoardPage: React.FC = () => {
 
     console.log('Router is ready. Current query:', router.query);
 
-    const { city1, city2, cate1, cate2, keyword, page, board_type } = router.query;
+    const { city1, city2, cate1, cate2, keyword, page, board_type, searchType } = router.query;
     let newFilters = {
       city1: city1 as string || '',
       city2: city2 as string || '',
       cate1: cate1 as string || '',
       cate2: cate2 as string || '',
-      keyword: keyword as string || ''
+      keyword: keyword as string || '',
+      searchType: (searchType as 'title' | 'contents' | 'both') || 'both'
     };
 
     const newBoardType = board_type as string || '0';
@@ -344,12 +379,21 @@ const BoardPage: React.FC = () => {
     }, undefined, { shallow: true });
   };
 
+  const handleSearch = useCallback((keyword: string, searchType: 'title' | 'contents' | 'both') => {
+    const newFilters = {
+      ...filters,
+      keyword,
+      searchType
+    };
+    handleFilterChange(newFilters);
+  }, [filters, handleFilterChange]);
+
   return (
     <div className={styles.container}>
       <Head>
         <title>구인구직 게시판 | 114114KR</title>
         <meta name="description" content="다양한 직종의 구인구직 정보를 찾아보세요." />
-        <meta name="keywords" content="114114, 114114코리아, 114114korea, 114114kr, 114114구인구직, 조선동포, 교포, 재외동포, 해외교포, 동포 구인구직, 일자리 정보, 구직자, 구인업체, 경력직 채용, 구인구직, 기업 채용, 단기 알바, 드림 구인구직, 무료 채용 공고, 아르바이트, 알바, 알바 구인구직, 월급, 일당, 주급, 채용 정보, 취업 정보, 직업 정보 제공, 지역별 구인구직, 헤드헌팅 비스, 신입 채용 공고, 동포 취업, 동포 일자리" />
+        <meta name="keywords" content="114114, 114114코리아, 114114korea, 114114kr, 114114구인구직, 조선동포, 교포, 재외동포, 해외교포, 동포 구인구직, 일자리 정보, 구직자, 구인체, 경력직 채용, 구인구직, 기업 채용, 단기 알바, 드림 구인구직, 무료 채용 공고, 아르바이트, 알바, 알바 구인구직, 월급, 일당, 주급, 채용 정보, 취업 정보, 직업 정보 제공, 지역별 구인구직, 헤드헌팅 비스, 신입 채용 공고, 동포 취업, 동포 일자리" />
         <meta property="og:title" content="구인구직 게시판 | 114114KR" />
         <meta property="og:description" content="다양한 직종의 구인구직 정보를 찾아보세요. 지역별, 카테고리별로 필터링하여 원하는 일자리를 쉽게 찾을 수 있습니다." />
         <meta property="og:type" content="website" />
@@ -366,7 +410,6 @@ const BoardPage: React.FC = () => {
           city2Options={city2Options}
           cate2Options={cate2Options}
         />
-        
         <MainCarousel 
           images={[
             { 

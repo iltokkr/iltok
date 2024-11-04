@@ -20,7 +20,7 @@ const nextConfig = {
         destination: '/api/sitemap'
       }
     ]
-  }
+  },
 }
 
 module.exports = withPWA(nextConfig)

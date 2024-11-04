@@ -8,19 +8,15 @@
 }
 
 .carousel {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
   position: relative;
-  overflow: hidden;
-  border-radius: 0.8vw;
 }
 
 .slide {
   width: 100%;
-  max-width: 980px;
-  height: auto;
-  overflow: hidden;
+  position: relative;
 }
 
 .image {
@@ -28,26 +24,52 @@
   height: auto;
   object-fit: cover;
   border-radius: 0.8vw;
+  display: block;
+  vertical-align: top;
 }
 
-
-
-/* .prevButton,
-.nextButton {
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
+/* 슬라이더 화살표 커스텀 스타일 */
+.carousel :global(.slick-prev),
+.carousel :global(.slick-next) {
   z-index: 1;
+  width: 40px;
+  height: 40px;
 }
 
-.prevButton {
-  left: 10px;
+.carousel :global(.slick-prev) {
+  left: 20px;
 }
 
-.nextButton {
-  right: 10px;
-} */ 
+.carousel :global(.slick-next) {
+  right: 20px;
+}
+
+/* 도트 네비게이션 커스텀 스타일 */
+.carousel :global(.slick-dots) {
+  bottom: -10%;
+}
+
+.carousel :global(.slick-dots li button:before) {
+  color: #ff3900;
+  opacity: 0.7;
+}
+
+.carousel :global(.slick-dots li.slick-active button:before) {
+  color: #ff3900;
+  opacity: 1;
+}
+
+/* 페이드 효과를 위한 스타일 */
+.carousel :global(.slick-slide) {
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  line-height: 0;
+}
+
+.carousel :global(.slick-slide.slick-active) {
+  opacity: 1;
+}
+
+.carousel :global(.slick-slide > div) {
+  line-height: 0;
+} 

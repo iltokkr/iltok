@@ -70,3 +70,70 @@
   display: table;
   clear: both;
 }
+
+.toggleBox {
+  margin: 0;
+  flex: 0 0 auto;
+}
+
+.toggleButton {
+  padding: 0 10px;
+  background: #fff;
+  border: 1px solid #ccc;
+  cursor: pointer;
+}
+
+.toggleButton:hover {
+  background: #f0f0f0;
+}
+
+.searchForm {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.searchType {
+  width: 100px;
+  height: 25px;
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 150px;
+  padding: 0 5px;
+}
+
+.searchButton {
+  width: 50px;
+  height: 25px;
+  background: #ff3900;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+.searchButton:hover {
+  background: #e63300;
+}
+
+@media (max-width: 768px) {
+  .searchForm {
+    flex-wrap: nowrap;  /* 모바일에서는 한 줄로 표시 */
+  }
+  
+  .searchType {
+    width: 90px;  /* 모바일에서는 더 작게 */
+    flex-shrink: 0;  /* 크기 고정 */
+  }
+  
+  .searchInput {
+    min-width: 0;  /* 모바일에서 최소 너비 제거 */
+  }
+  
+  .searchButton {
+    width: 45px;  /* 모바일에서는 더 작게 */
+    flex-shrink: 0;  /* 크기 고정 */
+  }
+}
