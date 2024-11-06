@@ -10,6 +10,7 @@ import MainCarousel from '@/components/MainCarousel';
 import styles from '@/styles/Board.module.css';
 import { createClient } from '@supabase/supabase-js'
 import Head from 'next/head'// 사용자에게 알림을 표시하기 위해 추가
+import { useLanguage } from '@/hooks/useLanguage';  // 추가
 
 // Supabase 클라이언트 생성
 const supabase = createClient(
@@ -128,6 +129,49 @@ function InstallPWA() {
   );
 }
 
+// ScrollToTop 컴포넌트 추가
+function ScrollToTop() {
+  const [isVisible, setIsVisible] = useState(false);
+
+  // 스크롤 위치에 따�� 버튼 표시 여부 결정
+  const toggleVisibility = useCallback(() => {
+    if (window.pageYOffset > 300) {
+      setIsVisible(true);
+    } else {
+      setIsVisible(false);
+    }
+  }, []);
+
+  // 클릭 시 최상단으로 스크롤
+  const scrollToTop = useCallback(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('scroll', toggleVisibility);
+    return () => {
+      window.removeEventListener('scroll', toggleVisibility);
+    };
+  }, [toggleVisibility]);
+
+  return (
+    <>
+      {isVisible && (
+        <button
+          className={styles.scrollToTop}
+          onClick={scrollToTop}
+          aria-label="맨 위로 가기"
+        >
+          ↑
+        </button>
+      )}
+    </>
+  );
+}
+
 const BoardPage: React.FC = () => {
 
   const router = useRouter();
@@ -153,6 +197,7 @@ const BoardPage: React.FC = () => {
   const contentRef = useRef<HTMLDivElement>(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [isPaginationChange, setIsPaginationChange] = useState(false);
+  const { currentLanguage, changeLanguage } = useLanguage();  // 추가
 
   const handleFilterChange = useCallback((newFilters: FilterOptions) => {
     // city1이 변경되었는지 확인
@@ -391,8 +436,14 @@ const BoardPage: React.FC = () => {
   return (
     <div className={styles.container}>
       <Head>
-        <title>구인구직 게시판 | 114114KR</title>
-        <meta name="description" content="다양한 직종의 구인구직 정보를 찾아보세요." />
+        <title>{currentLanguage === 'ko' ? '구인구직 게시판 | 114114KR' : 'Job Board | 114114KR'}</title>
+        <meta 
+          name="description" 
+          content={currentLanguage === 'ko' 
+            ? "다양한 직종의 구인구직 정보를 찾아보세요." 
+            : "Find job opportunities across various industries."
+          } 
+        />
         <meta name="keywords" content="114114, 114114코리아, 114114korea, 114114kr, 114114구인구직, 조선동포, 교포, 재외동포, 해외교포, 동포 구인구직, 일자리 정보, 구직자, 구인체, 경력직 채용, 구인구직, 기업 채용, 단기 알바, 드림 구인구직, 무료 채용 공고, 아르바이트, 알바, 알바 구인구직, 월급, 일당, 주급, 채용 정보, 취업 정보, 직업 정보 제공, 지역별 구인구직, 헤드헌팅 비스, 신입 채용 공고, 동포 취업, 동포 일자리" />
         <meta property="og:title" content="구인구직 게시판 | 114114KR" />
         <meta property="og:description" content="다양한 직종의 구인구직 정보를 찾아보세요. 지역별, 카테고리별로 필터링하여 원하는 일자리를 쉽게 찾을 수 있습니다." />
@@ -437,6 +488,7 @@ const BoardPage: React.FC = () => {
       <Footer />
       {error && <div className={styles.error}>{error}</div>}
       <InstallPWA /> {/* PWA 설치 버튼 추가 */}
+      <ScrollToTop /> {/* ScrollToTop 컴포넌트 추가 */}
     </div>
   );
 };

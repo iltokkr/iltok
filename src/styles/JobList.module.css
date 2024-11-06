@@ -246,6 +246,32 @@
   }
 }
 
+.languageSelector {
+  display: flex;
+  padding: 5px 0;
+  gap: 5px;
+  justify-content: flex-start;
+}
+
+.languageSelector button {
+  padding: 3px 6px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.languageSelector button:hover {
+  background: #f5f5f5;
+}
+
+.languageSelector button.activeLanguage {
+  background: #ff4800;
+  color: white;
+  border-color: #ff3900;
+}
+
 @media (max-width: 480px) {
   .listText li {
     width: 100%;
@@ -279,4 +305,28 @@
   .btnTop {
     font-size: 0.9em;
   }
+
+  .languageSelector {
+    display: flex;
+    gap: 5px;
+    padding: 0 0px 5px 5px;
+    justify-content: flex-start;
+  }
+
+  .languageSelector button {
+    padding: 3px 6px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+}
+
+.readPost {
+  opacity: 0.6;
+}
+
+.readPost .title a {
+  color: #666;
 }

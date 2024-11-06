@@ -6,6 +6,7 @@ import Header from '@/components/Header';
 import JobDetail from '@/components/JobDetail';
 import Footer from '@/components/Footer';
 import styles from '@/styles/JobDetailPage.module.css';
+import { useLanguage } from '@/hooks/useLanguage';
 
 // Supabase 클라이언트 설정
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
@@ -59,6 +60,7 @@ export const getServerSideProps = async (context: any) => {
 const JobDetailPage: React.FC<{ initialJobDetail: JobDetailType | null }> = ({ initialJobDetail }) => {
   const router = useRouter();
   const { id } = router.query;
+  const { currentLanguage } = useLanguage();
   const [jobDetail, setJobDetail] = useState<JobDetailType | null>(initialJobDetail);
   const scrollPositionRef = useRef<number>(0);
 
@@ -141,7 +143,9 @@ const JobDetailPage: React.FC<{ initialJobDetail: JobDetailType | null }> = ({ i
       <Header/>
       <div className={styles.layout}>
         {jobDetail ? (
-          <JobDetail jobDetail={jobDetail} />
+          <JobDetail 
+            jobDetail={jobDetail}
+          />
         ) : (
           <p>채용 정보를 불러오는 중입니다...</p>
         )}

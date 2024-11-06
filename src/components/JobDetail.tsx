@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import style from '@/styles/JobDetail.module.css';
 import { parseISO, format, subHours } from 'date-fns';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface JobDetailType {
   id: number;
@@ -21,6 +22,10 @@ interface JobDetailProps {
 
 const JobDetail: React.FC<JobDetailProps> = ({ jobDetail }) => {
   const router = useRouter();
+  const { currentLanguage, changeLanguage } = useLanguage();
+  const [translatedTitle, setTranslatedTitle] = useState(jobDetail.title);
+  const [translatedContents, setTranslatedContents] = useState(jobDetail.contents);
+  const [isTranslating, setIsTranslating] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const [isFloating, setIsFloating] = useState(false);
 
@@ -69,12 +74,72 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail }) => {
     window.open(url);
   };
 
+  // 번역 함수 수정
+  const translate = async (text: string, targetLang: string) => {
+    if (targetLang === 'ko') return text;
+    try {
+      const response = await fetch(
+        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=ko&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`
+      );
+      const data = await response.json();
+      
+      // 번역된 문장들을 공백 없이 합치기
+      return data[0]
+        .map((item: any[]) => item[0])
+        .filter(Boolean)
+        .join('');
+    } catch (error) {
+      console.error('Translation error:', error);
+      return text;
+    }
+  };
+
+  // 언어 변경 핸들러 수정
+  const handleLanguageChange = (lang: string) => {
+    if (lang === currentLanguage || isTranslating) return;
+    changeLanguage(lang);  // useLanguage의 changeLanguage 사용
+  };
+
+  // 언어 변경 시 번역 실행
+  useEffect(() => {
+    const translateContent = async () => {
+      if (currentLanguage === 'ko' || isTranslating) {
+        setTranslatedTitle(jobDetail.title);
+        setTranslatedContents(jobDetail.contents);
+        return;
+      }
+
+      setIsTranslating(true);
+      try {
+        // 제목 번역
+        const newTitle = await translate(jobDetail.title, currentLanguage);
+        
+        // 내용 번역 - 전체 내용을 한 번에 번역
+        const newContents = await translate(jobDetail.contents, currentLanguage);
+        
+        setTranslatedTitle(newTitle);
+        setTranslatedContents(newContents);
+      } catch (error) {
+        console.error('Translation error:', error);
+        // 에러 발생 시 원본 텍스트 유지
+        setTranslatedTitle(jobDetail.title);
+        setTranslatedContents(jobDetail.contents);
+      } finally {
+        setIsTranslating(false);
+      }
+      
+    };
+
+    translateContent();
+  }, [currentLanguage, jobDetail]);
+
   return (
     <div className={style.layout}>
+
       {copySuccess && <div className={style.copyAlert}>전화번호가 복사되었습니다!</div>}
       
       <div className={style.articleTitle}>
-        <h1>{jobDetail.title}</h1>
+        <h1>{translatedTitle}</h1>
       </div>
       <ul className={style.articleMeta}>
         <li>등록일: {formatDate(jobDetail.updated_time)}</li>
@@ -85,23 +150,50 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail }) => {
         <li>대표자명: {jobDetail.uploader.name || "정보없음"}</li>
       </ul>
       <div className={style.articleDetail}>
+      <div className={style.languageSelector}>
+        <button 
+          className={currentLanguage === 'ko' ? style.activeLanguage : ''} 
+          onClick={() => changeLanguage('ko')}
+        >
+          한국어
+        </button>
+        <button 
+          className={currentLanguage === 'en' ? style.activeLanguage : ''} 
+          onClick={() => changeLanguage('en')}
+        >
+          English
+        </button>
+        <button 
+          className={currentLanguage === 'zh' ? style.activeLanguage : ''} 
+          onClick={() => changeLanguage('zh')}
+        >
+          中文
+        </button>
+        <button 
+          className={currentLanguage === 'ja' ? style.activeLanguage : ''} 
+          onClick={() => changeLanguage('ja')}
+        >
+          日本語
+          </button>
+        </div>
         <div className={style.content}>
-           {jobDetail.id === 6599 ? ( 
-             <img 
-               src="/landing_ad.png" 
-               alt="Landing Ad" 
-               style={{ maxWidth: '980px', width: '100%', height: 'auto' }} // 최대 너비 980px, 비율에 맞게 조정
-             /> 
-           ) : ( 
+          {jobDetail.id === 6599 ? ( 
+            <img 
+              src="/landing_ad.png" 
+              alt="Landing Ad" 
+              style={{ maxWidth: '980px', width: '100%', height: 'auto' }}
+            /> 
+          ) : ( 
             <>
-              {jobDetail.contents.split('\n').map((line: string, index: number) => (
+              {translatedContents.split('\n').map((line: string, index: number) => (
                 <React.Fragment key={index}>
                   {line}
                   <br />
+                
                 </React.Fragment>
               ))}
             </>
-           )} 
+          )} 
         </div>
         {jobDetail.uploader.number && (
           <li>
