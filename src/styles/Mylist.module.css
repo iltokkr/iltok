@@ -1,5 +1,5 @@
 .layout {
-  width: 100%;
+  padding:10px;
 }
 
 .listHead {
@@ -16,7 +16,13 @@
   background-color: #f8f8f8;
   padding: 15px;
   margin-bottom: 15px;
-  font-size: 14px;
+  font-size: 12px;
+}
+
+.guideText {
+  font-size: 10px;
+  margin-top: 10px;
+  color: #888;
 }
 
 .statusText {
@@ -45,6 +51,18 @@
   display: flex;
   align-items: center;
   flex-grow: 1;
+  justify-content: space-between;
+}
+
+.postContent {
+  display: flex;
+  align-items: center;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 5px;
+  margin-left: auto;
 }
 
 .time {
@@ -67,10 +85,28 @@
 
 .recall {
   flex-shrink: 0;
-  margin-right: 10px;
 }
 
 .recall a {
   font-weight: bold;
   color: #ff3900;
+}
+
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+  .postInfo {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }

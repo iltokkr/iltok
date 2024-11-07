@@ -6,6 +6,7 @@ import Pagination from './Pagination';
 import AdPopup from './AdPopup';
 import { useReadPosts } from '@/hooks/useReadPosts';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useRouter } from 'next/router';
 
 interface Job {
   id: number;
@@ -40,6 +41,7 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
   const [translatedDetails, setTranslatedDetails] = useState<{ [key: number]: string }>({});
   const [isTranslating, setIsTranslating] = useState(false);
   const previousJobsRef = useRef<string>('');
+  const router = useRouter();
 
   // 번역 함수
   const translate = useCallback(async (text: string, targetLang: string) => {
@@ -92,6 +94,15 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
 
           setTranslatedTitles(newTitles);
           setTranslatedDetails(newDetails);
+
+          // 번역 완료 시 GA 이벤트
+          window.gtag('event', 'translation_complete', {
+            event_category: 'Translation',
+            event_label: currentLanguage,
+            page: 'job_list',
+            current_page: currentPage,
+            translated_count: untranslatedJobs.length
+          });
         }
       } catch (error) {
         console.error('Translation error:', error);
@@ -114,11 +125,18 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
   // 언어 변경 핸들러 수정
   const handleLanguageChange = useCallback((lang: string) => {
     if (lang === currentLanguage || isTranslating) return;
+    
+    window.gtag('event', 'translate', {
+      event_category: 'Translation',
+      event_label: `${currentLanguage}_to_${lang}`,
+      page: 'job_list',
+      current_page: currentPage
+    });
+    
     changeLanguage(lang);
-    // 강제로 번역 상태 초기화
     setTranslatedTitles({});
     setTranslatedDetails({});
-  }, [currentLanguage, isTranslating, changeLanguage]);
+  }, [currentLanguage, isTranslating, changeLanguage, currentPage]);
 
   const formatDate = (dateString: string) => {
     const date = parseISO(dateString);
@@ -154,25 +172,25 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
       <div className={styles.languageSelector}>
         <button 
           className={currentLanguage === 'ko' ? styles.activeLanguage : ''} 
-          onClick={() => changeLanguage('ko')}
+          onClick={() => handleLanguageChange('ko')}
         >
           한국어
         </button>
         <button 
           className={currentLanguage === 'en' ? styles.activeLanguage : ''} 
-          onClick={() => changeLanguage('en')}
+          onClick={() => handleLanguageChange('en')}
         >
           English
         </button>
         <button 
           className={currentLanguage === 'zh' ? styles.activeLanguage : ''} 
-          onClick={() => changeLanguage('zh')}
+          onClick={() => handleLanguageChange('zh')}
         >
           中文
         </button>
         <button 
           className={currentLanguage === 'ja' ? styles.activeLanguage : ''} 
-          onClick={() => changeLanguage('ja')}
+          onClick={() => handleLanguageChange('ja')}
         >
           日本語
           </button>

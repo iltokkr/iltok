@@ -45,7 +45,7 @@ const Header: React.FC = () => {
       <div className={styles.topbar}>
         <div className={styles.layout}>
           <div className={styles.path}>
-            <a className={styles.logoTxt} href="/"><em>114</em>114KR.COM</a>
+            <a className={styles.logoTxt} href="/board"><em>114</em>114KR.COM</a>
           </div>
           {!showMobileMenu && (
             <button 

@@ -112,8 +112,6 @@ const WritePage: React.FC = () => {
     e.preventDefault();
     setErrorMessage('');
 
-    // ... (validation checks remain the same)
-
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -142,7 +140,7 @@ const WritePage: React.FC = () => {
         .from('users')
         .select('is_accept, is_upload')
         .eq('id', user.id)
-        .maybeSingle(); // Use maybeSingle() instead of single()
+        .maybeSingle();
 
       if (userError) throw userError;
 
@@ -152,17 +150,15 @@ const WritePage: React.FC = () => {
         return;
       }
 
-      if (userData.is_upload) {
+      // 신규 등록시에만 is_upload 체크
+      if (!isEditing && userData.is_upload) {
         setErrorMessage('공고는 하루에 하나만 올릴 수 있습니다.');
         setIsModalOpen(true);
         return;
       }
 
       if (isEditing) {
-        // 현재 KST 시간 계산
-        const now = new Date();
-        const koreaTime = addHours(now, 9);
-
+        // 수정 시에는 내용만 업데이트
         const { data: updatedData, error: updateError } = await supabase
           .from('jd')
           .update({
@@ -171,8 +167,8 @@ const WritePage: React.FC = () => {
             '2depth_region': formData['2depth_region'],
             '1depth_category': formData['1depth_category'],
             '2depth_category': formData['2depth_category'],
-            contents: formData.contents.trim(),
-            updated_time: koreaTime
+            contents: formData.contents.trim()
+            // updated_time은 제외
           })
           .eq('id', id)
           .select();
@@ -184,27 +180,22 @@ const WritePage: React.FC = () => {
           setIsModalOpen(true);
           return;
         }
-
-        // Update user upload status
-        const { error: updateUserError } = await supabase
-          .from('users')
-          .update({ is_upload: true })
-          .eq('id', user.id);
-
-        if (updateUserError) throw updateUserError;
-
       } else {
-        // Insert new data
+        // 신규 등록
+        const now = new Date();
+        const koreaTime = addHours(now, 9);
+
         const { data: insertedData, error: insertError } = await supabase
-        .from('jd')
-        .insert([{ 
-          ...formData,
-          title: formData.title.trim(),
-          contents: formData.contents.trim(),
-          uploader_id: user.id, 
-          ad: false 
-        }])
-        .select();
+          .from('jd')
+          .insert([{ 
+            ...formData,
+            title: formData.title.trim(),
+            contents: formData.contents.trim(),
+            uploader_id: user.id,
+            ad: false,
+            updated_time: koreaTime
+          }])
+          .select();
 
         if (insertError) throw insertError;
 
@@ -214,7 +205,7 @@ const WritePage: React.FC = () => {
           return;
         }
 
-        // Update user upload status
+        // 신규 등록시에만 is_upload를 true로 업데이트
         const { error: updateUserError } = await supabase
           .from('users')
           .update({ is_upload: true })

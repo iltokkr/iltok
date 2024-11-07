@@ -15,7 +15,7 @@ const supabase = createClient(
 
 interface MyPost {
     id: number;
-    created_at: string;
+    updated_time: string;
     title: string;
     '1depth_region': string;
     '2depth_region': string;
@@ -26,11 +26,13 @@ interface MyPost {
 interface UserData {
   id: string;
   is_accept: boolean;
+  is_upload: boolean;
+  reload_times: number;
 }
 
 const My: React.FC = () => {
   const [myPosts, setMyPosts] = useState<MyPost[]>([]);
-  const [isAccept, setIsAccept] = useState<boolean>(false);
+  const [userData, setUserData] = useState<UserData | null>(null);
   const authContext = useContext(AuthContext);
 
   useEffect(() => {
@@ -45,7 +47,7 @@ const My: React.FC = () => {
       .from('jd')
       .select('*')
       .eq('uploader_id', authContext?.user?.id)
-      .order('created_at', { ascending: false });
+      .order('updated_time', { ascending: false });
 
     if (error) {
       console.error('Error fetching posts:', error);
@@ -57,14 +59,14 @@ const My: React.FC = () => {
   const fetchUserData = async () => {
     const { data, error } = await supabase
       .from('users')
-      .select('is_accept')
+      .select('id, is_accept, is_upload, reload_times')
       .eq('id', authContext?.user?.id)
       .single();
 
     if (error) {
       console.error('Error fetching user data:', error);
     } else {
-      setIsAccept(data?.is_accept || false);
+      setUserData(data);
     }
   };
 
@@ -88,7 +90,12 @@ const My: React.FC = () => {
 
       <Header />
       <main className={styles.main}>
-        <Mylist posts={myPosts} isAccept={isAccept} />
+        <Mylist 
+          posts={myPosts} 
+          isAccept={userData?.is_accept || false}
+          isUpload={userData?.is_upload || false}
+          reloadTimes={userData?.reload_times || 0}
+        />
       </main>
       <Footer />
     </div>

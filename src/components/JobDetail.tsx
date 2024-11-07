@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import style from '@/styles/JobDetail.module.css';
 import { parseISO, format, subHours } from 'date-fns';
 import { useLanguage } from '@/hooks/useLanguage';
+import { GA_TRACKING_ID } from '@/lib/gtag';
 
 interface JobDetailType {
   id: number;
@@ -69,7 +70,15 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail }) => {
   };
 
   const handleApplyButtonClick = (number: string) => {
-    const message = `114114KR에서 ${jobDetail.title} 보고 연락드립니다`;
+    window.gtag('event', 'job_application', {
+      event_category: 'Job',
+      event_label: jobDetail.title,
+      job_id: jobDetail.id,
+      company_name: jobDetail.uploader.company_name
+    });
+
+    const currentUrl = `${window.location.origin}${router.asPath}`;
+    const message = `114114KR에서 "${jobDetail.title}" 공고 보고 연락드립니다.\n\n채용공고 링크: ${currentUrl}`;
     const url = `sms:${number}?body=${encodeURIComponent(message)}`;
     window.open(url);
   };
@@ -97,7 +106,14 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail }) => {
   // 언어 변경 핸들러 수정
   const handleLanguageChange = (lang: string) => {
     if (lang === currentLanguage || isTranslating) return;
-    changeLanguage(lang);  // useLanguage의 changeLanguage 사용
+    
+    window.gtag('event', 'translate', {
+      event_category: 'Translation',
+      event_label: `${currentLanguage}_to_${lang}`,
+      job_id: jobDetail.id
+    });
+    
+    changeLanguage(lang);
   };
 
   // 언어 변경 시 번역 실행
