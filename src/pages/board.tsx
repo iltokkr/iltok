@@ -133,7 +133,7 @@ function InstallPWA() {
 function ScrollToTop() {
   const [isVisible, setIsVisible] = useState(false);
 
-  // 스크롤 위치에 따�� 버튼 표시 여부 결정
+  // 스크롤 위치에 따 버튼 표시 여부 결정
   const toggleVisibility = useCallback(() => {
     if (window.pageYOffset > 300) {
       setIsVisible(true);
@@ -225,85 +225,160 @@ const BoardPage: React.FC = () => {
     try {
       const { city1, city2, cate1, cate2, keyword, searchType } = currentFilters;
       const pageSize = 50;
+      const offset = (page - 1) * pageSize;
 
-      let regularQuery = supabase
+      // 1. uploader_id가 null인 게시물 쿼리
+      let nullUploaderQuery = supabase
         .from('jd')
-        .select('*', { count: 'exact' })
+        .select('*')
         .eq('ad', false)
         .eq('board_type', currentBoardType)
-        .order('updated_time', { ascending: false });
+        .is('uploader_id', null);
 
-      if (city1) regularQuery = regularQuery.eq('1depth_region', city1);
-      if (city2) regularQuery = regularQuery.eq('2depth_region', city2);
-      if (cate1) regularQuery = regularQuery.eq('1depth_category', cate1);
-      if (cate2) regularQuery = regularQuery.eq('2depth_category', cate2);
+      // 2. is_accept가 true인 사용자의 게시물 쿼리
+      let acceptedUploaderQuery = supabase
+        .from('jd')
+        .select(`
+          *,
+          users!inner (
+            is_accept
+          )
+        `)
+        .eq('ad', false)
+        .eq('board_type', currentBoardType)
+        .eq('users.is_accept', true);
+
+      // 필터 조건 추가
+      if (city1) {
+        nullUploaderQuery = nullUploaderQuery.eq('1depth_region', city1);
+        acceptedUploaderQuery = acceptedUploaderQuery.eq('1depth_region', city1);
+      }
+      if (city2) {
+        nullUploaderQuery = nullUploaderQuery.eq('2depth_region', city2);
+        acceptedUploaderQuery = acceptedUploaderQuery.eq('2depth_region', city2);
+      }
+      if (cate1) {
+        nullUploaderQuery = nullUploaderQuery.eq('1depth_category', cate1);
+        acceptedUploaderQuery = acceptedUploaderQuery.eq('1depth_category', cate1);
+      }
+      if (cate2) {
+        nullUploaderQuery = nullUploaderQuery.eq('2depth_category', cate2);
+        acceptedUploaderQuery = acceptedUploaderQuery.eq('2depth_category', cate2);
+      }
       
       if (keyword) {
         switch (searchType) {
           case 'title':
-            regularQuery = regularQuery.ilike('title', `%${keyword}%`);
+            nullUploaderQuery = nullUploaderQuery.ilike('title', `%${keyword}%`);
+            acceptedUploaderQuery = acceptedUploaderQuery.ilike('title', `%${keyword}%`);
             break;
           case 'contents':
-            regularQuery = regularQuery.ilike('contents', `%${keyword}%`);
+            nullUploaderQuery = nullUploaderQuery.ilike('contents', `%${keyword}%`);
+            acceptedUploaderQuery = acceptedUploaderQuery.ilike('contents', `%${keyword}%`);
             break;
           case 'both':
-            regularQuery = regularQuery.or(
-              `or(title.ilike.%${keyword}%,contents.ilike.%${keyword}%)`
+            nullUploaderQuery = nullUploaderQuery.or(
+              `title.ilike.%${keyword}%,contents.ilike.%${keyword}%`
+            );
+            acceptedUploaderQuery = acceptedUploaderQuery.or(
+              `title.ilike.%${keyword}%,contents.ilike.%${keyword}%`
             );
             break;
         }
       }
 
-      const offset = (page - 1) * pageSize;
-      regularQuery = regularQuery.range(offset, offset + pageSize - 1);
+      // 두 쿼리 실행
+      const [nullUploaderResult, acceptedUploaderResult] = await Promise.all([
+        nullUploaderQuery,
+        acceptedUploaderQuery
+      ]);
 
-      const { data: regularData, error: regularError, count } = await regularQuery;
+      if (nullUploaderResult.error) throw nullUploaderResult.error;
+      if (acceptedUploaderResult.error) throw acceptedUploaderResult.error;
 
+      // 결과 합치기 및 정렬
+      const allJobs = [...(nullUploaderResult.data || []), ...(acceptedUploaderResult.data || [])]
+        .sort((a, b) => new Date(b.updated_time).getTime() - new Date(a.updated_time).getTime());
 
-      if (regularError) {
-        throw new Error(`Error fetching regular jobs: ${regularError.message}`);
-      }
+      // 페이지네이션 적용
+      const totalCount = allJobs.length;
+      const paginatedJobs = allJobs.slice(offset, offset + pageSize);
 
-      setRegularJobs(regularData || []);
-      setTotalPages(Math.ceil((count || 0) / pageSize));
+      setRegularJobs(paginatedJobs);
+      setTotalPages(Math.ceil(totalCount / pageSize));
 
-      // Fetch ad jobs (only for the first page)
+      // 광고 쿼리도 동일한 방식으로 수정
       if (page === 1) {
-        let adQuery = supabase
+        let nullUploaderAdQuery = supabase
           .from('jd')
           .select('*')
           .eq('ad', true)
           .eq('board_type', currentBoardType)
-          .order('updated_time', { ascending: false });
+          .is('uploader_id', null);
 
-        if (city1) adQuery = adQuery.eq('1depth_region', city1);
-        if (city2) adQuery = adQuery.eq('2depth_region', city2);
-        if (cate1) adQuery = adQuery.eq('1depth_category', cate1);
-        if (cate2) adQuery = adQuery.eq('2depth_category', cate2);
+        let acceptedUploaderAdQuery = supabase
+          .from('jd')
+          .select(`
+            *,
+            users!inner (
+              is_accept
+            )
+          `)
+          .eq('ad', true)
+          .eq('board_type', currentBoardType)
+          .eq('users.is_accept', true);
+
+        // 광고 쿼리에 필터 조건 추가
+        if (city1) {
+          nullUploaderAdQuery = nullUploaderAdQuery.eq('1depth_region', city1);
+          acceptedUploaderAdQuery = acceptedUploaderAdQuery.eq('1depth_region', city1);
+        }
+        if (city2) {
+          nullUploaderAdQuery = nullUploaderAdQuery.eq('2depth_region', city2);
+          acceptedUploaderAdQuery = acceptedUploaderAdQuery.eq('2depth_region', city2);
+        }
+        if (cate1) {
+          nullUploaderAdQuery = nullUploaderAdQuery.eq('1depth_category', cate1);
+          acceptedUploaderAdQuery = acceptedUploaderAdQuery.eq('1depth_category', cate1);
+        }
+        if (cate2) {
+          nullUploaderAdQuery = nullUploaderAdQuery.eq('2depth_category', cate2);
+          acceptedUploaderAdQuery = acceptedUploaderAdQuery.eq('2depth_category', cate2);
+        }
         
         if (keyword) {
           switch (searchType) {
             case 'title':
-              adQuery = adQuery.ilike('title', `%${keyword}%`);
+              nullUploaderAdQuery = nullUploaderAdQuery.ilike('title', `%${keyword}%`);
+              acceptedUploaderAdQuery = acceptedUploaderAdQuery.ilike('title', `%${keyword}%`);
               break;
             case 'contents':
-              adQuery = adQuery.ilike('contents', `%${keyword}%`);
+              nullUploaderAdQuery = nullUploaderAdQuery.ilike('contents', `%${keyword}%`);
+              acceptedUploaderAdQuery = acceptedUploaderAdQuery.ilike('contents', `%${keyword}%`);
               break;
             case 'both':
-              adQuery = adQuery.or(
-                `or(title.ilike.%${keyword}%,contents.ilike.%${keyword}%)`
+              nullUploaderAdQuery = nullUploaderAdQuery.or(
+                `title.ilike.%${keyword}%,contents.ilike.%${keyword}%`
+              );
+              acceptedUploaderAdQuery = acceptedUploaderAdQuery.or(
+                `title.ilike.%${keyword}%,contents.ilike.%${keyword}%`
               );
               break;
           }
         }
 
-        const { data: adData, error: adError } = await adQuery;
+        const [nullUploaderAdResult, acceptedUploaderAdResult] = await Promise.all([
+          nullUploaderAdQuery,
+          acceptedUploaderAdQuery
+        ]);
 
-        if (adError) {
-          throw new Error(`Error fetching ad jobs: ${adError.message}`);
-        }
+        if (nullUploaderAdResult.error) throw nullUploaderAdResult.error;
+        if (acceptedUploaderAdResult.error) throw acceptedUploaderAdResult.error;
 
-        setAdJobs(adData as AdJob[] || []);
+        const allAdJobs = [...(nullUploaderAdResult.data || []), ...(acceptedUploaderAdResult.data || [])]
+          .sort((a, b) => new Date(b.updated_time).getTime() - new Date(a.updated_time).getTime());
+
+        setAdJobs(allAdJobs as AdJob[]);
       } else {
         setAdJobs([]);
       }
