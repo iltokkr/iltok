@@ -111,7 +111,7 @@ function InstallPWA() {
     }
   };
 
-  // 설치 불가능하거나 이미 설치된 경우 버튼을 숨김
+  // 설치 불가능하거나 이��� 설치된 경우 버튼을 숨김
   if (!supportsPWA) {
     return null;
   }
@@ -227,15 +227,7 @@ const BoardPage: React.FC = () => {
       const pageSize = 50;
       const offset = (page - 1) * pageSize;
 
-      // 1. uploader_id가 null인 게시물 쿼리
-      let nullUploaderQuery = supabase
-        .from('jd')
-        .select('*')
-        .eq('ad', false)
-        .eq('board_type', currentBoardType)
-        .is('uploader_id', null);
-
-      // 2. 사용자가 작성한 게시물 쿼리
+      // 사용자가 작성한 게시물 쿼리만 실행 (null 게시물 제외)
       let userQuery;
       if (currentBoardType === '0') {
         // board_type이 '0'일 때는 is_accept가 true인 사용자의 게시물만
@@ -249,7 +241,9 @@ const BoardPage: React.FC = () => {
           `)
           .eq('ad', false)
           .eq('board_type', currentBoardType)
-          .eq('users.is_accept', true);
+          .eq('users.is_accept', true)
+          .not('uploader_id', 'is', null); // null이 아닌 게시물만 선택
+
       } else {
         // 다른 board_type일 때는 모든 사용자의 게시물
         userQuery = supabase
@@ -257,42 +251,36 @@ const BoardPage: React.FC = () => {
           .select('*')
           .eq('ad', false)
           .eq('board_type', currentBoardType)
-          .not('uploader_id', 'is', null);
+          .not('uploader_id', 'is', null); // null이 아닌 게시물만 선택
       }
 
       // 필터 조건 추가
-      [nullUploaderQuery, userQuery].forEach(query => {
-        if (city1) query = query.eq('1depth_region', city1);
-        if (city2) query = query.eq('2depth_region', city2);
-        if (cate1) query = query.eq('1depth_category', cate1);
-        if (cate2) query = query.eq('2depth_category', cate2);
-        
-        if (keyword) {
-          switch (searchType) {
-            case 'title':
-              query = query.ilike('title', `%${keyword}%`);
-              break;
-            case 'contents':
-              query = query.ilike('contents', `%${keyword}%`);
-              break;
-            case 'both':
-              query = query.or(`title.ilike.%${keyword}%,contents.ilike.%${keyword}%`);
-              break;
-          }
+      if (city1) userQuery = userQuery.eq('1depth_region', city1);
+      if (city2) userQuery = userQuery.eq('2depth_region', city2);
+      if (cate1) userQuery = userQuery.eq('1depth_category', cate1);
+      if (cate2) userQuery = userQuery.eq('2depth_category', cate2);
+      
+      if (keyword) {
+        switch (searchType) {
+          case 'title':
+            userQuery = userQuery.ilike('title', `%${keyword}%`);
+            break;
+          case 'contents':
+            userQuery = userQuery.ilike('contents', `%${keyword}%`);
+            break;
+          case 'both':
+            userQuery = userQuery.or(`title.ilike.%${keyword}%,contents.ilike.%${keyword}%`);
+            break;
         }
-      });
+      }
 
-      // 두 쿼리 실행
-      const [nullUploaderResult, userResult] = await Promise.all([
-        nullUploaderQuery,
-        userQuery
-      ]);
+      // 쿼리 실행
+      const userResult = await userQuery;
 
-      if (nullUploaderResult.error) throw nullUploaderResult.error;
       if (userResult.error) throw userResult.error;
 
-      // 결과 합치기 및 정렬
-      const allJobs = [...(nullUploaderResult.data || []), ...(userResult.data || [])]
+      // 결과 정렬
+      const allJobs = [...(userResult.data || [])]
         .sort((a, b) => new Date(b.updated_time).getTime() - new Date(a.updated_time).getTime());
 
       // 페이지네이션 적용
@@ -515,7 +503,7 @@ const BoardPage: React.FC = () => {
             : "Find job opportunities across various industries."
           } 
         />
-        <meta name="keywords" content="114114, 114114코리아, 114114korea, 114114kr, 114114구인구직, 조선동포, 교포, 재외동포, 해외교포, 동포 구인구직, 일자리 정보, 구직자, 구인체, 경력직 채용, 구인구직, 기업 채용, 단기 알바, 드림 구인구직, 무료 채용 공고, 아르바이트, 알바, 알바 구인구직, 월급, 일당, 주급, 채용 정보, 취업 정보, 직업 정보 제공, 지역별 구인구직, 헤드헌팅 비스, 신입 채용 공고, 동포 취업, 동포 일자리" />
+        <meta name="keywords" content="114114, 114114코리아, 114114korea, 114114kr, 114114구인구직, 조선동포, 교포, 재외동���, 해외교포, 동포 구인구직, 일자리 정보, 구직자, 구인체, 경력직 채용, 구인구직, 기업 채용, 단기 알바, 드림 구인구직, 무료 채용 공고, 아르바이트, 알바, 알바 구인구직, 월급, 일당, 주급, 채용 정보, 취업 정보, 직업 정보 제공, 지역별 구인구직, 헤드헌팅 비스, 신입 채용 공고, 동포 취업, 동포 일자리" />
         <meta property="og:title" content="구인구직 게시판 | 114114KR" />
         <meta property="og:description" content="다양한 직종의 구인구직 정보를 찾아보세요. 지역별, 카테고리별로 필터링하여 원하는 일자리를 쉽게 찾을 수 있습니다." />
         <meta property="og:type" content="website" />
