@@ -543,6 +543,11 @@ const BoardPage: React.FC = () => {
               src: '/image.png', 
               link: '/jd/6599',
               mobileSrc: '/image_mo.png'
+            },
+            { 
+              src: '/image_3.png', 
+              link: 'https://88pandacar.framer.website/',
+              mobileSrc: '/image_3_mo.png'
             }
             // 추가 이미지와 링크를 여기에 추가
           ]}
