@@ -235,69 +235,64 @@ const BoardPage: React.FC = () => {
         .eq('board_type', currentBoardType)
         .is('uploader_id', null);
 
-      // 2. is_accept가 true인 사용자의 게시물 쿼리
-      let acceptedUploaderQuery = supabase
-        .from('jd')
-        .select(`
-          *,
-          users!inner (
-            is_accept
-          )
-        `)
-        .eq('ad', false)
-        .eq('board_type', currentBoardType)
-        .eq('users.is_accept', true);
+      // 2. 사용자가 작성한 게시물 쿼리
+      let userQuery;
+      if (currentBoardType === '0') {
+        // board_type이 '0'일 때는 is_accept가 true인 사용자의 게시물만
+        userQuery = supabase
+          .from('jd')
+          .select(`
+            *,
+            users!inner (
+              is_accept
+            )
+          `)
+          .eq('ad', false)
+          .eq('board_type', currentBoardType)
+          .eq('users.is_accept', true);
+      } else {
+        // 다른 board_type일 때는 모든 사용자의 게시물
+        userQuery = supabase
+          .from('jd')
+          .select('*')
+          .eq('ad', false)
+          .eq('board_type', currentBoardType)
+          .not('uploader_id', 'is', null);
+      }
 
       // 필터 조건 추가
-      if (city1) {
-        nullUploaderQuery = nullUploaderQuery.eq('1depth_region', city1);
-        acceptedUploaderQuery = acceptedUploaderQuery.eq('1depth_region', city1);
-      }
-      if (city2) {
-        nullUploaderQuery = nullUploaderQuery.eq('2depth_region', city2);
-        acceptedUploaderQuery = acceptedUploaderQuery.eq('2depth_region', city2);
-      }
-      if (cate1) {
-        nullUploaderQuery = nullUploaderQuery.eq('1depth_category', cate1);
-        acceptedUploaderQuery = acceptedUploaderQuery.eq('1depth_category', cate1);
-      }
-      if (cate2) {
-        nullUploaderQuery = nullUploaderQuery.eq('2depth_category', cate2);
-        acceptedUploaderQuery = acceptedUploaderQuery.eq('2depth_category', cate2);
-      }
-      
-      if (keyword) {
-        switch (searchType) {
-          case 'title':
-            nullUploaderQuery = nullUploaderQuery.ilike('title', `%${keyword}%`);
-            acceptedUploaderQuery = acceptedUploaderQuery.ilike('title', `%${keyword}%`);
-            break;
-          case 'contents':
-            nullUploaderQuery = nullUploaderQuery.ilike('contents', `%${keyword}%`);
-            acceptedUploaderQuery = acceptedUploaderQuery.ilike('contents', `%${keyword}%`);
-            break;
-          case 'both':
-            nullUploaderQuery = nullUploaderQuery.or(
-              `title.ilike.%${keyword}%,contents.ilike.%${keyword}%`
-            );
-            acceptedUploaderQuery = acceptedUploaderQuery.or(
-              `title.ilike.%${keyword}%,contents.ilike.%${keyword}%`
-            );
-            break;
+      [nullUploaderQuery, userQuery].forEach(query => {
+        if (city1) query = query.eq('1depth_region', city1);
+        if (city2) query = query.eq('2depth_region', city2);
+        if (cate1) query = query.eq('1depth_category', cate1);
+        if (cate2) query = query.eq('2depth_category', cate2);
+        
+        if (keyword) {
+          switch (searchType) {
+            case 'title':
+              query = query.ilike('title', `%${keyword}%`);
+              break;
+            case 'contents':
+              query = query.ilike('contents', `%${keyword}%`);
+              break;
+            case 'both':
+              query = query.or(`title.ilike.%${keyword}%,contents.ilike.%${keyword}%`);
+              break;
+          }
         }
-      }
+      });
 
       // 두 쿼리 실행
-      const [nullUploaderResult, acceptedUploaderResult] = await Promise.all([
+      const [nullUploaderResult, userResult] = await Promise.all([
         nullUploaderQuery,
-        acceptedUploaderQuery
+        userQuery
       ]);
 
       if (nullUploaderResult.error) throw nullUploaderResult.error;
-      if (acceptedUploaderResult.error) throw acceptedUploaderResult.error;
+      if (userResult.error) throw userResult.error;
 
       // 결과 합치기 및 정렬
-      const allJobs = [...(nullUploaderResult.data || []), ...(acceptedUploaderResult.data || [])]
+      const allJobs = [...(nullUploaderResult.data || []), ...(userResult.data || [])]
         .sort((a, b) => new Date(b.updated_time).getTime() - new Date(a.updated_time).getTime());
 
       // 페이지네이션 적용
@@ -307,7 +302,7 @@ const BoardPage: React.FC = () => {
       setRegularJobs(paginatedJobs);
       setTotalPages(Math.ceil(totalCount / pageSize));
 
-      // 광고 쿼리도 동일한 방식으로 수정
+      // 광고 게시물도 동일한 로직으로 처리
       if (page === 1) {
         let nullUploaderAdQuery = supabase
           .from('jd')
@@ -316,6 +311,7 @@ const BoardPage: React.FC = () => {
           .eq('board_type', currentBoardType)
           .is('uploader_id', null);
 
+        let userAdQuery;
         let acceptedUploaderAdQuery = supabase
           .from('jd')
           .select(`

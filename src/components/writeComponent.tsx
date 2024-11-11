@@ -419,7 +419,7 @@ const WritePage: React.FC = () => {
             <textarea
               name="contents"
               className={style.textarea}
-              placeholder="내용을 입력해주세요."
+              placeholder="내용을 입력해주세요. 게시글 내에 근무지, 급여(최저임금 이상), 근무형태, 근무시간, 자격요건에 대한 내용이 부족하면 게시글 등록이 제한됩니다."
               value={formData.contents}
               onChange={handleInputChange}
             ></textarea>
@@ -428,7 +428,7 @@ const WritePage: React.FC = () => {
 
         {/* 새로운 문구 추가 */}
         <p className={style.uploadNotice}>
-          ** 모든 게시글은 하루에 1개 업로드 가능하며, 매일 00시 초기화됩니다. (재등록도 동일)
+          ** 모든 게시글은 하루에 1개 업로드 가능하며, 매일 00시 초기화됩니다.
         </p>
 
         <dl className={`${style.formGroup} ${style.ft}`}>
