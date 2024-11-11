@@ -18,7 +18,7 @@ const MainMenu: React.FC<MainMenuProps> = ({ currentBoardType }) => (
         구직정보
       </Link>
     </li>
-    <li>
+    {/* <li>
       <Link href="/board?board_type=2" className={currentBoardType === '2' ? styles.focus : ''}>
         중고시장
       </Link>
@@ -27,7 +27,7 @@ const MainMenu: React.FC<MainMenuProps> = ({ currentBoardType }) => (
       <Link href="/board?board_type=3" className={currentBoardType === '3' ? styles.focus : ''}>
         부동산정보
       </Link>
-    </li>
+    </li> */}
   </ul>
 );
 
