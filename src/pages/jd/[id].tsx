@@ -7,6 +7,7 @@ import JobDetail from '@/components/JobDetail';
 import Footer from '@/components/Footer';
 import styles from '@/styles/JobDetailPage.module.css';
 import { useLanguage } from '@/hooks/useLanguage';
+import MainMenu from '@/components/MainMenu';
 
 // Supabase 클라이언트 설정
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
@@ -17,6 +18,7 @@ interface JobDetailType {
   title: string;
   contents: string;
   ad: boolean;
+  board_type: string;
   uploader: {
     company_name: string;
     name: string;
@@ -47,7 +49,8 @@ export const getServerSideProps = async (context: any) => {
 
   const processedData = {
     ...data,
-    uploader: data.uploader || { company_name: "정보 없음", name: "정보 없음" }
+    uploader: data.uploader || { company_name: "정보 없음", name: "정보 없음" },
+    board_type: data.board_type || '0'
   };
 
   return {
@@ -63,6 +66,7 @@ const JobDetailPage: React.FC<{ initialJobDetail: JobDetailType | null }> = ({ i
   const { currentLanguage } = useLanguage();
   const [jobDetail, setJobDetail] = useState<JobDetailType | null>(initialJobDetail);
   const scrollPositionRef = useRef<number>(0);
+  const [boardType, setBoardType] = useState<string>(initialJobDetail?.board_type || '0');
 
   useEffect(() => {
     const handleBeforeUnload = () => {
@@ -141,6 +145,7 @@ const JobDetailPage: React.FC<{ initialJobDetail: JobDetailType | null }> = ({ i
       </Head>
 
       <Header/>
+      <MainMenu currentBoardType={boardType} />
       <div className={styles.layout}>
         {jobDetail ? (
           <JobDetail 

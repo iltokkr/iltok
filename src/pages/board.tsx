@@ -512,15 +512,8 @@ const BoardPage: React.FC = () => {
       </Head>
 
       <Header/>
-      <div className={styles.layout} ref={contentRef}>
-        <MainMenu currentBoardType={boardType} />
-        <JobFilter
-          filters={filters}
-          onFilterChange={handleFilterChange}
-          city2Options={city2Options}
-          cate2Options={cate2Options}
-        />
-        <MainCarousel 
+      <MainMenu currentBoardType={boardType} />
+      <MainCarousel 
           images={[
             { 
               src: '/image copy.png', 
@@ -538,7 +531,14 @@ const BoardPage: React.FC = () => {
               mobileSrc: '/image_3_mo.png'
             }
             // 추가 이미지와 링크를 여기에 추가
-          ]}
+        ]}
+      />
+      <div className={styles.layout} ref={contentRef}>
+        <JobFilter
+          filters={filters}
+          onFilterChange={handleFilterChange}
+          city2Options={city2Options}
+          cate2Options={cate2Options}
         />
 
         <JobList 

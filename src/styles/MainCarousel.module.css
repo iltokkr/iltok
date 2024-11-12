@@ -8,6 +8,7 @@
 }
 
 .carousel {
+  padding-top: 10px;
   width: 100%;
   max-width: 980px;
   margin: 0 auto;
