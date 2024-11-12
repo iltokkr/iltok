@@ -1,22 +1,23 @@
 .searchBar {
+  width: 100%;
+  flex-shrink: 0;
   border: 1px solid #ccc;
   background: #eee;
   padding: 11px 14px;
-  overflow: hidden; /* clearfix 적용 */
+  position: sticky;
+  top: 20px;
+  height: fit-content;
+  align-self: flex-start;
 }
-
-
 
 .filterBar {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .selectBox {
-  margin: 0;
-  flex: 1 1 calc(50% - 5px);
-  min-width: 100px;
+  width: 100%;
 }
 
 .selectBox select {
@@ -34,8 +35,8 @@
 }
 
 .searchForm {
-  display: inline-block; /* float 대신 inline-block 사용 */
-  vertical-align: top; /* 상단 정렬 */
+  display: inline-block;
+  vertical-align: top;
 }
 
 .searchIpt {
@@ -64,7 +65,6 @@
   background: #ccc;
 }
 
-/* 새로운 clearfix 클래스 추가 */
 .clearfix::after {
   content: "";
   display: table;
@@ -120,20 +120,38 @@
 
 @media (max-width: 768px) {
   .searchForm {
-    flex-wrap: nowrap;  /* 모바일에서는 한 줄로 표시 */
+    flex-wrap: nowrap;
   }
   
   .searchType {
-    width: 90px;  /* 모바일에서는 더 작게 */
-    flex-shrink: 0;  /* 크기 고정 */
+    width: 90px;
+    flex-shrink: 0;
   }
   
   .searchInput {
-    min-width: 0;  /* 모바일에서 최소 너비 제거 */
+    min-width: 0;
   }
   
   .searchButton {
-    width: 45px;  /* 모바일에서는 더 작게 */
-    flex-shrink: 0;  /* 크기 고정 */
+    width: 45px;
+    flex-shrink: 0;
+  }
+}
+
+@media (max-width: 1024px) {
+  .searchBar {
+    width: 100%;
+    position: static;
+    height: auto;
+  }
+
+  .filterBar {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .selectBox {
+    flex: 1 1 calc(50% - 5px);
+    min-width: 100px;
   }
 }

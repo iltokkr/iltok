@@ -1,20 +1,14 @@
-import { useState, useEffect } from 'react';
+import { create } from 'zustand';
 
-export const useLanguage = () => {
-  const [currentLanguage, setCurrentLanguage] = useState('ko');
+interface LanguageState {
+  currentLanguage: string;
+  changeLanguage: (language: string) => void;
+}
 
-  useEffect(() => {
-    // 초기 로드 시 localStorage에서 언어 설정 가져오기
-    const savedLanguage = localStorage.getItem('preferredLanguage');
-    if (savedLanguage) {
-      setCurrentLanguage(savedLanguage);
-    }
-  }, []);
-
-  const changeLanguage = (language: string) => {
-    setCurrentLanguage(language);
-    localStorage.setItem('preferredLanguage', language);
-  };
-
-  return { currentLanguage, changeLanguage };
-}; 
+export const useLanguage = create<LanguageState>((set) => ({
+  currentLanguage: 'ko', // 기본값
+  changeLanguage: (language: string) => {
+    console.log('Language changed to:', language); // 디버깅용
+    set({ currentLanguage: language });
+  },
+})); 

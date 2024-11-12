@@ -1,15 +1,19 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import styles from '@/styles/Header.module.css';
 import LoginPopup from './LoginPopup';
 import { AuthContext } from '@/contexts/AuthContext';
 import { FaHome, FaUser, FaPen, FaSignOutAlt, FaTimes } from 'react-icons/fa';
+import { useLanguage } from '@/hooks/useLanguage';
 
 const Header: React.FC = () => {
   const [showLoginPopup, setShowLoginPopup] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const auth = useContext(AuthContext);
   const router = useRouter();
+  const { currentLanguage, changeLanguage } = useLanguage();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   if (!auth) throw new Error("AuthContext not found");
 
@@ -39,6 +43,37 @@ const Header: React.FC = () => {
       document.body.style.overflow = 'auto';
     };
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
+    console.log('Current language in Header:', currentLanguage);
+  }, [currentLanguage]);
+
+  const handleLanguageChange = useCallback((lang: string) => {
+    console.log('Language change requested:', lang);
+    changeLanguage(lang);
+    setIsDropdownOpen(false);
+
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('event', 'language_change', {
+        event_category: 'Language',
+        event_label: lang,
+        from_language: currentLanguage
+      });
+    }
+  }, [changeLanguage, currentLanguage]);
 
   return (
     <>

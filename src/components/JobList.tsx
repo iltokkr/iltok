@@ -35,8 +35,8 @@ interface JobListProps {
 type TranslateFunction = (text: string, targetLang: string) => Promise<string>;
 
 const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages, onPageChange }) => {
+  const { currentLanguage } = useLanguage();
   const { markAsRead, isRead } = useReadPosts();
-  const { currentLanguage, changeLanguage } = useLanguage();
   const [translatedTitles, setTranslatedTitles] = useState<{ [key: number]: string }>({});
   const [translatedDetails, setTranslatedDetails] = useState<{ [key: number]: string }>({});
   const [isTranslating, setIsTranslating] = useState(false);
@@ -58,11 +58,10 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
     }
   }, []);
 
-  // 언어 변경 시 번역 실행 로직 수정
+  // 언어 변경 시 번역 실행
   useEffect(() => {
     const currentJobsString = JSON.stringify([...jobs, ...adJobs]);
     
-    // Skip translation if conditions aren't met
     if (
       currentLanguage === 'ko' || 
       isTranslating || 
@@ -73,16 +72,19 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
 
     const translateAllPosts = async () => {
       setIsTranslating(true);
+      console.log('Starting translation to:', currentLanguage); // 디버깅용
       
       try {
         const allJobs = [...(currentPage === 1 ? adJobs : []), ...jobs];
         const newTitles = { ...translatedTitles };
         const newDetails = { ...translatedDetails };
         
-        // Only translate jobs that haven't been translated yet
+        // 아직 번역되지 않은 게시물만 번역
         const untranslatedJobs = allJobs.filter(job => !newTitles[job.id]);
         
         if (untranslatedJobs.length > 0) {
+          console.log(`Translating ${untranslatedJobs.length} jobs`); // 디버깅용
+          
           await Promise.all(untranslatedJobs.map(async (job) => {
             const [translatedTitle, translatedDetail] = await Promise.all([
               translate(job.title, currentLanguage),
@@ -94,15 +96,7 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
 
           setTranslatedTitles(newTitles);
           setTranslatedDetails(newDetails);
-
-          // 번역 완료 시 GA 이벤트
-          window.gtag('event', 'translation_complete', {
-            event_category: 'Translation',
-            event_label: currentLanguage,
-            page: 'job_list',
-            current_page: currentPage,
-            translated_count: untranslatedJobs.length
-          });
+          console.log('Translation completed'); // 디버깅용
         }
       } catch (error) {
         console.error('Translation error:', error);
@@ -119,24 +113,23 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
     adJobs,
     currentPage,
     translate,
-    isTranslating
+    isTranslating,
+    translatedTitles,
+    translatedDetails
   ]);
 
-  // 언어 변경 핸들러 수정
-  const handleLanguageChange = useCallback((lang: string) => {
-    if (lang === currentLanguage || isTranslating) return;
-    
-    window.gtag('event', 'translate', {
-      event_category: 'Translation',
-      event_label: `${currentLanguage}_to_${lang}`,
-      page: 'job_list',
-      current_page: currentPage
-    });
-    
-    changeLanguage(lang);
-    setTranslatedTitles({});
-    setTranslatedDetails({});
-  }, [currentLanguage, isTranslating, changeLanguage, currentPage]);
+  const formatJobDetails = useCallback((job: Job) => {
+    return `(${job['1depth_region']} ${job['2depth_region']}) - ${job['1depth_category']}`;
+  }, []);
+
+  const getDisplayText = useCallback((job: Job, type: 'title' | 'details') => {
+    if (currentLanguage === 'ko') {
+      return type === 'title' ? job.title : formatJobDetails(job);
+    }
+    return type === 'title' 
+      ? translatedTitles[job.id] || job.title 
+      : translatedDetails[job.id] || formatJobDetails(job);
+  }, [currentLanguage, translatedTitles, translatedDetails, formatJobDetails]);
 
   const formatDate = (dateString: string) => {
     const date = parseISO(dateString);
@@ -149,53 +142,12 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
 
   const [showAdPopup, setShowAdPopup] = useState(false);
 
-  const formatJobDetails = (job: Job) => {
-    return `(${job['1depth_region']} ${job['2depth_region']}) - ${job['1depth_category']}`;
-  };
-
   const handlePostClick = (postId: number) => {
     markAsRead(postId);
   };
 
-  const getDisplayText = useCallback((job: Job, type: 'title' | 'details') => {
-    if (currentLanguage === 'ko') {
-      return type === 'title' ? job.title : formatJobDetails(job);
-    }
-    return type === 'title' 
-      ? translatedTitles[job.id] || job.title 
-      : translatedDetails[job.id] || formatJobDetails(job);
-  }, [currentLanguage, translatedTitles, translatedDetails]);
-
   return (
     <div className={styles.layout}>
-      {/* 언어 선택 버튼 추가 */}
-      <div className={styles.languageSelector}>
-        <button 
-          className={currentLanguage === 'ko' ? styles.activeLanguage : ''} 
-          onClick={() => handleLanguageChange('ko')}
-        >
-          한국어
-        </button>
-        <button 
-          className={currentLanguage === 'en' ? styles.activeLanguage : ''} 
-          onClick={() => handleLanguageChange('en')}
-        >
-          English
-        </button>
-        <button 
-          className={currentLanguage === 'zh' ? styles.activeLanguage : ''} 
-          onClick={() => handleLanguageChange('zh')}
-        >
-          中文
-        </button>
-        <button 
-          className={currentLanguage === 'ja' ? styles.activeLanguage : ''} 
-          onClick={() => handleLanguageChange('ja')}
-        >
-          日本語
-          </button>
-        </div>
-
       <section className={styles.mainList}>
         {showAdJobs && adJobs.length > 0 && (
           <ul className={`${styles.listWrap} ${styles.listText} ${styles.topArea}`}>
