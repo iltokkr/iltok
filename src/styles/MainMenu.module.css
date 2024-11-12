@@ -1,27 +1,46 @@
 .mainMenu {
-    list-style-type: none;
-    margin: 0;
+  list-style-type: none;
+  margin: 0;
+  padding: 10px;
+  background-color: #eee;
+  border:1px solid #ccc;
+}
+
+.mainMenu li {
+  margin-bottom: 10px;
+}
+
+.mainMenu a {
+  display: block;
+  padding: 8px 10px;
+  font-size: 13px;
+  color: #333;
+  text-decoration: none;
+  border-radius: 4px;
+}
+
+.mainMenu .focus {
+  font-weight: bold;
+  color: #ff5205;
+}
+
+/* 모바일 스타일 */
+@media screen and (max-width: 768px) {
+  .mainMenu {
     display: flex;
-    justify-content: left;
-    padding: 10px 10px 0px 10px;
-    text-align: center;
+    overflow-x: auto;
+    padding: 10px 0;
+    margin: 0 -10px;
+    -webkit-overflow-scrolling: touch;
   }
-  
+
   .mainMenu li {
-    margin-right: 50px;
+    margin: 0;
+    flex: 0 0 auto;
   }
+
   .mainMenu a {
-    font-size: 13px;
-
+    padding: 8px 15px;
+    white-space: nowrap;
   }
-  .mainMenu .focus {
-    font-weight: bold;
-    color: #ff5205;
-  }
-
-  @media screen and (max-width: 768px) {
-    .mainMenu li {
-      margin-right: auto;
-    }
-    
-  }
+}

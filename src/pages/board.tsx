@@ -11,6 +11,7 @@ import styles from '@/styles/Board.module.css';
 import { createClient } from '@supabase/supabase-js'
 import Head from 'next/head'// 사용자에게 알림을 표시하기 위해 추가
 import { useLanguage } from '@/hooks/useLanguage';  // 추가
+import { Job, AdJob } from '@/types/job';
 
 // Supabase 클라이언트 생성
 const supabase = createClient(
@@ -25,22 +26,6 @@ interface FilterOptions {
   cate2: string;
   keyword: string;
   searchType: 'title' | 'contents' | 'both';
-}
-
-interface Job {
-  id: number;
-  updated_time: string;
-  title: string;
-  contents: string;
-  '1depth_region': string;
-  '2depth_region': string;
-  '1depth_category': string;
-  '2depth_category': string;
-  ad: boolean;
-}
-
-interface AdJob extends Job {
-  ad: true;
 }
 
 function InstallPWA() {
@@ -111,7 +96,7 @@ function InstallPWA() {
     }
   };
 
-  // 설치 불가능하거나 이��� 설치된 경우 버튼을 숨김
+  // 설치 불가능하거나 이 설치된 경우 버튼을 숨김
   if (!supportsPWA) {
     return null;
   }
@@ -129,7 +114,7 @@ function InstallPWA() {
   );
 }
 
-// ScrollToTop 컴포넌트 추가
+// ScrollToTop 컴포넌트 가
 function ScrollToTop() {
   const [isVisible, setIsVisible] = useState(false);
 
@@ -198,6 +183,120 @@ const BoardPage: React.FC = () => {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [isPaginationChange, setIsPaginationChange] = useState(false);
   const { currentLanguage, changeLanguage } = useLanguage();  // 추가
+
+  // 번역 관련 상태들을 Board로 이동
+  const [translatedTitles, setTranslatedTitles] = useState<{ [key: number]: string }>({});
+  const [translatedDetails, setTranslatedDetails] = useState<{ [key: number]: string }>({});
+  const [isTranslating, setIsTranslating] = useState(false);
+  const previousJobsRef = useRef<string>('');
+
+  // 번역 함수
+  const translate = useCallback(async (text: string, targetLang: string) => {
+    if (targetLang === 'ko') return text;
+    try {
+      const response = await fetch(
+        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=ko&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`
+      );
+      const data = await response.json();
+      return data[0][0][0];
+    } catch (error) {
+      console.error('Translation error:', error);
+      return text;
+    }
+  }, []);
+
+  // 언어 변경 핸들러
+  const handleLanguageChange = useCallback((lang: string) => {
+    if (lang === currentLanguage || isTranslating) return;
+    
+    window.gtag('event', 'translate', {
+      event_category: 'Translation',
+      event_label: `${currentLanguage}_to_${lang}`,
+      page: 'job_list',
+      current_page: currentPage
+    });
+    
+    changeLanguage(lang);
+    setTranslatedTitles({});
+    setTranslatedDetails({});
+  }, [currentLanguage, isTranslating, changeLanguage, currentPage]);
+
+  // 직무 상세 정보 포맷팅
+  const formatJobDetails = useCallback((job: Job) => {
+    return `(${job['1depth_region']} ${job['2depth_region']}) - ${job['1depth_category']}`;
+  }, []);
+
+  // 번역 실행 로직
+  useEffect(() => {
+    const currentJobsString = JSON.stringify([...regularJobs, ...adJobs]);
+    
+    if (
+      currentLanguage === 'ko' || 
+      isTranslating || 
+      (currentJobsString === previousJobsRef.current && Object.keys(translatedTitles).length > 0)
+    ) {
+      return;
+    }
+
+    const translateAllPosts = async () => {
+      setIsTranslating(true);
+      
+      try {
+        const allJobs = [...(currentPage === 1 ? adJobs : []), ...regularJobs];
+        const newTitles = { ...translatedTitles };
+        const newDetails = { ...translatedDetails };
+        
+        const untranslatedJobs = allJobs.filter(job => !newTitles[job.id]);
+        
+        if (untranslatedJobs.length > 0) {
+          await Promise.all(untranslatedJobs.map(async (job) => {
+            const [translatedTitle, translatedDetail] = await Promise.all([
+              translate(job.title, currentLanguage),
+              translate(formatJobDetails(job), currentLanguage)
+            ]);
+            newTitles[job.id] = translatedTitle;
+            newDetails[job.id] = translatedDetail;
+          }));
+
+          setTranslatedTitles(newTitles);
+          setTranslatedDetails(newDetails);
+
+          window.gtag('event', 'translation_complete', {
+            event_category: 'Translation',
+            event_label: currentLanguage,
+            page: 'job_list',
+            current_page: currentPage,
+            translated_count: untranslatedJobs.length
+          });
+        }
+      } catch (error) {
+        console.error('Translation error:', error);
+      } finally {
+        setIsTranslating(false);
+      }
+    };
+
+    translateAllPosts();
+    previousJobsRef.current = currentJobsString;
+  }, [
+    currentLanguage,
+    regularJobs,
+    adJobs,
+    currentPage,
+    translate,
+    isTranslating,
+    formatJobDetails
+  ]);
+
+  // 텍스트 표시 함수
+  const getDisplayText = useCallback((job: Job, type: 'title' | 'details') => {
+    if (currentLanguage === 'ko') {
+      return type === 'title' ? job.title : formatJobDetails(job);
+    }
+    return type === 'title' 
+      ? translatedTitles[job.id] || job.title 
+      : translatedDetails[job.id] || formatJobDetails(job);
+  }, [currentLanguage, translatedTitles, translatedDetails, formatJobDetails]);
 
   const handleFilterChange = useCallback((newFilters: FilterOptions) => {
     // city1이 변경되었는지 확인
@@ -503,7 +602,7 @@ const BoardPage: React.FC = () => {
             : "Find job opportunities across various industries."
           } 
         />
-        <meta name="keywords" content="114114, 114114코리아, 114114korea, 114114kr, 114114구인구직, 조선동포, 교포, 재외동���, 해외교포, 동포 구인구직, 일자리 정보, 구직자, 구인체, 경력직 채용, 구인구직, 기업 채용, 단기 알바, 드림 구인구직, 무료 채용 공고, 아르바이트, 알바, 알바 구인구직, 월급, 일당, 주급, 채용 정보, 취업 정보, 직업 정보 제공, 지역별 구인구직, 헤드헌팅 비스, 신입 채용 공고, 동포 취업, 동포 일자리" />
+        <meta name="keywords" content="114114, 114114코리아, 114114korea, 114114kr, 114114구인구직, 조선동포, 교포, 재외동, 해외교포, 동포 구인구직, 일자리 정보, 구직자, 구인체, 경력직 채용, 구인구직, 기업 채용, 단기 알바, 드림 구인구직, 무료 채용 공고, 아르바이트, 알바, 알바 구인구직, 월급, 일당, 주급, 채용 정보, 취업 정보, 직업 정보 제공, 지역별 구인구직, 헤드헌팅 비스, 신입 채용 공고, 동포 취업, 동포 일자리" />
         <meta property="og:title" content="구인구직 게시판 | 114114KR" />
         <meta property="og:description" content="다양한 직종의 구인구직 정보를 찾아보세요. 지역별, 카테고리별로 필터링하여 원하는 일자리를 쉽게 찾을 수 있습니다." />
         <meta property="og:type" content="website" />
@@ -512,14 +611,7 @@ const BoardPage: React.FC = () => {
       </Head>
 
       <Header/>
-      <div className={styles.layout} ref={contentRef}>
-        <MainMenu currentBoardType={boardType} />
-        <JobFilter
-          filters={filters}
-          onFilterChange={handleFilterChange}
-          city2Options={city2Options}
-          cate2Options={cate2Options}
-        />
+      <div className={styles.layout}>
         <MainCarousel 
           images={[
             { 
@@ -540,19 +632,62 @@ const BoardPage: React.FC = () => {
             // 추가 이미지와 링크를 여기에 추가
           ]}
         />
+        
+        <div className={styles.contentWrapper}>
+          <div className={styles.sideMenu}>
+            <MainMenu currentBoardType={boardType} />
+            <div className={styles.languageSelector}>
+              <button 
+                className={currentLanguage === 'ko' ? styles.activeLanguage : ''} 
+                onClick={() => handleLanguageChange('ko')}
+              >
+                한국어
+              </button>
+              <button 
+                className={currentLanguage === 'en' ? styles.activeLanguage : ''} 
+                onClick={() => handleLanguageChange('en')}
+              >
+                English
+              </button>
+              <button 
+                className={currentLanguage === 'zh' ? styles.activeLanguage : ''} 
+                onClick={() => handleLanguageChange('zh')}
+              >
+                中文
+              </button>
+              <button 
+                className={currentLanguage === 'ja' ? styles.activeLanguage : ''} 
+                onClick={() => handleLanguageChange('ja')}
+              >
+                日本語
+              </button>
+            </div>
+          </div>
+          
+          <div className={styles.mainContent}>
+            <JobFilter
+              filters={filters}
+              onFilterChange={handleFilterChange}
+              city2Options={city2Options}
+              cate2Options={cate2Options}
+            />
 
-        <JobList 
-          jobs={regularJobs}
-          adJobs={adJobs}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-        />
+            <JobList 
+              jobs={regularJobs}
+              adJobs={adJobs}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              getDisplayText={getDisplayText}  // 새로운 prop 추가
+            />
+          </div>
+        </div>
       </div>
+      
       <Footer />
       {error && <div className={styles.error}>{error}</div>}
-      <InstallPWA /> {/* PWA 설치 버튼 추가 */}
-      <ScrollToTop /> {/* ScrollToTop 컴포넌트 추가 */}
+      <InstallPWA />
+      <ScrollToTop />
     </div>
   );
 };

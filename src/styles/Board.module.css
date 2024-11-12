@@ -2,9 +2,28 @@
   max-width: 980px;
   width: 100%;
   margin: 0 auto;
+  padding: 0 10px;
+}
+
+.contentWrapper {
+  display: flex;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.sideMenu {
+  position: sticky;
+  top: 20px;
+  flex: 0 0 100px;
+  height: fit-content;
+  align-self: flex-start;
+}
+
+.mainContent {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  min-width: 0;
+  gap: 10px; /* Prevents flex item from overflowing */
 }
 
 /* Floating 버튼 스타일 추가 */
@@ -38,18 +57,22 @@
   }
 }
 
-/* 반응형 스타일 추가 */
-@media (max-width: 980px) {
-  .layout {
-    width: 100%;
+/* 반응형 스타일 수정 */
+@media (max-width: 768px) {
+  .contentWrapper {
+    flex-direction: column;
     gap: 10px;
   }
-}
 
-@media (max-width: 768px) {
-  .layout {
+  .sideMenu {
+    position: static; /* 모바일에서는 floating 해제 */
+    flex: none;
     width: 100%;
-    gap: 5px;
+  }
+
+  .mainContent {
+    width: 100%;
+    gap: 10px;
   }
 }
 
@@ -93,21 +116,43 @@
 }
 
 .languageSelector {
-  display: flex;
-  gap: 10px;
-  padding: 10px;
-  justify-content: flex-end;
-  background: #f5f5f5;
+  margin-top: 10px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
 }
 
 .languageSelector button {
-  padding: 5px 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-bottom: 1px solid #ddd;
   background: white;
   cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.languageSelector button:last-child {
+  border-bottom: none;
 }
 
 .languageSelector button:hover {
-  background: #eee;
+  background: #f5f5f5;
+}
+
+.languageSelector button.activeLanguage {
+  background: #ff4800;
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .languageSelector {
+    margin-bottom: 10px;
+  }
+  
+  .languageSelector button {
+    padding: 8px;
+  }
 }

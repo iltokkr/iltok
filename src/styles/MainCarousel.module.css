@@ -10,7 +10,7 @@
 .carousel {
   width: 100%;
   max-width: 980px;
-  margin: 0 auto;
+  margin: 10px auto;
   position: relative;
 }
 
