@@ -81,23 +81,25 @@ const JobDetailPage: React.FC<{ initialJobDetail: JobDetailType | null }> = ({ i
   }, []);
 
   useEffect(() => {
-    const handleRouteChangeStart = () => {
-      scrollPositionRef.current = window.pageYOffset;
-    };
+    // JD 페이지에 진입할 때 항상 맨 위로 스크롤
+    window.scrollTo(0, 0);
+  }, []);
 
+  useEffect(() => {
     const handleRouteChangeComplete = () => {
       if (router.asPath === '/board') {
-        setTimeout(() => {
-          window.scrollTo(0, scrollPositionRef.current);
-        }, 0);
+        const savedPosition = sessionStorage.getItem('boardScrollPosition');
+        if (savedPosition) {
+          setTimeout(() => {
+            window.scrollTo(0, parseInt(savedPosition));
+          }, 0);
+        }
       }
     };
 
-    router.events.on('routeChangeStart', handleRouteChangeStart);
     router.events.on('routeChangeComplete', handleRouteChangeComplete);
 
     return () => {
-      router.events.off('routeChangeStart', handleRouteChangeStart);
       router.events.off('routeChangeComplete', handleRouteChangeComplete);
     };
   }, [router]);

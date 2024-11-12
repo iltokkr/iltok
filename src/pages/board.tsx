@@ -77,7 +77,7 @@ function InstallPWA() {
     // 이미 설치되어 있는지 확인
     if (window.matchMedia('(display-mode: standalone)').matches) {
       console.log('이미 설치됨');
-      setInstallStatus('이미 설치됨');
+      setInstallStatus('미 설치됨');
       setSupportsPWA(false);
       return;
     }
@@ -111,7 +111,7 @@ function InstallPWA() {
     }
   };
 
-  // 설치 불가능하거나 이��� 설치된 경우 버튼을 숨김
+  // 설치 불가능하거나 이 설치된 경우 버튼을 숨김
   if (!supportsPWA) {
     return null;
   }
@@ -254,7 +254,7 @@ const BoardPage: React.FC = () => {
           .not('uploader_id', 'is', null); // null이 아닌 게시물만 선택
       }
 
-      // 필터 조건 추가
+      // 필터 조�� 추가
       if (city1) userQuery = userQuery.eq('1depth_region', city1);
       if (city2) userQuery = userQuery.eq('2depth_region', city2);
       if (cate1) userQuery = userQuery.eq('1depth_category', cate1);
@@ -376,6 +376,20 @@ const BoardPage: React.FC = () => {
     }
   }, []);
 
+  const restoreScrollPosition = useCallback(() => {
+    const savedPosition = sessionStorage.getItem('boardScrollPosition');
+    if (savedPosition !== null) {
+      console.log('Restoring scroll position:', savedPosition);
+      // 광고 섹션이 로드될 시간을 고려하여 약간의 지연 추가
+      setTimeout(() => {
+        window.scrollTo(0, parseInt(savedPosition));
+        console.log('Scroll position restored');
+      }, 100);
+    } else {
+      console.log('No saved scroll position found.');
+    }
+  }, []);
+
   useEffect(() => {
     const handleRouteChangeStart = () => {
       if (!isPaginationChange) {
@@ -407,19 +421,6 @@ const BoardPage: React.FC = () => {
     };
   }, [router, isInitialLoad, isPaginationChange]);
 
-  const restoreScrollPosition = useCallback(() => {
-    const savedPosition = sessionStorage.getItem('boardScrollPosition');
-    if (savedPosition !== null) {
-      console.log('Restoring scroll position:', savedPosition);
-      requestAnimationFrame(() => {
-        window.scrollTo(0, parseInt(savedPosition));
-        console.log('Scroll position restored');
-      });
-    } else {
-      console.log('No saved scroll position found.');
-    }
-  }, []);
-
   useEffect(() => {
     if (!router.isReady) return;
 
@@ -449,14 +450,14 @@ const BoardPage: React.FC = () => {
   }, [router.isReady, router.query, fetchJobs]);
 
   useEffect(() => {
-    if (contentRef.current && regularJobs.length > 0) {
+    if (contentRef.current && regularJobs.length > 0 && adJobs.length >= 0) {
       if (isInitialLoad) {
         console.log('Initial load complete. Attempting to restore scroll position.');
         restoreScrollPosition();
         setIsInitialLoad(false);
       }
     }
-  }, [restoreScrollPosition, regularJobs, isInitialLoad]);
+  }, [restoreScrollPosition, regularJobs, adJobs, isInitialLoad]);
 
   const handlePageChange = (newPage: number) => {
     setIsPaginationChange(true);
@@ -503,7 +504,7 @@ const BoardPage: React.FC = () => {
             : "Find job opportunities across various industries."
           } 
         />
-        <meta name="keywords" content="114114, 114114코리아, 114114korea, 114114kr, 114114구인구직, 조선동포, 교포, 재외동���, 해외교포, 동포 구인구직, 일자리 정보, 구직자, 구인체, 경력직 채용, 구인구직, 기업 채용, 단기 알바, 드림 구인구직, 무료 채용 공고, 아르바이트, 알바, 알바 구인구직, 월급, 일당, 주급, 채용 정보, 취업 정보, 직업 정보 제공, 지역별 구인구직, 헤드헌팅 비스, 신입 채용 공고, 동포 취업, 동포 일자리" />
+        <meta name="keywords" content="114114, 114114코리아, 114114korea, 114114kr, 114114구인구직, 조선동포, 교포, 재외동, 해외교포, 동포 구인구직, 일자리 정보, 구직자, 구인체, 경력직 채용, 구인구직, 기업 채용, 단기 알바, 드림 구인구직, 무료 채용 공고, 아르바이트, 알바, 알바 구인구직, 월급, 일당, 주급, 채용 정보, 취업 정보, 직업 정보 제공, 지역별 구인구직, 헤드헌팅 비스, 신입 채용 공고, 동포 취업, 동포 일자리" />
         <meta property="og:title" content="구인구직 게시판 | 114114KR" />
         <meta property="og:description" content="다양한 직종의 구인구직 정보를 찾아보세요. 지역별, 카테고리별로 필터링하여 원하는 일자리를 쉽게 찾을 수 있습니다." />
         <meta property="og:type" content="website" />
