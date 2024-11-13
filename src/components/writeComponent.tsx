@@ -376,7 +376,7 @@ const WritePage: React.FC = () => {
             <div className={style.subSection}>
               <div className={style.formRow}>
                 <div className={style.formLabel}>조건</div>
-                <div className={style.formInput}>
+                <div className={style.conditionFormInput}>
                   <select name="experience" value={formData.experience} onChange={handleInputChange} className={style.select}>
                     <option value="무관">경력 무관</option>
                     <option value="1년이상">1년 이상</option>
@@ -524,7 +524,7 @@ const WritePage: React.FC = () => {
                 placeholder="상세 주소"
               />
               {(errors['1depth_region'] || errors['2depth_region'] || errors.work_location_detail) && 
-                <div className={style.errorText}>지역 정보를 모두 입력해주세요</div>}
+                <div className={style.errorText}>지역 정보를 모�� 입력해주세요</div>}
             </div>
           </div>
         </div>

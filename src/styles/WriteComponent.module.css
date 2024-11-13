@@ -382,3 +382,40 @@
     padding: 6px 10px;
   }
 }
+
+@media screen and (max-width: 768px) {
+  .layout{
+    padding: 10px;
+  }
+
+  .formGrid{
+    gap: 3px;
+  }
+  .select {
+    width: 50%;
+  }
+  
+  .timeInput {
+    width: 50%;
+  }
+}
+
+.conditionFormInput {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  flex: 1;
+}
+
+@media screen and (max-width: 768px) {
+  .conditionFormInput {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3px;
+  }
+  
+  .conditionFormInput .select {
+    width: 100%;
+    min-width: 100%;
+  }
+}
