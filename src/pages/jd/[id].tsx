@@ -19,6 +19,19 @@ interface JobDetailType {
   contents: string;
   ad: boolean;
   board_type: string;
+  experience: string;
+  gender: string;
+  education: string;
+  age_limit: string;
+  salary_type: string;
+  salary_detail: string;
+  '1depth_category': string;
+  '2depth_category': string;
+  '1depth_region': string;
+  '2depth_region': string;
+  work_location_detail: string;
+  work_start_time: string;
+  work_end_time: string;
   uploader: {
     company_name: string;
     name: string;
@@ -50,7 +63,7 @@ export const getServerSideProps = async (context: any) => {
   const processedData = {
     ...data,
     uploader: data.uploader || { company_name: "정보 없음", name: "정보 없음" },
-    board_type: data.board_type || '0'
+    board_type: data.board_type
   };
 
   return {

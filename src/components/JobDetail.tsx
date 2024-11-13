@@ -10,11 +10,25 @@ interface JobDetailType {
   updated_time: string;
   title: string;
   contents: string;
+  experience: string;
+  gender: string;
+  education: string;
+  age_limit: string;
+  salary_type: string;
+  salary_detail: string;
+  '1depth_category': string;
+  '2depth_category': string;
+  '1depth_region': string;
+  '2depth_region': string;
+  work_location_detail: string;
+  work_start_time: string;
+  work_end_time: string;
   uploader: {
     company_name: string;
     name: string;
     number: string;
   };
+  board_type: string;
 }
 
 interface JobDetailProps {
@@ -103,7 +117,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail }) => {
     }
   };
 
-  // 언어 변경 핸들러 수정
+  // 언어 변경 핸들러 ��정
   const handleLanguageChange = (lang: string) => {
     if (lang === currentLanguage || isTranslating) return;
     
@@ -157,6 +171,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail }) => {
       <div className={style.articleTitle}>
         <h1>{translatedTitle}</h1>
       </div>
+
       <ul className={style.articleMeta}>
         <li>등록일: {formatDate(jobDetail.updated_time)}</li>
         <li>글번호: {jobDetail.id}</li>
@@ -192,6 +207,49 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail }) => {
           日本語
           </button>
         </div>
+        {jobDetail.board_type === '0' && (
+          <div className={style.jobInfoGrid}>
+            {/* 채용 조건 - 데이터가 하나라도 있을 때만 표시 */}
+            {(jobDetail.experience || jobDetail.gender || jobDetail.education || jobDetail.age_limit) && (
+              <div className={style.infoCard}>
+                <h3>채용 조건</h3>
+                {jobDetail.experience && <span>경력 {jobDetail.experience}</span>}
+                {jobDetail.gender && <span>성별 {jobDetail.gender}</span>}
+                {jobDetail.education && <span>학력 {jobDetail.education}</span>}
+                {jobDetail.age_limit && <span>연령 {jobDetail.age_limit}</span>}
+              </div>
+            )}
+
+            {/* 급여 정보 - 데이터가 하나라도 있을 때만 표시 */}
+            {(jobDetail.salary_type || (jobDetail.work_start_time && jobDetail.work_end_time)) && (
+              <div className={style.infoCard}>
+                <h3>급여·근무</h3>
+                {jobDetail.salary_type && jobDetail.salary_detail && (
+                  <span>{jobDetail.salary_type} {jobDetail.salary_detail}원</span>
+                )}
+                {jobDetail.work_start_time && jobDetail.work_end_time && (
+                  <span>{jobDetail.work_start_time}~{jobDetail.work_end_time}</span>
+                )}
+              </div>
+            )}
+
+            {/* 근무 정보 - 데이터가 하나라도 있을 때만 표시 */}
+            {(jobDetail['1depth_region'] || jobDetail.work_location_detail) && (
+              <div className={style.infoCard}>
+                <h3>근무지</h3>
+                {jobDetail['1depth_region'] && (
+                  <span>
+                    {jobDetail['1depth_region']}
+                    {jobDetail['2depth_region'] && ` ${jobDetail['2depth_region']}`}
+                  </span>
+                )}
+                {jobDetail.work_location_detail && (
+                  <span>{jobDetail.work_location_detail}</span>
+                )}
+              </div>
+            )}
+          </div>
+        )}
         <div className={style.content}>
           {jobDetail.id === 6599 ? ( 
             <img 
@@ -201,11 +259,11 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail }) => {
             /> 
           ) : ( 
             <>
+              <h3 className={style.contentTitle}>상세 내용</h3>
               {translatedContents.split('\n').map((line: string, index: number) => (
                 <React.Fragment key={index}>
                   {line}
                   <br />
-                
                 </React.Fragment>
               ))}
             </>
