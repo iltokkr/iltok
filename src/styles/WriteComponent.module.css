@@ -183,8 +183,9 @@
 .formInput {
   flex: 1;
   display: flex;
-  gap: 5px;
-  min-width: 0;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 .select {
@@ -220,7 +221,23 @@
   }
   
   .formInput {
-    flex-wrap: wrap;
+    gap: 3px;
+  }
+  
+  .formInput .locationSelects {
+    display: flex;
+    gap: 3px;
+    width: 100%;
+  }
+
+  .formInput .locationSelects select {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .formInput input[name="work_location_detail"] {
+    width: 100%;
+    margin-top: 3px;
   }
   
   .select, .input {
@@ -409,13 +426,25 @@
 
 @media screen and (max-width: 768px) {
   .conditionFormInput {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 3px;
+    width: 100%;
   }
   
   .conditionFormInput .select {
     width: 100%;
     min-width: 100%;
+  }
+
+  .conditionFormInput .locationSelects {
+    display: flex;
+    gap: 3px;
+    width: 100%;
+  }
+
+  .conditionFormInput .locationSelects .select {
+    width: 50%;
+    min-width: 0;
   }
 }

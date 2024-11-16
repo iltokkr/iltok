@@ -310,7 +310,7 @@ const WritePage: React.FC = () => {
     대전: ["동구", "중구", "서구", "유성구", "대덕구"],
     울산: ["중구", "남구", "동구", "북구", "울주군"],
     세종: [""],
-    경기: ["수원시", "성남시", "고양시", "용인시", "부천시", "안산시", "안양시", "남양주시", "화시", "평택시", "의정부시", "시흥시", "파주시", "광명시", "김포시", "군포시", "광주시", "이천시", "양주시", "오산시", "구리시", "안성시", "포천시", "의왕시", "하남시", "여주시", "여주군", "양평군", "동두천시", "과천시", "가평군", "연천군"],
+    경기: ["수원시", "성남시", "고양시", "용인시", "부천시", "안산시", "안양시", "남양주시", "화성시", "평택시", "의정부시", "시흥시", "파주시", "광명시", "김포시", "군포시", "광주시", "이천시", "양주시", "오산시", "구리시", "안성시", "포천시", "의왕시", "하남시", "여주시", "여주군", "양평군", "동두천시", "과천시", "가평군", "연천군"],
     강원: ["춘천시", "원주시", "강릉시", "동해시", "태백시", "속초시", "삼척시", "홍천군", "횡성군", "영월군", "평창군", "정선군", "철원군", "화천군", "양구군", "제군", "고성군", "양양군"],
     충북: ["청주시", "충주시", "제천시", "청원군", "보은군", "옥천군", "영군", "진천군", "괴산군", "음성군", "단양군", "증군"],
     충남: ["천안시", "공주시", "보령시", "아산시", "서산시", "논산시", "계룡시", "당진시", "당진군", "금산군", "연기군", "부여군", "서천군", "청양군", "홍성군", "예산군", "태안군"],
@@ -493,28 +493,30 @@ const WritePage: React.FC = () => {
               {formData.board_type === '0' ? '근무지' : '지역'} <span className={style.required}>*</span>
             </div>
             <div className={style.formInput}>
-              <select 
-                name="1depth_region" 
-                value={formData['1depth_region']} 
-                onChange={handleInputChange} 
-                className={getInputClassName('1depth_region', style.select)}
-              >
-                <option value="">시/도</option>
-                {Object.keys(locations).map(city => (
-                  <option key={city} value={city}>{city}</option>
-                ))}
-              </select>
-              <select 
-                name="2depth_region" 
-                value={formData['2depth_region']} 
-                onChange={handleInputChange} 
-                className={getInputClassName('2depth_region', style.select)}
-              >
-                <option value="">시/구/군</option>
-                {formData['1depth_region'] && locations[formData['1depth_region']].map(district => (
-                  <option key={district} value={district}>{district}</option>
-                ))}
-              </select>
+              <div className={style.locationSelects}>
+                <select 
+                  name="1depth_region" 
+                  value={formData['1depth_region']} 
+                  onChange={handleInputChange} 
+                  className={getInputClassName('1depth_region', style.select)}
+                >
+                  <option value="">시/도</option>
+                  {Object.keys(locations).map(city => (
+                    <option key={city} value={city}>{city}</option>
+                  ))}
+                </select>
+                <select 
+                  name="2depth_region" 
+                  value={formData['2depth_region']} 
+                  onChange={handleInputChange} 
+                  className={getInputClassName('2depth_region', style.select)}
+                >
+                  <option value="">시/구/군</option>
+                  {formData['1depth_region'] && locations[formData['1depth_region']].map(district => (
+                    <option key={district} value={district}>{district}</option>
+                  ))}
+                </select>
+              </div>
               <input
                 type="text"
                 name="work_location_detail"
@@ -524,7 +526,7 @@ const WritePage: React.FC = () => {
                 placeholder="상세 주소"
               />
               {(errors['1depth_region'] || errors['2depth_region'] || errors.work_location_detail) && 
-                <div className={style.errorText}>지역 정보를 모�� 입력해주세요</div>}
+                <div className={style.errorText}>지역 정보를 모두 입력해주세요</div>}
             </div>
           </div>
         </div>
