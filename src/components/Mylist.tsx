@@ -121,7 +121,7 @@ const Mylist: React.FC<MylistProps> = ({
         <p>재등록 가능 횟수 : <span className={styles.statusText}>{reloadTimes}회</span></p>
         <div className={styles.guideText}>
           <ul>
-            <li>"재업로드"는 매일 00시, 06시, 12시, 18시에 충전됩니다.</li>
+            <li>"재업로드"는 매일 00시, 06시, 12시, 18시에 1개씩 충전됩니다.</li>
             <li>"수정"은 횟수와 상관없이 모두 가능하지만, 업로드 일시는 변경이 안되어 상위노출이 되지는 않습니다.</li>
           </ul>
       </div>

@@ -223,17 +223,26 @@ const WritePage: React.FC = () => {
       }
 
       if (isEditing) {
-        // 수정 시에는 내용만 업데이트
+        // 수정 시 업데이트할 필드 확장
         const { data: updatedData, error: updateError } = await supabase
           .from('jd')
           .update({
             title: formData.title.trim(),
-            '1depth_region': formData['1depth_region'],
-            '2depth_region': formData['2depth_region'],
+            board_type: formData.board_type,
+            experience: formData.experience,
+            gender: formData.gender,
+            education: formData.education,
+            age_limit: formData.age_limit,
+            salary_type: formData.salary_type,
+            salary_detail: formData.salary_detail,
             '1depth_category': formData['1depth_category'],
             '2depth_category': formData['2depth_category'],
+            '1depth_region': formData['1depth_region'],
+            '2depth_region': formData['2depth_region'],
+            work_location_detail: formData.work_location_detail,
+            work_start_time: formData.work_start_time,
+            work_end_time: formData.work_end_time,
             contents: formData.contents.trim()
-            // updated_time은 제외
           })
           .eq('id', id)
           .select();
