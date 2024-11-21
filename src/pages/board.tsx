@@ -32,6 +32,8 @@ interface Job {
   updated_time: string;
   title: string;
   contents: string;
+  salary_type: string;
+  salary_detail: string;
   '1depth_region': string;
   '2depth_region': string;
   '1depth_category': string;
@@ -172,6 +174,35 @@ function ScrollToTop() {
   );
 }
 
+// CustomerSupport 컴포넌트 추가
+function CustomerSupport() {
+  const { currentLanguage } = useLanguage();
+  
+  return (
+    <a
+      href="https://open.kakao.com/me/114114KR"
+      target="_blank"
+      rel="noopener noreferrer"
+      className={styles.customerSupport}
+      aria-label={currentLanguage === 'ko' ? '고객센터 문의하기' : 'Contact Customer Support'}
+    >
+      <div className={styles.customerSupportIcon}>
+        <svg 
+          viewBox="0 0 24 24" 
+          width="24" 
+          height="24" 
+          fill="currentColor"
+        >
+          <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z"/>
+        </svg>
+      </div>
+      <span className={styles.tooltip}>
+        {currentLanguage === 'ko' ? '불편한 점이 있다면 문의하세요' : 'Contact Us'}
+      </span>
+    </a>
+  );
+}
+
 const BoardPage: React.FC = () => {
 
   const router = useRouter();
@@ -228,33 +259,30 @@ const BoardPage: React.FC = () => {
       const offset = (page - 1) * pageSize;
 
       // 사용자가 작성한 게시물 쿼리만 실행 (null 게시물 제외)
-      let userQuery;
-      if (currentBoardType === '0') {
-        // board_type이 '0'일 때는 is_accept가 true인 사용자의 게시물만
-        userQuery = supabase
-          .from('jd')
-          .select(`
-            *,
-            users!inner (
-              is_accept
-            )
-          `)
-          .eq('ad', false)
-          .eq('board_type', currentBoardType)
-          .eq('users.is_accept', true)
-          .not('uploader_id', 'is', null); // null이 아닌 게시물만 선택
+      let userQuery = supabase
+        .from('jd')
+        .select(`
+          id,
+          updated_time,
+          title,
+          contents,
+          salary_type,
+          salary_detail,
+          1depth_region,
+          2depth_region,
+          1depth_category,
+          2depth_category,
+          ad,
+          users!inner (
+            is_accept
+          )
+        `)
+        .eq('ad', false)
+        .eq('board_type', currentBoardType)
+        .eq('users.is_accept', true)
+        .not('uploader_id', 'is', null); // null이 아닌 게시물만 선택
 
-      } else {
-        // 다른 board_type일 때는 모든 사용자의 게시물
-        userQuery = supabase
-          .from('jd')
-          .select('*')
-          .eq('ad', false)
-          .eq('board_type', currentBoardType)
-          .not('uploader_id', 'is', null); // null이 아닌 게시물만 선택
-      }
-
-      // 필터 조�� 추가
+      // 필터 조 추가
       if (city1) userQuery = userQuery.eq('1depth_region', city1);
       if (city2) userQuery = userQuery.eq('2depth_region', city2);
       if (cate1) userQuery = userQuery.eq('1depth_category', cate1);
@@ -294,7 +322,19 @@ const BoardPage: React.FC = () => {
       if (page === 1) {
         let nullUploaderAdQuery = supabase
           .from('jd')
-          .select('*')
+          .select(`
+            id,
+            updated_time,
+            title,
+            contents,
+            salary_type,
+            salary_detail,
+            1depth_region,
+            2depth_region,
+            1depth_category,
+            2depth_category,
+            ad
+          `)
           .eq('ad', true)
           .eq('board_type', currentBoardType)
           .is('uploader_id', null);
@@ -514,7 +554,7 @@ const BoardPage: React.FC = () => {
 
       <Header/>
       <MainMenu currentBoardType={boardType} />
-      <MainCarousel 
+      <MainCarousel  
           images={[
             { 
               src: '/image copy.png', 
@@ -554,6 +594,7 @@ const BoardPage: React.FC = () => {
       {error && <div className={styles.error}>{error}</div>}
       <InstallPWA /> {/* PWA 설치 버튼 추가 */}
       <ScrollToTop /> {/* ScrollToTop 컴포넌트 추가 */}
+      <CustomerSupport /> {/* 고객센터 버튼 추가 */}
     </div>
   );
 };

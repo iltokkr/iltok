@@ -13,6 +13,8 @@ interface Job {
   id: number;
   updated_time: string;
   title: string;
+  salary_type: string;
+  salary_detail: string;
   '1depth_region': string;
   '2depth_region': string;
   '1depth_category': string;
@@ -49,8 +51,46 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
 
   const [showAdPopup, setShowAdPopup] = useState(false);
 
+  const formatTitle = (job: Job) => {
+    return job.title;
+  };
+
+  const formatSalary = (job: Job) => {
+    if (!job.salary_type || !job.salary_detail) return null;
+    
+    let formattedSalary = job.salary_detail;
+    if (!isNaN(Number(job.salary_detail))) {
+      const salaryNum = Number(job.salary_detail);
+      if (salaryNum >= 100000) {
+        formattedSalary = `${Math.floor(salaryNum / 10000)}만`;
+      }
+    }
+    
+    return (
+      <span className={styles.salaryInfo}>
+        <span className={styles.salaryType}>{job.salary_type}</span>
+        {' '}
+        <span className={styles.salaryDetail}>{formattedSalary}</span>
+      </span>
+    );
+  };
+
   const formatJobDetails = (job: Job) => {
-    return `(${job['1depth_region']} ${job['2depth_region']}) - ${job['1depth_category']}`;
+    const salary = formatSalary(job);
+    const location = (
+      <span className={styles.locationInfo}>
+        <span className={styles.firstDepth}>{job['1depth_region']}</span>
+        {' '}
+        <span className={styles.secondDepth}>{job['2depth_region']}</span>
+      </span>
+    );
+
+    return (
+      <div className={styles.detailsContainer}>
+        {salary && salary}
+        {location}
+      </div>
+    );
   };
 
   const handlePostClick = (postId: number) => {
@@ -69,12 +109,12 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
               <a href="#" onClick={() => setShowAdPopup(true)} className={styles.btnTop}>등록안내</a>
             </div>
             {adJobs.map(job => (
-              <li key={`ad-${job.id}`} className={`${styles.jobItem} ${isRead(job.id) ? styles.readPost : ''}`}>
+              <li key={`ad-${job.id}`} className={`${styles.jobItem} ${isRead(job.id) ? styles.readPost : ''} ${!job.salary_type || !job.salary_detail ? 'no-salary' : ''}`}>
                 <span className={styles.time}>{formatDate(job.updated_time)}</span>
                 <div className={styles.jobContent}>
                   <p className={styles.title}>
                     <Link href={`/jd/${job.id}`} onClick={() => handlePostClick(job.id)}>
-                      {job.title}
+                      {formatTitle(job)}
                     </Link>
                   </p>
                   <p className={styles.jobDetails}>
@@ -88,12 +128,12 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
 
         <ul className={`${styles.listWrap} ${styles.listText}`}>
           {jobs.map(job => (
-            <li key={job.id} className={`${styles.jobItem} ${isRead(job.id) ? styles.readPost : ''}`}>
+            <li key={job.id} className={`${styles.jobItem} ${isRead(job.id) ? styles.readPost : ''} ${!job.salary_type || !job.salary_detail ? 'no-salary' : ''}`}>
               <span className={styles.time}>{formatDate(job.updated_time)}</span>
               <div className={styles.jobContent}>
                 <p className={styles.title}>
                   <Link href={`/jd/${job.id}`} onClick={() => handlePostClick(job.id)}>
-                    {job.title}
+                    {formatTitle(job)}
                   </Link>
                 </p>
                 <p className={styles.jobDetails}>
