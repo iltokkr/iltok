@@ -52,7 +52,14 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
   const [showAdPopup, setShowAdPopup] = useState(false);
 
   const formatTitle = (job: Job) => {
-    return job.title;
+    return (
+      <>
+        {job.title}
+        <span className={styles.locationText}>
+          ({job['1depth_region']} {job['2depth_region']})
+        </span>
+      </>
+    );
   };
 
   const formatSalary = (job: Job) => {
@@ -77,18 +84,10 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
 
   const formatJobDetails = (job: Job) => {
     const salary = formatSalary(job);
-    const location = (
-      <span className={styles.locationInfo}>
-        <span className={styles.firstDepth}>{job['1depth_region']}</span>
-        {' '}
-        <span className={styles.secondDepth}>{job['2depth_region']}</span>
-      </span>
-    );
-
+    
     return (
       <div className={styles.detailsContainer}>
         {salary && salary}
-        {location}
       </div>
     );
   };
