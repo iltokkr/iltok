@@ -343,48 +343,93 @@ const BoardPage: React.FC = () => {
       setRegularJobs(paginatedJobs);
       setTotalPages(Math.ceil(totalCount / pageSize));
 
-      // 광고 게시물 처리
+      // 광고 게시물 처리 부분 수정
       if (page === 1) {
-        let nullUploaderAdQuery = supabase
-          .from('jd')
-          .select(`
-            id,
-            updated_time,
-            title,
-            contents,
-            salary_type,
-            salary_detail,
-            1depth_region,
-            2depth_region,
-            1depth_category,
-            2depth_category,
-            ad,
-            uploader_id
-          `)
-          .eq('ad', true)
-          .eq('board_type', currentBoardType);
-
-        // board_type이 1인 경우 특정 uploader_id 또는 null 허용
-
-        let acceptedUploaderAdQuery;
+        let adQuery;
         
         if (currentBoardType === '0') {
-          // board_type이 0일 때는 users 테이블과 join
-          acceptedUploaderAdQuery = supabase
+          // board_type이 0일 때는 users 테이블과 join하고 is_accept가 true인 것만 가져옴
+          adQuery = supabase
             .from('jd')
             .select(`
-              *,
+              id,
+              updated_time,
+              title,
+              contents,
+              salary_type,
+              salary_detail,
+              1depth_region,
+              2depth_region,
+              1depth_category,
+              2depth_category,
+              ad,
+              uploader_id,
               users!inner (
                 is_accept
               )
             `)
             .eq('ad', true)
             .eq('board_type', currentBoardType)
-            .not('uploader_id', 'is', null)
             .eq('users.is_accept', true);
+
+          // uploader_id가 null인 광고도 별도로 가져옴
+          let nullUploaderQuery = supabase
+            .from('jd')
+            .select()
+            .eq('ad', true)
+            .eq('board_type', currentBoardType)
+            .is('uploader_id', null);
+
+          // 필터 조건 추가
+          if (city1) {
+            adQuery = adQuery.eq('1depth_region', city1);
+            nullUploaderQuery = nullUploaderQuery.eq('1depth_region', city1);
+          }
+          if (city2) {
+            adQuery = adQuery.eq('2depth_region', city2);
+            nullUploaderQuery = nullUploaderQuery.eq('2depth_region', city2);
+          }
+          if (cate1) {
+            adQuery = adQuery.eq('1depth_category', cate1);
+            nullUploaderQuery = nullUploaderQuery.eq('1depth_category', cate1);
+          }
+          if (cate2) {
+            adQuery = adQuery.eq('2depth_category', cate2);
+            nullUploaderQuery = nullUploaderQuery.eq('2depth_category', cate2);
+          }
+          
+          if (keyword) {
+            switch (searchType) {
+              case 'title':
+                adQuery = adQuery.ilike('title', `%${keyword}%`);
+                nullUploaderQuery = nullUploaderQuery.ilike('title', `%${keyword}%`);
+                break;
+              case 'contents':
+                adQuery = adQuery.ilike('contents', `%${keyword}%`);
+                nullUploaderQuery = nullUploaderQuery.ilike('contents', `%${keyword}%`);
+                break;
+              case 'both':
+                adQuery = adQuery.or(`title.ilike.%${keyword}%,contents.ilike.%${keyword}%`);
+                nullUploaderQuery = nullUploaderQuery.or(`title.ilike.%${keyword}%,contents.ilike.%${keyword}%`);
+                break;
+            }
+          }
+
+          const adResult = await adQuery;
+          const nullUploaderResult = await nullUploaderQuery;
+
+          if (adResult.error) throw adResult.error;
+          if (nullUploaderResult.error) throw nullUploaderResult.error;
+
+          const allAdJobs = [
+            ...(adResult.data || []),
+            ...(nullUploaderResult.data || [])
+          ].sort((a, b) => new Date(b.updated_time).getTime() - new Date(a.updated_time).getTime());
+
+          setAdJobs(allAdJobs as AdJob[]);
         } else {
           // board_type이 1일 때는 users 테이블과 join하지 않음
-          acceptedUploaderAdQuery = supabase
+          adQuery = supabase
             .from('jd')
             .select(`
               id,
@@ -403,59 +448,37 @@ const BoardPage: React.FC = () => {
             .eq('ad', true)
             .eq('board_type', currentBoardType);
 
-        }
-
-        // 광고 쿼리에 필터 조건 추가
-        if (city1) {
-          nullUploaderAdQuery = nullUploaderAdQuery.eq('1depth_region', city1);
-          acceptedUploaderAdQuery = acceptedUploaderAdQuery.eq('1depth_region', city1);
-        }
-        if (city2) {
-          nullUploaderAdQuery = nullUploaderAdQuery.eq('2depth_region', city2);
-          acceptedUploaderAdQuery = acceptedUploaderAdQuery.eq('2depth_region', city2);
-        }
-        if (cate1) {
-          nullUploaderAdQuery = nullUploaderAdQuery.eq('1depth_category', cate1);
-          acceptedUploaderAdQuery = acceptedUploaderAdQuery.eq('1depth_category', cate1);
-        }
-        if (cate2) {
-          nullUploaderAdQuery = nullUploaderAdQuery.eq('2depth_category', cate2);
-          acceptedUploaderAdQuery = acceptedUploaderAdQuery.eq('2depth_category', cate2);
-        }
-        
-        if (keyword) {
-          switch (searchType) {
-            case 'title':
-              nullUploaderAdQuery = nullUploaderAdQuery.ilike('title', `%${keyword}%`);
-              acceptedUploaderAdQuery = acceptedUploaderAdQuery.ilike('title', `%${keyword}%`);
-              break;
-            case 'contents':
-              nullUploaderAdQuery = nullUploaderAdQuery.ilike('contents', `%${keyword}%`);
-              acceptedUploaderAdQuery = acceptedUploaderAdQuery.ilike('contents', `%${keyword}%`);
-              break;
-            case 'both':
-              nullUploaderAdQuery = nullUploaderAdQuery.or(
-                `title.ilike.%${keyword}%,contents.ilike.%${keyword}%`
-              );
-              acceptedUploaderAdQuery = acceptedUploaderAdQuery.or(
-                `title.ilike.%${keyword}%,contents.ilike.%${keyword}%`
-              );
-              break;
+          // 필터 조건 추가
+          if (city1) adQuery = adQuery.eq('1depth_region', city1);
+          if (city2) adQuery = adQuery.eq('2depth_region', city2);
+          if (cate1) adQuery = adQuery.eq('1depth_category', cate1);
+          if (cate2) adQuery = adQuery.eq('2depth_category', cate2);
+          
+          if (keyword) {
+            switch (searchType) {
+              case 'title':
+                adQuery = adQuery.ilike('title', `%${keyword}%`);
+                break;
+              case 'contents':
+                adQuery = adQuery.ilike('contents', `%${keyword}%`);
+                break;
+              case 'both':
+                adQuery = adQuery.or(`title.ilike.%${keyword}%,contents.ilike.%${keyword}%`);
+                break;
+            }
           }
+
+          const adResult = await adQuery;
+
+          if (adResult.error) throw adResult.error;
+
+          const allAdJobs = [...(adResult.data || [])]
+            .sort((a, b) => new Date(b.updated_time).getTime() - new Date(a.updated_time).getTime());
+
+          setAdJobs(allAdJobs as AdJob[]);
         }
 
-        const [nullUploaderAdResult, acceptedUploaderAdResult] = await Promise.all([
-          nullUploaderAdQuery,
-          acceptedUploaderAdQuery
-        ]);
-
-        if (nullUploaderAdResult.error) throw nullUploaderAdResult.error;
-        if (acceptedUploaderAdResult.error) throw acceptedUploaderAdResult.error;
-
-        const allAdJobs = [...(nullUploaderAdResult.data || []), ...(acceptedUploaderAdResult.data || [])]
-          .sort((a, b) => new Date(b.updated_time).getTime() - new Date(a.updated_time).getTime());
-
-        setAdJobs(allAdJobs as AdJob[]);
+        setError(null);
       } else {
         setAdJobs([]);
       }
