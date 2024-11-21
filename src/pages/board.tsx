@@ -258,29 +258,54 @@ const BoardPage: React.FC = () => {
       const pageSize = 50;
       const offset = (page - 1) * pageSize;
 
-      // 사용자가 작성한 게시물 쿼리만 실행 (null 게시물 제외)
-      let userQuery = supabase
-        .from('jd')
-        .select(`
-          id,
-          updated_time,
-          title,
-          contents,
-          salary_type,
-          salary_detail,
-          1depth_region,
-          2depth_region,
-          1depth_category,
-          2depth_category,
-          ad,
-          users!inner (
-            is_accept
-          )
-        `)
-        .eq('ad', false)
-        .eq('board_type', currentBoardType)
-        .eq('users.is_accept', true)
-        .not('uploader_id', 'is', null); // null이 아닌 게시물만 선택
+      let userQuery: any;  // Add type assertion
+      
+      // board_type에 따라 다른 쿼리 구성
+      if (currentBoardType === '0') {
+        // board_type이 0일 때는 users 테이블과 join
+        userQuery = supabase
+          .from('jd')
+          .select(`
+            id,
+            updated_time,
+            title,
+            contents,
+            salary_type,
+            salary_detail,
+            1depth_region,
+            2depth_region,
+            1depth_category,
+            2depth_category,
+            ad,
+            users!inner (
+              is_accept
+            )
+          `)
+          .eq('ad', false)
+          .eq('board_type', currentBoardType)
+          .not('uploader_id', 'is', null)
+          .eq('users.is_accept', true);
+      } else {
+        // board_type이 1일 때는 users 테이블과 join하지 않음
+        userQuery = supabase
+          .from('jd')
+          .select(`
+            id,
+            updated_time,
+            title,
+            contents,
+            salary_type,
+            salary_detail,
+            1depth_region,
+            2depth_region,
+            1depth_category,
+            2depth_category,
+            ad,
+            uploader_id
+          `)
+          .eq('ad', false)
+          .eq('board_type', currentBoardType);
+      }
 
       // 필터 조 추가
       if (city1) userQuery = userQuery.eq('1depth_region', city1);
@@ -318,7 +343,7 @@ const BoardPage: React.FC = () => {
       setRegularJobs(paginatedJobs);
       setTotalPages(Math.ceil(totalCount / pageSize));
 
-      // 광고 게시물도 동일한 로직으로 처리
+      // 광고 게시물 처리
       if (page === 1) {
         let nullUploaderAdQuery = supabase
           .from('jd')
@@ -333,24 +358,52 @@ const BoardPage: React.FC = () => {
             2depth_region,
             1depth_category,
             2depth_category,
-            ad
+            ad,
+            uploader_id
           `)
           .eq('ad', true)
-          .eq('board_type', currentBoardType)
-          .is('uploader_id', null);
+          .eq('board_type', currentBoardType);
 
-        let userAdQuery;
-        let acceptedUploaderAdQuery = supabase
-          .from('jd')
-          .select(`
-            *,
-            users!inner (
-              is_accept
-            )
-          `)
-          .eq('ad', true)
-          .eq('board_type', currentBoardType)
-          .eq('users.is_accept', true);
+        // board_type이 1인 경우 특정 uploader_id 또는 null 허용
+
+        let acceptedUploaderAdQuery;
+        
+        if (currentBoardType === '0') {
+          // board_type이 0일 때는 users 테이블과 join
+          acceptedUploaderAdQuery = supabase
+            .from('jd')
+            .select(`
+              *,
+              users!inner (
+                is_accept
+              )
+            `)
+            .eq('ad', true)
+            .eq('board_type', currentBoardType)
+            .not('uploader_id', 'is', null)
+            .eq('users.is_accept', true);
+        } else {
+          // board_type이 1일 때는 users 테이블과 join하지 않음
+          acceptedUploaderAdQuery = supabase
+            .from('jd')
+            .select(`
+              id,
+              updated_time,
+              title,
+              contents,
+              salary_type,
+              salary_detail,
+              1depth_region,
+              2depth_region,
+              1depth_category,
+              2depth_category,
+              ad,
+              uploader_id
+            `)
+            .eq('ad', true)
+            .eq('board_type', currentBoardType);
+
+        }
 
         // 광고 쿼리에 필터 조건 추가
         if (city1) {
