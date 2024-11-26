@@ -57,6 +57,18 @@ function MyApp({ Component, pageProps }: AppProps) {
           `}
         </Script>
 
+        {/* 네이버 애널리틱스 */}
+        <Script src="//wcs.naver.net/wcslog.js" strategy="afterInteractive" />
+        <Script id="naver-analytics" strategy="afterInteractive">
+          {`
+            if(!wcs_add) var wcs_add = {};
+            wcs_add["wa"] = "13f96843ef89820";
+            if(window.wcs) {
+              wcs_do();
+            }
+          `}
+        </Script>
+
         <Component {...pageProps} />
       </AuthProvider>
     </TranslationProvider>
