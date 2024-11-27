@@ -553,6 +553,13 @@ const WritePage: React.FC = () => {
           {errors.contents && <div className={style.errorText}>상세 내용을 입력해주세요</div>}
         </div>
 
+        {/* 법적 경고 문구 */}
+        <div className={style.legalWarning}>
+          <p>⚠️ 성매매 알선 등 행위의 처벌에 관한 법률 제4조에 해당되는 내용이 포함된 구인 광고 관련 법령에 따라 성매매를 알선한 경우, 3년 이하의 징역형 또는 3천만 원 이하의 벌금에 처해질 수 있습니다.</p>
+          <p>⚠️ 노래방 종업원 및 BAR 종업원등 유흥업소에 대한 공고는 게시가 제한됩니다.</p>
+          <p>⚠️ 1개의 공고에 여러 회사의 공고를 업로드할 경우 게시가 제한됩니다.</p>
+        </div>
+
         {/* 제출 버튼 */}
         <div className={`${style.formGroup} ${style.ft}`}>
           <button type="submit" className={style.submitButton}>

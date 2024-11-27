@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Link from 'next/link';
 import styles from '@/styles/Footer.module.css';
 
 const Footer: React.FC = () => {
@@ -7,12 +8,22 @@ const Footer: React.FC = () => {
   return (
     <footer className={styles.footer}>
       <div className={styles.container}>
-        <strong 
-          className={styles.toggleText} 
-          onClick={() => setIsOpen(!isOpen)}
-        >
-          114114KR
-        </strong>
+        <div className={styles.footerTop}>
+          <strong 
+            className={styles.toggleText} 
+            onClick={() => setIsOpen(!isOpen)}
+          >
+            114114KR
+          </strong>
+          <div className={styles.links}>
+            <Link href="/privacy-policy">
+              <span className={styles.privacyLink}>이용약관</span>
+            </Link>
+            <Link href="/privacy">
+              <span className={styles.privacyLink}>개인정보처리방침</span>
+            </Link>
+          </div>
+        </div>
         {isOpen && (
           <div className={styles.content}>
             <div className={styles.companyInfo}>

@@ -448,3 +448,26 @@
     min-width: 0;
   }
 }
+
+.legalWarning {
+  margin: 20px 0;
+  padding: 15px;
+  background-color: #fff5f5;
+  border: 1px solid #fed7d7;
+  border-radius: 4px;
+  font-size: 0.85em;
+  color: #e53e3e;
+  line-height: 1.6;
+}
+
+.legalWarning p {
+  margin: 5px 0;
+}
+
+@media screen and (max-width: 768px) {
+  .legalWarning {
+    font-size: 0.8em;
+    padding: 12px;
+    margin: 15px 0;
+  }
+}
