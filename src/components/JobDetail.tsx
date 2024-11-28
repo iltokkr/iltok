@@ -117,7 +117,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail }) => {
     }
   };
 
-  // 언어 변경 핸들러 ��정
+  // 언어 변경 핸들러 정
   const handleLanguageChange = (lang: string) => {
     if (lang === currentLanguage || isTranslating) return;
     
@@ -221,9 +221,15 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail }) => {
             )}
 
             {/* 급여 정보 - 데이터가 하나라도 있을 때만 표시 */}
+            
             {(jobDetail.salary_type || (jobDetail.work_start_time && jobDetail.work_end_time)) && (
               <div className={style.infoCard}>
-                <h3>급여·근무</h3>
+                <h3>
+                  급여·근무
+                  <span style={{ fontSize: '0.8em', marginLeft: '8px', color: '#666' }}>
+                    2024년 최저임금은 9,860원입니다
+                  </span>
+                </h3>
                 {jobDetail.salary_type && jobDetail.salary_detail && (
                   <span>{jobDetail.salary_type} {jobDetail.salary_detail}원</span>
                 )}
