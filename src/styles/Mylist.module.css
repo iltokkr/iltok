@@ -1,0 +1,112 @@
+.layout {
+  padding:10px;
+}
+
+.listHead {
+  margin-bottom: 15px;
+  font-size: 14px;
+}
+
+.delAll {
+  color: #888;
+  font-size: 12px;
+}
+
+.businessStatus {
+  background-color: #f8f8f8;
+  padding: 15px;
+  margin-bottom: 15px;
+  font-size: 12px;
+}
+
+.guideText {
+  font-size: 10px;
+  margin-top: 10px;
+  color: #888;
+}
+
+.statusText {
+  color: red;
+}
+
+.editLink {
+  color: blue;
+  margin-left: 10px;
+}
+
+.listWrap {
+  list-style: none;
+  padding: 0;
+}
+
+.listWrap li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+  padding: 10px 0;
+}
+
+.postInfo {
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+  justify-content: space-between;
+}
+
+.postContent {
+  display: flex;
+  align-items: center;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 5px;
+  margin-left: auto;
+}
+
+.time {
+  color: #888;
+  font-size: 12px;
+  margin-right: 10px;
+}
+
+.title {
+  color: #333;
+  text-decoration: none;
+  margin-right: 10px;
+}
+
+.postInfo em {
+  color: #888;
+  font-style: normal;
+  font-size: 12px;
+}
+
+.recall {
+  flex-shrink: 0;
+}
+
+.recall a {
+  font-weight: bold;
+  color: #ff3900;
+}
+
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+  .postInfo {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

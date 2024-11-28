@@ -1,0 +1,473 @@
+.layout {
+    padding: 15px 0 30px;
+  }
+  
+.formGroup {
+    line-height: 22px;
+    padding: 0 0 15px 15px;
+    overflow: hidden;
+  }
+
+.form dl {
+  display: inline-block;
+}
+
+.formGroup dd {
+    margin-left: 65px;
+  }
+
+  
+.formGroup dt {
+    width: 65px;
+    float: left;
+    clear: left;
+  }
+  
+.formGroup.hd {
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #ccc;
+  }
+  
+.formGroup.ft {
+    border-top: 1px solid #ccc;
+    padding-top: 10px;
+  }
+  
+.chooseType {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+}
+
+.chooseType li {
+    padding: 0 24px 0 0;
+    float: left;
+  }
+  
+  .radio,
+  .checkbox {
+    vertical-align: middle;
+    margin: 0 3px 0 0;
+    padding: 0;
+    font-size: 16px;
+  }
+  
+  .chooseType li label,
+  .formGroup label {
+    vertical-align: middle;
+    cursor: pointer;
+  }
+  
+  .selectBox {
+    margin: 0 5px 0 0;
+    display: inline-block;  /* float 대신 inline-block 사용 */
+  }
+  
+  .uploadNotice {
+    font-size: 0.9em;
+    color: #666;
+    text-align: center;
+  }
+
+  .input{
+    height: 20px;
+    width: 115px;
+    padding: 0 5px;
+    border: 1px solid #ccc;
+    margin-bottom: 5px;
+    font-size: 0.9em;
+    border-radius: 4px;
+  }
+  .select {
+    height: 22px;
+    line-height: 22px;
+    width: 115px;
+    padding: 0 5px;
+    border: 1px solid #ccc;
+    margin-bottom: 5px;
+    font-size: 0.9em;
+  }
+  
+  .input.title {
+    width: 785px;
+  }
+  
+  .textarea {
+    display: block;
+    width: 785px;
+    padding: 5px;
+    resize: vertical;
+    border: 1px solid #ccc;
+  }
+  
+  .textTips {
+    display: inline;
+    color: #aaa;
+  }
+  
+  .submitButton {
+    padding: 0 25px;
+    background: #ff3900;
+    border: 0;
+    font-weight: bold;
+    cursor: pointer;
+    color: #fff;
+  }
+  
+  .submitButton:hover {
+    background: #DD3100;
+  }
+  
+  .fileButton {
+    border: 1px solid #ccc;
+    background: #eee;
+    text-align: center;
+    cursor: pointer;
+  }
+  
+  .fileList {
+    padding: 8px 0 0;
+  }
+  
+  .fileList li {
+    line-height: 1.5;
+  }
+  
+  .fileList .deleteIcon {
+    display: inline-block;
+    width: 15px;
+    background-position: 0 -76px;
+    margin: 0 3px 0 0;
+    vertical-align: middle;
+  }
+  
+  .fileList .fileName {
+    display: inline;
+    vertical-align: middle;
+    color: #aaa;
+  }
+
+.sectionTitle {
+  font-size: 1.1em;
+  font-weight: bold;
+  margin: 10px 0 5px;
+  border-bottom: 2px solid #ff3900;
+}
+
+.subSection {
+  margin: 5px 0;
+  padding: 12px;
+  background: #f9f9f9;
+  border-radius: 4px;
+}
+
+.formRow {
+  display: flex;
+  align-items: center;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+}
+
+.formLabel {
+  width: 80px;
+  font-weight: bold;
+  font-size: 0.9em;
+}
+
+.formInput {
+  flex: 1;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.select {
+  min-width: 90px;
+  padding: 0 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.timeInput {
+  width: 90px;
+  padding: 0 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 150px;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  resize: vertical;
+  font-size: 0.9em;
+}
+
+@media screen and (max-width: 768px) {
+  .formGrid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  
+  .formInput {
+    gap: 3px;
+  }
+  
+  .formInput .locationSelects {
+    display: flex;
+    gap: 3px;
+    width: 100%;
+  }
+
+  .formInput .locationSelects select {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .formInput input[name="work_location_detail"] {
+    width: 100%;
+    margin-top: 3px;
+  }
+  
+  .select, .input {
+    width: 100%;
+  }
+}
+
+.radioGroup {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.radioGroup input[type="radio"] {
+  margin: 0;
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+}
+
+.radioGroup label {
+  margin-left: 6px;
+  font-size: 0.9em;
+  cursor: pointer;
+  vertical-align: middle;
+  display: inline-flex;
+  align-items: center;
+}
+
+.radioGroup input[type="radio"] + label {
+  color: #666;
+}
+
+.radioGroup input[type="radio"]:checked + label {
+  color: #ff3900;
+  font-weight: bold;
+}
+
+@media screen and (max-width: 768px) {
+  .radioGroup {
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  
+  .radioGroup label {
+    font-size: 0.85em;
+  }
+}
+
+.titleInput {
+  flex: 1;
+  max-width: 100%;
+}
+
+.titleField {
+  width: 100%; /* 다른 input보다 약간 더 높게 */
+  font-size: 1em; /* 다른 input보다 약간 더 크게 */
+  padding: 0 15px;
+}
+
+.titleField::placeholder {
+  color: #999;
+}
+
+.titleField:focus {
+  border-color: #ff3900;
+  outline: none;
+  box-shadow: 0 0 0 1px rgba(255, 57, 0, 0.1);
+}
+
+
+.errorInput {
+  border: 1px solid #ff4444 !important;
+  background-color: #fff8f8;
+}
+
+.errorText {
+  color: #ff4444;
+  font-size: 0.8rem;
+  margin-top: 4px;
+  display: block;
+}
+
+.required {
+  color: #ff4444;
+}
+
+.formLabel {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.formInput {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+/* 모바일 대응을 위한 미디어 쿼리 */
+@media screen and (max-width: 768px) {
+  .errorText {
+    width: 100%;
+    margin-top: 2px;
+  }
+}
+
+.boardSelect {
+  width: 120px;
+  flex: none; /* 고정 너비 유지 */
+  font-weight: 500;
+}
+
+.titleField {
+  flex: 1;
+  font-size: 1em;
+  padding: 0 15px;
+}
+
+.formInput {
+  flex: 1;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+@media screen and (max-width: 768px) {
+  .formInput {
+    flex-wrap: nowrap; /* 모바일에서도 가로 배열 유지 */
+  }
+  
+  .boardSelect {
+    width: 100px; /* 모바일에서는 약간 더 좁게 */
+    font-size: 0.9em;
+  }
+  
+  .titleField {
+    font-size: 0.9em;
+  }
+}
+
+.warningText {
+  padding: 8px 12px;
+  background-color: #fff5f5;
+  border-radius: 4px;
+  font-size: 0.85em;
+  color: #e53e3e;
+  line-height: 1.5;
+}
+
+.warningText strong {
+  color: #c53030;
+}
+
+@media screen and (max-width: 768px) {
+  .warningText {
+    font-size: 0.8em;
+    padding: 6px 10px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .layout{
+    padding: 10px;
+  }
+
+  .formGrid{
+    gap: 3px;
+  }
+  .select {
+    width: 50%;
+  }
+  
+  .timeInput {
+    width: 50%;
+  }
+}
+
+.conditionFormInput {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  flex: 1;
+}
+
+@media screen and (max-width: 768px) {
+  .conditionFormInput {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    width: 100%;
+  }
+  
+  .conditionFormInput .select {
+    width: 100%;
+    min-width: 100%;
+  }
+
+  .conditionFormInput .locationSelects {
+    display: flex;
+    gap: 3px;
+    width: 100%;
+  }
+
+  .conditionFormInput .locationSelects .select {
+    width: 50%;
+    min-width: 0;
+  }
+}
+
+.legalWarning {
+  margin: 20px 0;
+  padding: 15px;
+  background-color: #fff5f5;
+  border: 1px solid #fed7d7;
+  border-radius: 4px;
+  font-size: 0.85em;
+  color: #e53e3e;
+  line-height: 1.6;
+}
+
+.legalWarning p {
+  margin: 5px 0;
+}
+
+@media screen and (max-width: 768px) {
+  .legalWarning {
+    font-size: 0.8em;
+    padding: 12px;
+    margin: 15px 0;
+  }
+}

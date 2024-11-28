@@ -1,0 +1,392 @@
+.jobList {
+    margin-top: 20px;
+  }
+
+  .btnTop {
+    font-size: 1em;
+    margin-left: 10px;
+  }
+
+  .layout {
+    width: 100%;
+    max-width: 980px;
+    margin: 0 auto;
+    box-sizing: border-box;
+  }
+  
+  .listWrap {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .topArea {
+    background-color: #fffcf5;
+    border-top: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+    padding: 10px;
+  }
+  
+  .topDiv {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .topTitle {
+    font-size: 15px;
+    font-weight: bold;
+    color: #ff5205;
+  }
+  
+  
+  .time {
+    color: #888;
+    margin-right: 10px;
+  }
+  
+  .title {
+    margin: 0;
+  }
+  
+  .title a {
+    color: #000;
+  }
+  
+  .title em {
+    color: #888;
+    font-style: normal;
+    margin-left: 10px;
+  }
+  
+  .pager {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+  }
+  
+  .pages a {
+    display: inline-block;
+    padding: 5px 10px;
+    margin: 0 2px;
+    border: 1px solid #ddd;
+    color: #333;
+  }
+  
+  .pages .current {
+    background-color: #ff5205;
+    color: white;
+    border-color: #ff5205;
+  }
+  
+  .pages .next {
+    font-weight: bold;
+  }
+
+.listHead {
+  padding: 1em 15px 8px;
+  border-bottom: 1px solid #ccc;
+}
+
+.listHead .checkbox {
+  margin: 3px 8px 0 0;
+}
+
+.listHead .move,
+.listHead .del {
+  float: left;
+  margin: 0 8px 0 0;
+}
+
+.listHead .delAll {
+  color: #aaa;
+}
+
+.listText {
+  padding: 15px;
+}
+
+.listText li {
+  width: 100%;
+  margin: 0 0 5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.listText li * {
+  vertical-align: middle;
+}
+
+.listWrap li .checkbox {
+  margin: 4px 8px 0 0;
+}
+
+.listWrap li .fav {
+  display: inline-block;
+  width: 16px;
+  height: 20px;
+  background-position: 0 -27px;
+  margin: 0 8px 0 0;
+}
+
+.listWrap li .fav {
+  display: inline;
+}
+
+.listWrap li .favAct {
+  background-position: 0 -49px;
+}
+
+.listWrap li .time {
+  white-space: pre;
+}
+
+.listWrap li .title {
+  display: inline;
+  word-break: break-all;
+}
+
+.listWrap li .title em {
+  color: #aaa;
+  padding: 0 0 0 3px;
+}
+
+.listWrap li .txt,
+.listWrap li .txt a {
+  color: #ff3900;
+}
+
+.listWrap li .txt {
+  padding: 0 6px 0 0;
+}
+
+.listP {
+  background-color: #FFFCF5;
+  border-bottom: 1px solid #CCCCCC;
+  border-top: 1px solid #CCCCCC;
+  margin-top: 15px;
+}
+
+.listP font {
+  color: #FF3900;
+  padding-right: 10px;
+}
+
+.listPA {
+  text-decoration: underline;
+  color: #999999;
+}
+
+.jobItem {
+  display: flex;
+  align-items: center;
+  padding: 2px 0;
+  width: 100%;
+}
+
+.time {
+  flex: 0 0 45px;
+  color: #888;
+}
+
+.jobContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex: 1;
+  gap: 8px;
+  min-width: 0;
+}
+
+.title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding-right: 8px;
+}
+
+.title a {
+  display: block;
+  white-space: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
+  max-height: 3em;
+  line-height: 1.5em;
+}
+
+.detailsContainer {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  gap: 8px;
+  min-width: 200px;
+  justify-content: flex-end;
+  padding-right: 30px;
+}
+
+.salaryInfo, .locationInfo, .categoryInfo {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+/* 구분선 수정 - 최상위 span 사이에만 구분선 적용 */
+.detailsContainer > span:not(:last-child)::after {
+  content: '|';
+  margin: 0 4px;
+  color: #ddd;
+}
+
+/* 모바일 대응 */
+@media (max-width: 768px) {
+  .jobContent {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .title {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: calc(100% - 80px);
+  }
+
+  .detailsContainer {
+    flex: 0 0 auto;
+    min-width: 80px;
+    font-size: 0.85rem;
+    padding-right: 4px;
+  }
+
+  .salaryInfo {
+    font-size: 0.85rem;
+  }
+
+  .locationText {
+    font-size: 0.85em;
+    color: #888;
+  }
+
+  /* 급여 정보가 없을 때 제목 영역 최대화 */
+  .jobContent.no-salary .title {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+
+  .jobContent.no-salary .detailsContainer {
+    display: none;
+  }
+
+  /* 모바일에서도 동일하게 최상위 span에만 구분선 적용 */
+  .detailsContainer > span:not(:last-child)::after {
+    content: '|';
+    margin: 0 4px;
+    color: #ddd;
+    display: inline;
+  }
+
+  /* 모바일에서 1차 지역정보 숨김 */
+  .locationInfo .firstDepth {
+    display: none;
+  }
+
+  /* 모바일에서 1차 지역정보 뒤의 공백 제거 */
+  .locationInfo .secondDepth {
+    margin-left: 0;
+  }
+
+  /* 급여 정보가 없을 때 제목 영역 최대화 */
+  .jobContent {
+    display: flex;
+    align-items: center;
+  }
+
+  .jobContent .title {
+    flex: 1 1 0; /* Allow the title to grow and fill available space */
+    min-width: 0;
+  }
+
+  .jobContent .detailsContainer {
+    flex: 0 0 auto; /* Keep detailsContainer at its natural size */
+  }
+}
+
+.languageSelector {
+  display: flex;
+  padding: 5px 0;
+  gap: 5px;
+  justify-content: flex-start;
+}
+
+.languageSelector button {
+  padding: 3px 6px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.languageSelector button:hover {
+  background: #f5f5f5;
+}
+
+.languageSelector button.activeLanguage {
+  background: #ff4800;
+  color: white;
+  border-color: #ff3900;
+}
+
+.readPost {
+  opacity: 0.6;
+}
+
+.readPost .title a {
+  color: #666;
+}
+
+.salaryInfo {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.salaryType {
+  color: #ff6b00;
+  font-weight: 600;
+}
+
+.salaryDetail {
+  color: inherit; /* 부모 요소의 색상 상속 */
+  font-weight: normal;
+}
+
+/* 이미 읽은 게시물의 경우에도 급여 유형 색상 유지 */
+.readPost .salaryType {
+  color: #ff6b00;
+  opacity: 0.8;
+}
+
+.jobContent.no-salary .title {
+  flex: 1 1 100%; /* Allow the title to take full width */
+}
+
+.jobContent.no-salary .detailsContainer {
+  display: none; /* Hide the detailsContainer */
+}
+
+.locationText {
+  color: #666;
+  font-size: 0.9em;
+  margin-left: 8px;
+}
+

@@ -1,0 +1,139 @@
+.searchBar {
+  border: 1px solid #ccc;
+  background: #eee;
+  padding: 11px 14px;
+  overflow: hidden; /* clearfix 적용 */
+}
+
+
+
+.filterBar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.selectBox {
+  margin: 0;
+  flex: 1 1 calc(50% - 5px);
+  min-width: 100px;
+}
+
+.selectBox select {
+  width: 100%;
+}
+
+@media (min-width: 769px) {
+  .filterBar {
+    flex-wrap: nowrap;
+  }
+
+  .selectBox {
+    flex: 0 0 auto;
+  }
+}
+
+.searchForm {
+  display: inline-block; /* float 대신 inline-block 사용 */
+  vertical-align: top; /* 상단 정렬 */
+}
+
+.searchIpt {
+  width: 166px;
+  height: 23px;
+  line-height: 23px;
+  background: #fff;
+  border: 1px solid #ccc;
+  padding: 0 5px;
+  float: left;
+  margin: 0 -1px 0 0;
+}
+
+.searchBtn {
+  width: 50px;
+  height: 25px;
+  line-height: 25px;
+  float: left;
+  border: 1px solid #ccc;
+  background: #ddd;
+  text-align: center;
+  cursor: pointer;
+}
+
+.searchBtn:hover {
+  background: #ccc;
+}
+
+/* 새로운 clearfix 클래스 추가 */
+.clearfix::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+.toggleBox {
+  margin: 0;
+  flex: 0 0 auto;
+}
+
+.toggleButton {
+  padding: 0 10px;
+  background: #fff;
+  border: 1px solid #ccc;
+  cursor: pointer;
+}
+
+.toggleButton:hover {
+  background: #f0f0f0;
+}
+
+.searchForm {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.searchType {
+  width: 100px;
+  height: 25px;
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 150px;
+  padding: 0 5px;
+}
+
+.searchButton {
+  width: 50px;
+  height: 25px;
+  background: #ff3900;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+
+.searchButton:hover {
+  background: #e63300;
+}
+
+@media (max-width: 768px) {
+  .searchForm {
+    flex-wrap: nowrap;  /* 모바일에서는 한 줄로 표시 */
+  }
+  
+  .searchType {
+    width: 90px;  /* 모바일에서는 더 작게 */
+    flex-shrink: 0;  /* 크기 고정 */
+  }
+  
+  .searchInput {
+    min-width: 0;  /* 모바일에서 최소 너비 제거 */
+  }
+  
+  .searchButton {
+    width: 45px;  /* 모바일에서는 더 작게 */
+    flex-shrink: 0;  /* 크기 고정 */
+  }
+}

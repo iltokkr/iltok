@@ -1,0 +1,68 @@
+body,html,h1,h2,h3,h4,h5,h6,p,ul,ol,li,dl,dt,dd,th,td,form,object,iframe,blockquote,pre,a,abbr,address,code,img,fieldset,form,label{margin:0;padding:0;}
+body,html,input,button,textarea{color:#333;font:12px/1.8 Gulim,Tahoma,Arial,Verdana,Helvetica,sans-serif;}
+article,aside,figcaption,figure,footer,header,hgroup,main,nav,section{display:block;}
+h1{font-size:18px;}
+h2{font-size:16px;}
+h3,h4,h5{font-size:14px;}
+img{border:none;vertical-align:middle;}
+li{list-style:none;}
+i,em{font-style:normal;}
+a{color:#333;text-decoration:none;}
+a:focus{outline:none;}
+a:hover{color:#333;text-decoration:underline;}
+
+.clearfix:after,
+.layout:after,
+.nav:after,
+.search-bar:after,
+.list-head:after,
+.pager:after,
+.list-gallery:after,
+.list-img li:after,
+.popbox dl:after,
+.small-img:after,
+.article-foot .acts:after,
+.share-bar:after,
+.choose-type li:after,
+.write dl:after {
+  content: "";
+  height: 0;
+  display: block;
+  clear: both;
+  visibility: hidden;
+}
+
+* html .clearfix,
+* html .layout,
+* html .nav,
+* html .search-bar,
+* html .list-head,
+* html .pager,
+* html .list-gallery,
+* html .list-img li,
+* html .popbox,
+* html .small-img,
+* html .article-foot .acts,
+* html .share-bar,
+* html .choose-type li,
+* html .write dl {
+  display: inline-block;
+}
+
+* + html .clearfix,
+* + html .layout,
+* + html .nav,
+* + html .search-bar,
+* + html .list-head,
+* + html .pager,
+* + html .list-gallery,
+* + html .list-img li,
+* + html .popbox,
+* + html .small-img,
+* + html .article-foot .acts,
+* + html .share-bar,
+* + html .choose-type li,
+* + html .write dl {
+  display: inline-block;
+}
+

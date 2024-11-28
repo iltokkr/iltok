@@ -1,0 +1,187 @@
+.layout {
+  padding-top: 10px;
+  max-width: 980px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Floating 버튼 스타일 추가 */
+.installButton {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #ff4800;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 50px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  border: none;
+  cursor: pointer;
+  z-index: 1000;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.installButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* 모바일 환경에서 버튼 크기 조정 */
+@media (max-width: 768px) {
+  .installButton {
+    padding: 10px 16px;
+    font-size: 14px;
+    bottom: 16px;
+    right: 16px;
+  }
+}
+
+/* 반응형 스타일 추가 */
+@media (max-width: 980px) {
+  .layout {
+    width: 100%;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .layout {
+    width: 100%;
+    gap: 5px;
+  }
+}
+
+/* Add this style for the banner image */
+.bannerImage {
+  width: 100%; /* Make the image responsive */
+  height: auto; /* Maintain aspect ratio */
+  max-width: 980px; /* Limit the maximum width */
+  aspect-ratio: 980 / 70;
+  border-radius: 5px; /* Maintain the aspect ratio */ /* Add some space below the image */
+}
+
+.scrollToTop {
+  position: fixed;
+  bottom: 160px;
+  right: 20px;
+  background-color: #ff3900;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  transition: background-color 0.3s;
+}
+
+.scrollToTop:hover {
+  background-color: #ff4800;
+}
+
+/* PWA 설치 버튼이 있는 경우 위치 조정 */
+@media screen and (max-width: 768px) {
+  .scrollToTop {
+    bottom: 140px;
+    width: 35px;
+    height: 35px;
+  }
+}
+
+.languageSelector {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  justify-content: flex-end;
+  background: #f5f5f5;
+}
+
+.languageSelector button {
+  padding: 5px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+}
+
+.languageSelector button:hover {
+  background: #eee;
+}
+
+.customerSupport {
+  position: fixed;
+  bottom: 90px;
+  right: 20px;
+  z-index: 1000;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.customerSupportIcon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: #FEE500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+  color: #000000;
+}
+
+.customerSupportIcon:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.tooltip {
+  position: absolute;
+  right: 70px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.tooltip::after {
+  content: '';
+  position: absolute;
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 6px 0 6px 6px;
+  border-style: solid;
+  border-color: transparent transparent transparent rgba(0, 0, 0, 0.8);
+}
+
+.customerSupport:hover .tooltip {
+  opacity: 1;
+  visibility: visible;
+  right: 80px;
+}
+
+@media (max-width: 768px) {
+  .customerSupportIcon {
+    width: 45px;
+    height: 45px;
+  }
+  
+  .customerSupport {
+    bottom: 80px;
+  }
+}
