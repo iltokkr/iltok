@@ -39,6 +39,7 @@ interface Job {
   '1depth_category': string;
   '2depth_category': string;
   ad: boolean;
+  board_type: number;
 }
 
 interface AdJob extends Job {
@@ -421,12 +422,15 @@ const BoardPage: React.FC = () => {
           if (adResult.error) throw adResult.error;
           if (nullUploaderResult.error) throw nullUploaderResult.error;
 
-          const allAdJobs = [
-            ...(adResult.data || []),
-            ...(nullUploaderResult.data || [])
-          ].sort((a, b) => new Date(b.updated_time).getTime() - new Date(a.updated_time).getTime());
+          const allAdJobs = [...(adResult.data || []), ...(nullUploaderResult.data || [])]
+            .sort((a, b) => new Date(b.updated_time).getTime() - new Date(a.updated_time).getTime())
+            .map(job => ({
+              ...job,
+              board_type: parseInt(currentBoardType),
+              ad: true as const
+            }));
 
-          setAdJobs(allAdJobs as AdJob[]);
+          setAdJobs(allAdJobs);
         } else {
           // board_type이 1일 때는 users 테이블과 join하지 않음
           adQuery = supabase
@@ -473,9 +477,14 @@ const BoardPage: React.FC = () => {
           if (adResult.error) throw adResult.error;
 
           const allAdJobs = [...(adResult.data || [])]
-            .sort((a, b) => new Date(b.updated_time).getTime() - new Date(a.updated_time).getTime());
+            .sort((a, b) => new Date(b.updated_time).getTime() - new Date(a.updated_time).getTime())
+            .map(job => ({
+              ...job,
+              board_type: parseInt(currentBoardType),
+              ad: true as const
+            }));
 
-          setAdJobs(allAdJobs as AdJob[]);
+          setAdJobs(allAdJobs);
         }
 
         setError(null);
@@ -620,7 +629,7 @@ const BoardPage: React.FC = () => {
             : "Find job opportunities across various industries."
           } 
         />
-        <meta name="keywords" content="114114, 114114코리아, 114114korea, 114114kr, 114114구인구직, 조선동포, 교포, 재외동, 해외교포, 동포 구인구직, 일자리 정보, 구직자, 구인체, 경력직 채용, 구인구직, 기업 채용, 단기 알바, 드림 구인구직, 무료 채용 공고, 아르바이트, 알바, 알바 구인구직, 월급, 일당, 주급, 채용 정보, 취업 정보, 직업 정보 제공, 지역별 구인구직, 헤드헌팅 비스, 신입 채용 공고, 동포 취업, 동포 일자리" />
+        <meta name="keywords" content="114114, 114114코리아, 114114korea, 114114kr, 114114구인구직, 조선동포, 교포, 재외동, 해외교포, 동포 구인구직, 일자리 정보, 구직자, 구인체, 경력직 채용, 구인구직, 기업 채용, 단기 알바, 드림 구인구직, 무료 채용 공고, 아르바이트, 알바, 알바 구인구직, 월급, 일당, 주급, 채용 정보, 취업 정보, 직업 정보 제공, 지역별 구인구직, 헤드헌팅 비스, 신입 채용 공고, 포 취업, 동포 일자리" />
         <meta property="og:title" content="구인구직 게시판 | 114114KR" />
         <meta property="og:description" content="다양한 직종의 구인구직 정보를 찾아보세요. 지역별, 카테고리별로 필터링하여 원하는 일자리를 쉽게 찾을 수 있습니다." />
         <meta property="og:type" content="website" />
@@ -664,6 +673,7 @@ const BoardPage: React.FC = () => {
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={handlePageChange}
+          boardType={boardType}
         />
       </div>
       <Footer />

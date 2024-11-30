@@ -20,6 +20,7 @@ interface Job {
   '1depth_category': string;
   '2depth_category': string;
   ad: boolean;
+  board_type: number;
 }
 
 interface AdJob extends Job {
@@ -32,9 +33,10 @@ interface JobListProps {
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
+  boardType: string;
 }
 
-const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages, onPageChange }) => {
+const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages, onPageChange, boardType }) => {
   const { currentLanguage } = useTranslation();
   const { markAsRead, isRead } = useReadPosts();
   const previousJobsRef = useRef<string>('');
@@ -63,7 +65,7 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
   };
 
   const formatSalary = (job: Job) => {
-    if (!job.salary_type || !job.salary_detail) return null;
+    if (boardType !== '0' || !job.salary_type || !job.salary_detail) return null;
     
     let formattedSalary = job.salary_detail;
     if (!isNaN(Number(job.salary_detail))) {
