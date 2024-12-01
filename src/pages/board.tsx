@@ -259,89 +259,100 @@ const BoardPage: React.FC = () => {
       const pageSize = 50;
       const offset = (page - 1) * pageSize;
 
-      let userQuery: any;  // Add type assertion
-      
-      // board_type에 따라 다른 쿼리 구성
-      if (currentBoardType === '0') {
-        // board_type이 0일 때는 users 테이블과 join
-        userQuery = supabase
-          .from('jd')
-          .select(`
-            id,
-            updated_time,
-            title,
-            contents,
-            salary_type,
-            salary_detail,
-            1depth_region,
-            2depth_region,
-            1depth_category,
-            2depth_category,
-            ad,
-            users!inner (
-              is_accept
-            )
-          `)
-          .eq('ad', false)
-          .eq('board_type', currentBoardType)
-          .not('uploader_id', 'is', null)
-          .eq('users.is_accept', true);
-      } else {
-        // board_type이 1일 때는 users 테이블과 join하지 않음
-        userQuery = supabase
-          .from('jd')
-          .select(`
-            id,
-            updated_time,
-            title,
-            contents,
-            salary_type,
-            salary_detail,
-            1depth_region,
-            2depth_region,
-            1depth_category,
-            2depth_category,
-            ad,
-            uploader_id
-          `)
-          .eq('ad', false)
-          .eq('board_type', currentBoardType);
-      }
+      // 전체 개수를 가져오기 위한 쿼리
+      let countQuery = supabase
+        .from('jd')
+        .select('id', { count: 'exact' })  // id만 선택하여 개수 조회
+        .eq('ad', false)
+        .eq('board_type', currentBoardType)
+        .not('uploader_id', 'is', null);
 
-      // 필터 조 추가
-      if (city1) userQuery = userQuery.eq('1depth_region', city1);
-      if (city2) userQuery = userQuery.eq('2depth_region', city2);
-      if (cate1) userQuery = userQuery.eq('1depth_category', cate1);
-      if (cate2) userQuery = userQuery.eq('2depth_category', cate2);
+      // 데이터를 가져오기 위한 쿼리
+      let dataQuery = supabase
+        .from('jd')
+        .select(`
+          id,
+          updated_time,
+          title,
+          contents,
+          salary_type,
+          salary_detail,
+          1depth_region,
+          2depth_region,
+          1depth_category,
+          2depth_category,
+          ad,
+          users (
+            is_accept
+          )
+        `)
+        .eq('ad', false)
+        .eq('board_type', currentBoardType)
+        .not('uploader_id', 'is', null)
+        .eq('users.is_accept', true);
+
+      // 필터 조건 추가
+      if (city1) {
+        countQuery = countQuery.eq('1depth_region', city1);
+        dataQuery = dataQuery.eq('1depth_region', city1);
+      }
+      if (city2) {
+        countQuery = countQuery.eq('2depth_region', city2);
+        dataQuery = dataQuery.eq('2depth_region', city2);
+      }
+      if (cate1) {
+        countQuery = countQuery.eq('1depth_category', cate1);
+        dataQuery = dataQuery.eq('1depth_category', cate1);
+      }
+      if (cate2) {
+        countQuery = countQuery.eq('2depth_category', cate2);
+        dataQuery = dataQuery.eq('2depth_category', cate2);
+      }
       
       if (keyword) {
         switch (searchType) {
           case 'title':
-            userQuery = userQuery.ilike('title', `%${keyword}%`);
+            countQuery = countQuery.ilike('title', `%${keyword}%`);
+            dataQuery = dataQuery.ilike('title', `%${keyword}%`);
             break;
           case 'contents':
-            userQuery = userQuery.ilike('contents', `%${keyword}%`);
+            countQuery = countQuery.ilike('contents', `%${keyword}%`);
+            dataQuery = dataQuery.ilike('contents', `%${keyword}%`);
             break;
           case 'both':
-            userQuery = userQuery.or(`title.ilike.%${keyword}%,contents.ilike.%${keyword}%`);
+            countQuery = countQuery.or(`title.ilike.%${keyword}%,contents.ilike.%${keyword}%`);
+            dataQuery = dataQuery.or(`title.ilike.%${keyword}%,contents.ilike.%${keyword}%`);
             break;
         }
       }
 
-      // 쿼리 실행
-      const userResult = await userQuery;
+      // 전체 개수 조회
+      const { data: countData, error: countError } = await countQuery;
+      
+      if (countError) {
+        throw countError;
+      }
 
-      if (userResult.error) throw userResult.error;
+      const totalCount = countData?.length || 0;
+      // console.log('Total count:', totalCount);
 
-      // 결과 정렬
-      const allJobs = [...(userResult.data || [])]
-        .sort((a, b) => new Date(b.updated_time).getTime() - new Date(a.updated_time).getTime());
+      // 실제 데이터 조회
+      const { data: jobs, error: dataError } = await dataQuery
+        .order('updated_time', { ascending: false })
+        .range(offset, offset + pageSize - 1);
 
-      // 페이지네이션 적용
-      const totalCount = allJobs.length;
-      const paginatedJobs = allJobs.slice(offset, offset + pageSize);
+      if (dataError) {
+        throw dataError;
+      }
 
-      setRegularJobs(paginatedJobs);
+      // console.log('Current page data:', jobs?.length);
+      
+      const mappedJobs = (jobs || []).map(job => ({
+        ...job,
+        board_type: parseInt(currentBoardType)
+      }));
+
+      setRegularJobs(mappedJobs);
       setTotalPages(Math.ceil(totalCount / pageSize));
 
       // 광고 게시물 처리 부분 수정
@@ -493,9 +504,29 @@ const BoardPage: React.FC = () => {
       }
 
       setError(null);
+
+      // 특정 ID 공고 디버깅
+      // const debugQuery = await supabase
+      //   .from('jd')
+      //   .select(`
+      //     *,
+      //     users (
+      //       is_accept
+      //     )
+      //   `)
+      //   .eq('id', 9923)
+      //   .single();
+      
+      // console.log('Debug 9923 공고:', debugQuery.data);
+      // console.log('9923 공고 필터링 조건:');
+      // console.log('- uploader_id:', debugQuery.data?.uploader_id);
+      // console.log('- user accept status:', debugQuery.data?.users?.is_accept);
+      // console.log('- board_type:', debugQuery.data?.board_type);
+      // console.log('- ad status:', debugQuery.data?.ad);
+
     } catch (err) {
-      console.error('Error in fetchJobs:', err);
-      setError('데이터를 불러오는 데 실패했습니다.');
+      // console.error('Error in fetchJobs:', err);
+      setError('데터를 불러오는 데 실패했습니다.');
     } finally {
       setIsLoading(false);
     }
@@ -504,15 +535,14 @@ const BoardPage: React.FC = () => {
   const restoreScrollPosition = useCallback(() => {
     const savedPosition = sessionStorage.getItem('boardScrollPosition');
     if (savedPosition !== null) {
-      console.log('Restoring scroll position:', savedPosition);
-      // 광고 섹션이 로드될 시간을 고려하여 약간의 지연 추가
+      // console.log('Restoring scroll position:', savedPosition);
       setTimeout(() => {
         window.scrollTo(0, parseInt(savedPosition));
-        console.log('Scroll position restored');
+        // console.log('Scroll position restored');
       }, 100);
-    } else {
-      console.log('No saved scroll position found.');
-    }
+    } // else {
+      // console.log('No saved scroll position found.');
+    // }
   }, []);
 
   useEffect(() => {
@@ -520,19 +550,19 @@ const BoardPage: React.FC = () => {
       if (!isPaginationChange) {
         const currentPosition = window.pageYOffset;
         sessionStorage.setItem('boardScrollPosition', currentPosition.toString());
-        console.log('Board: Route change start. Saving scroll position:', currentPosition);
+        // console.log('Board: Route change start. Saving scroll position:', currentPosition);
       } else {
-        console.log('Board: Pagination change. Not saving scroll position.');
+        // console.log('Board: Pagination change. Not saving scroll position.');
       }
     };
 
     const handleRouteChangeComplete = () => {
-      console.log('Board: Route change complete. Attempting to restore scroll position.');
+      // console.log('Board: Route change complete. Attempting to restore scroll position.');
       if (!isInitialLoad && !isPaginationChange) {
         restoreScrollPosition();
       } else if (isPaginationChange) {
         window.scrollTo(0, 0);
-        console.log('Board: Pagination change. Scrolling to top.');
+        // console.log('Board: Pagination change. Scrolling to top.');
         setIsPaginationChange(false);
       }
     };
@@ -549,7 +579,7 @@ const BoardPage: React.FC = () => {
   useEffect(() => {
     if (!router.isReady) return;
 
-    console.log('Router is ready. Current query:', router.query);
+    // console.log('Router is ready. Current query:', router.query);
 
     const { city1, city2, cate1, cate2, keyword, page, board_type, searchType } = router.query;
     let newFilters = {
@@ -564,9 +594,9 @@ const BoardPage: React.FC = () => {
     const newBoardType = board_type as string || '0';
     const newPage = page ? parseInt(page as string) : 1;
     
-    console.log('Setting new filters:', newFilters);
-    console.log('Setting new board type:', newBoardType);
-    console.log('Setting new page:', newPage);
+    // console.log('Setting new filters:', newFilters);
+    // console.log('Setting new board type:', newBoardType);
+    // console.log('Setting new page:', newPage);
 
     setFilters(newFilters);
     setBoardType(newBoardType);
@@ -577,7 +607,7 @@ const BoardPage: React.FC = () => {
   useEffect(() => {
     if (contentRef.current && regularJobs.length > 0 && adJobs.length >= 0) {
       if (isInitialLoad) {
-        console.log('Initial load complete. Attempting to restore scroll position.');
+        // console.log('Initial load complete. Attempting to restore scroll position.');
         restoreScrollPosition();
         setIsInitialLoad(false);
       }
@@ -629,7 +659,7 @@ const BoardPage: React.FC = () => {
             : "Find job opportunities across various industries."
           } 
         />
-        <meta name="keywords" content="114114, 114114코리아, 114114korea, 114114kr, 114114구인구직, 조선동포, 교포, 재외동, 해외교포, 동포 구인구직, 일자리 정보, 구직자, 구인체, 경력직 채용, 구인구직, 기업 채용, 단기 알바, 드림 구인구직, 무료 채용 공고, 아르바이트, 알바, 알바 구인구직, 월급, 일당, 주급, 채용 정보, 취업 정보, 직업 정보 제공, 지역별 구인구직, 헤드헌팅 비스, 신입 채용 공고, 포 취업, 동포 일자리" />
+        <meta name="keywords" content="114114, 114114코리아, 114114korea, 114114kr, 114114구인구직, 조선동포, 교포, 재외동, 해외교포, 동포 구인구직, 일자리 정보, 구직자, 구인체, 경력직 채용, 구인구직, 기업 채용, 기 알바, 드림 구인구직, 무료 채용 공고, 아르바이트, 알바, 알바 구인구직, 월급, 일당, 주급, 채용 정보, 취업 정보, 직업 정보 제공, 지역별 구인구직, 헤드헌팅 비스, 신입 채용 공고, 포 취업, 동포 일자리" />
         <meta property="og:title" content="구인구직 게시판 | 114114KR" />
         <meta property="og:description" content="다양한 직종의 구인구직 정보를 찾아보세요. 지역별, 카테고리별로 필터링하여 원하는 일자리를 쉽게 찾을 수 있습니다." />
         <meta property="og:type" content="website" />
