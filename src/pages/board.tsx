@@ -672,6 +672,11 @@ const BoardPage: React.FC = () => {
       <MainCarousel  
           images={[
             { 
+              src: '/image.png', 
+              link: '/jd/6599',
+              mobileSrc: '/image_mo.png'
+            },
+            { 
               src: '/image copy.png', 
               link: 'https://open.kakao.com/me/114114KR',
               mobileSrc: '/image copy_mo.png'
