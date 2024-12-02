@@ -677,11 +677,6 @@ const BoardPage: React.FC = () => {
               mobileSrc: '/image copy_mo.png'
             },
             { 
-              src: '/image.png', 
-              link: '/jd/6599',
-              mobileSrc: '/image_mo.png'
-            },
-            { 
               src: '/image_3.png', 
               link: 'https://88pandacar.framer.website/',
               mobileSrc: '/image_3_mo.png'
