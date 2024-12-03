@@ -270,26 +270,46 @@ const BoardPage: React.FC = () => {
       // 데이터를 가져오기 위한 쿼리
       let dataQuery = supabase
         .from('jd')
-        .select(`
-          id,
-          updated_time,
-          title,
-          contents,
-          salary_type,
-          salary_detail,
-          1depth_region,
-          2depth_region,
-          1depth_category,
-          2depth_category,
-          ad,
-          users!inner (
-            is_accept
-          )
-        `)
+        .select(
+          currentBoardType === '0' 
+            ? `
+              id,
+              updated_time,
+              title,
+              contents,
+              salary_type,
+              salary_detail,
+              1depth_region,
+              2depth_region,
+              1depth_category,
+              2depth_category,
+              ad,
+              users!inner (
+                is_accept
+              )
+            `
+            : `
+              id,
+              updated_time,
+              title,
+              contents,
+              salary_type,
+              salary_detail,
+              1depth_region,
+              2depth_region,
+              1depth_category,
+              2depth_category,
+              ad
+            `
+        )
         .eq('ad', false)
         .eq('board_type', currentBoardType)
-        .not('uploader_id', 'is', null)
-        .eq('users.is_accept', true);
+        .not('uploader_id', 'is', null);
+
+      // board_type이 0일 때만 is_accept 조건 추가
+      if (currentBoardType === '0') {
+        dataQuery = dataQuery.eq('users.is_accept', true);
+      }
 
       // 필터 조건 추가
       if (city1) {
@@ -347,7 +367,7 @@ const BoardPage: React.FC = () => {
 
       // console.log('Current page data:', jobs?.length);
       
-      const mappedJobs = (jobs || []).map(job => ({
+      const mappedJobs = (jobs || []).map((job: any) => ({
         ...job,
         board_type: parseInt(currentBoardType)
       }));
