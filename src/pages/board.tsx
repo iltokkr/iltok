@@ -282,7 +282,7 @@ const BoardPage: React.FC = () => {
           1depth_category,
           2depth_category,
           ad,
-          users (
+          users!inner (
             is_accept
           )
         `)
