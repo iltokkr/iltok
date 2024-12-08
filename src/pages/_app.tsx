@@ -40,6 +40,8 @@ function MyApp({ Component, pageProps }: AppProps) {
               gtag('config', 'AW-16758883524');
             `}
           </Script>
+
+          <meta name="google-adsense-account" content="ca-pub-5358954637109366"></meta>
         </Head>
 
         {/* Google Analytics */}
