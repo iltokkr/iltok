@@ -328,7 +328,6 @@ export default function Privacy() {
                 <ul>
                     <li>이름 : 김민혁</li>
                     <li>소속/지위 : CEO</li>
-                    <li>전화 : 010-7473-8258</li>
                 </ul>
                 <p>2. 기타 개인정보침해에 관한 신고나 상담이 필요한 경우 아래 기관에 문의할 수 있습니다.</p>
                 <ul>
