@@ -118,13 +118,17 @@ const Mylist: React.FC<MylistProps> = ({
       </div>
 
       <div className={styles.businessStatus}>
-        <p>구인업체 사업자 인증상태 : 
-          <span 
-            className={`${styles.statusText} ${styles.clickable}`}
-            onClick={() => setShowVerificationModal(true)}
-          >
+        <p>
+          구인업체 사업자 인증상태 : 
+          <span className={styles.statusText}>
             {businessStatus}
           </span>
+          <button 
+            className={styles.editButton}
+            onClick={() => setShowVerificationModal(true)}
+          >
+            수정하기
+          </button>
         </p>
         <p>신규 등록 가능 여부 : <span className={styles.statusText}>{isUpload ? "불가능" : "가능"}</span></p>
         <p>재등록 가능 횟수 : <span className={styles.statusText}>{reloadTimes}회</span></p>
