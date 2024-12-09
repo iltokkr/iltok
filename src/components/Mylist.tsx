@@ -3,6 +3,7 @@ import styles from '@/styles/Mylist.module.css';
 import { createClient } from '@supabase/supabase-js';
 import { addHours, format, subHours } from 'date-fns';
 import { AuthContext } from '@/contexts/AuthContext';
+import BusinessVerificationModal from '@/components/BusinessVerificationModal';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -33,6 +34,7 @@ const Mylist: React.FC<MylistProps> = ({
   reloadTimes 
 }) => {
   const [showModal, setShowModal] = useState(false);
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
   const authContext = useContext(AuthContext);
 
   const businessStatus = isAccept ? "인증" : "대기중";  
@@ -116,13 +118,20 @@ const Mylist: React.FC<MylistProps> = ({
       </div>
 
       <div className={styles.businessStatus}>
-        <p>구인업체 사업자 인증상태 : <span className={styles.statusText}>{businessStatus}</span></p>
+        <p>구인업체 사업자 인증상태 : 
+          <span 
+            className={`${styles.statusText} ${styles.clickable}`}
+            onClick={() => setShowVerificationModal(true)}
+          >
+            {businessStatus}
+          </span>
+        </p>
         <p>신규 등록 가능 여부 : <span className={styles.statusText}>{isUpload ? "불가능" : "가능"}</span></p>
         <p>재등록 가능 횟수 : <span className={styles.statusText}>{reloadTimes}회</span></p>
         <div className={styles.guideText}>
           <ul>
             <li>"재업로드"는 매일 00시, 06시, 12시, 18시에 1개씩 충전됩니다.</li>
-            <li>"수정"은 횟수와 상관없이 모두 가능하지만, 업로드 일시는 변경이 안되어 상위노출이 되지는 않습니다.</li>
+            <li>"수정"은 횟수와 상관없이 모두 가능하지만, 업로드 일시는 변경이 되어 상위노출이 되지는 않습니다.</li>
           </ul>
       </div>
       </div>
@@ -160,6 +169,12 @@ const Mylist: React.FC<MylistProps> = ({
         <div className={styles.modal}>
           <p>처리되었습니다.</p>
         </div>
+      )}
+
+      {showVerificationModal && (
+        <BusinessVerificationModal 
+          onClose={() => setShowVerificationModal(false)} 
+        />
       )}
     </div>
   );

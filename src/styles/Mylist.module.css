@@ -110,3 +110,12 @@
     align-items: flex-start;
   }
 }
+
+.clickable {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.clickable:hover {
+  color: #0066cc;
+}

@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import styles from '@/styles/BusinessVerificationModal.module.css';
 import { createClient } from '@supabase/supabase-js';
 import { AuthContext } from '@/contexts/AuthContext';
@@ -18,12 +18,43 @@ const BusinessVerificationModal: React.FC<BusinessVerificationModalProps> = ({ o
   const [file, setFile] = useState<File | null>(null);
   const [termsChecked, setTermsChecked] = useState(false);
   const [policyChecked, setPolicyChecked] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
   const auth = useContext(AuthContext);
   if (!auth) {
     throw new Error("AuthContext must be used within an AuthProvider");
   }
   const { user } = auth;
+
+  // 기존 데이터 불러오기
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!user) return;
+
+      try {
+        const { data, error } = await supabase
+          .from('users')
+          .select('company_name, name, policy_term, auth_term')
+          .eq('id', user.id)
+          .single();
+
+        if (error) throw error;
+
+        if (data) {
+          setCompanyName(data.company_name || '');
+          setRepresentativeName(data.name || '');
+          setTermsChecked(data.policy_term || false);
+          setPolicyChecked(data.auth_term || false);
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,12 +63,9 @@ const BusinessVerificationModal: React.FC<BusinessVerificationModalProps> = ({ o
       return;
     }
 
-    console.log('User ID:', user.id);
-
     try {
       let fileUrl = null;
 
-      // 파일 업로드
       if (file) {
         const fileExt = file.name.split('.').pop();
         const fileName = `${user.id}-${Date.now()}.${fileExt}`;
@@ -47,7 +75,6 @@ const BusinessVerificationModal: React.FC<BusinessVerificationModalProps> = ({ o
 
         if (uploadError) throw uploadError;
 
-        // 파일 URL 가져오기
         const { data: urlData } = supabase.storage
           .from('auth_file')
           .getPublicUrl(fileName);
@@ -55,26 +82,32 @@ const BusinessVerificationModal: React.FC<BusinessVerificationModalProps> = ({ o
         fileUrl = urlData.publicUrl;
       }
 
-      // 사용자 데이터 업데이트
+      const updateData: any = {
+        company_name: companyName,
+        name: representativeName,
+        policy_term: termsChecked,
+        auth_term: policyChecked,
+        is_accept: false, // 수정 시 재검토가 필요하므로 인증 상태를 false로 변경
+      };
+
+      // 새 파일이 업로드된 경우에만 biz_file 업데이트
+      if (fileUrl) {
+        updateData.biz_file = fileUrl;
+      }
+
       const { error: updateError } = await supabase
         .from('users')
-        .update({
-          company_name: companyName,
-          name: representativeName,
-          policy_term: termsChecked,
-          auth_term: policyChecked,
-          biz_file: fileUrl, // 업로드된 파일의 URL을 저장
-        })
-        .eq('id', user.id)
-        .select();
+        .update(updateData)
+        .eq('id', user.id);
 
       if (updateError) throw updateError;
 
-      console.log('Form submitted and data updated successfully');
-      onClose(); // 모달 닫기
+      alert('사업자 정보가 수정되었습니다. 관리자 승인 후 이용 가능합니다.');
+      onClose();
+      window.location.reload(); // 페이지 새로고침하여 상태 업데이트
     } catch (error) {
       console.error('Error updating user data:', error);
-      // 여기에 에러 처리 로직 추가 (예: 사용자에게 에러 메시지 표시)
+      alert('사업자 정보 수정 중 오류가 발생했습니다.');
     }
   };
 
@@ -83,6 +116,16 @@ const BusinessVerificationModal: React.FC<BusinessVerificationModalProps> = ({ o
       setFile(e.target.files[0]);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className={styles.modalOverlay}>
+        <div className={styles.modalContent}>
+          <p>로딩중...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.modalOverlay}>
