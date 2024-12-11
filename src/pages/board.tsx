@@ -223,7 +223,7 @@ const BoardPage: React.FC = () => {
   const [cate2Options, setCate2Options] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [boardType, setBoardType] = useState<string>('0'); // 기본값을 '0'으로 설정
+  const [boardType, setBoardType] = useState<string>('0'); // ��값을 '0'으로 설정
   const scrollPositionRef = useRef<number | null>(null);
   const isBackRef = useRef<boolean>(false);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -259,123 +259,72 @@ const BoardPage: React.FC = () => {
       const pageSize = 50;
       const offset = (page - 1) * pageSize;
 
-      // 전체 개수를 가져오기 위한 쿼리
-      let countQuery = supabase
+      // 기본 쿼리 설정
+      let baseQuery = supabase
         .from('jd')
-        .select('id', { count: 'exact' })  // id만 선택하여 개수 조회
-        .eq('ad', false)
-        .eq('board_type', currentBoardType)
-        .not('uploader_id', 'is', null);
-
-      // 데이터를 가져오기 위한 쿼리
-      let dataQuery = supabase
-        .from('jd')
-        .select(
-          currentBoardType === '0' 
-            ? `
-              id,
-              updated_time,
-              title,
-              contents,
-              salary_type,
-              salary_detail,
-              1depth_region,
-              2depth_region,
-              1depth_category,
-              2depth_category,
-              ad,
-              users!inner (
-                is_accept
-              )
-            `
-            : `
-              id,
-              updated_time,
-              title,
-              contents,
-              salary_type,
-              salary_detail,
-              1depth_region,
-              2depth_region,
-              1depth_category,
-              2depth_category,
-              ad
-            `
-        )
+        .select(`
+          *,
+          users!inner (
+            is_accept
+          )
+        `, { count: 'exact' })
         .eq('ad', false)
         .eq('board_type', currentBoardType)
         .not('uploader_id', 'is', null);
 
       // board_type이 0일 때만 is_accept 조건 추가
       if (currentBoardType === '0') {
-        dataQuery = dataQuery.eq('users.is_accept', true);
+        baseQuery = baseQuery.eq('users.is_accept', true);
       }
 
       // 필터 조건 추가
-      if (city1) {
-        countQuery = countQuery.eq('1depth_region', city1);
-        dataQuery = dataQuery.eq('1depth_region', city1);
-      }
-      if (city2) {
-        countQuery = countQuery.eq('2depth_region', city2);
-        dataQuery = dataQuery.eq('2depth_region', city2);
-      }
-      if (cate1) {
-        countQuery = countQuery.eq('1depth_category', cate1);
-        dataQuery = dataQuery.eq('1depth_category', cate1);
-      }
-      if (cate2) {
-        countQuery = countQuery.eq('2depth_category', cate2);
-        dataQuery = dataQuery.eq('2depth_category', cate2);
-      }
+      if (city1) baseQuery = baseQuery.eq('1depth_region', city1);
+      if (city2) baseQuery = baseQuery.eq('2depth_region', city2);
+      if (cate1) baseQuery = baseQuery.eq('1depth_category', cate1);
+      if (cate2) baseQuery = baseQuery.eq('2depth_category', cate2);
       
+      // 검색어 조건 추가
       if (keyword) {
         switch (searchType) {
           case 'title':
-            countQuery = countQuery.ilike('title', `%${keyword}%`);
-            dataQuery = dataQuery.ilike('title', `%${keyword}%`);
+            baseQuery = baseQuery.ilike('title', `%${keyword}%`);
             break;
           case 'contents':
-            countQuery = countQuery.ilike('contents', `%${keyword}%`);
-            dataQuery = dataQuery.ilike('contents', `%${keyword}%`);
+            baseQuery = baseQuery.ilike('contents', `%${keyword}%`);
             break;
           case 'both':
-            countQuery = countQuery.or(`title.ilike.%${keyword}%,contents.ilike.%${keyword}%`);
-            dataQuery = dataQuery.or(`title.ilike.%${keyword}%,contents.ilike.%${keyword}%`);
+            baseQuery = baseQuery.or(`title.ilike.%${keyword}%,contents.ilike.%${keyword}%`);
             break;
         }
       }
 
-      // 전체 개수 조회
-      const { data: countData, error: countError } = await countQuery;
-      
-      if (countError) {
-        throw countError;
-      }
-
-      const totalCount = countData?.length || 0;
-      // console.log('Total count:', totalCount);
-
-      // 실제 데이터 조회
-      const { data: jobs, error: dataError } = await dataQuery
+      // 데이터 조회 (페이지네이션 적용)
+      const { data: jobs, count: totalCount, error } = await baseQuery
         .order('updated_time', { ascending: false })
         .range(offset, offset + pageSize - 1);
 
-      if (dataError) {
-        throw dataError;
+      if (error) {
+        console.error('Query error:', error);
+        throw error;
       }
 
+      // console.log('Total count:', totalCount);
       // console.log('Current page data:', jobs?.length);
-      
+
+      // 전체 페이지 수 계산
+      const totalPages = Math.ceil((totalCount || 0) / pageSize);
+      setTotalPages(totalPages);
+
+      // 데이터 매핑
       const mappedJobs = (jobs || []).map((job: any) => ({
         ...job,
         board_type: parseInt(currentBoardType)
       }));
 
       setRegularJobs(mappedJobs);
-      setTotalPages(Math.ceil(totalCount / pageSize));
+      setError(null);
 
-      // 광고 게시물 처리 부분 수정
+      // 광고 게시물 처리 (첫 페이지에만)
       if (page === 1) {
         let adQuery;
         
@@ -545,8 +494,8 @@ const BoardPage: React.FC = () => {
       // console.log('- ad status:', debugQuery.data?.ad);
 
     } catch (err) {
-      // console.error('Error in fetchJobs:', err);
-      setError('데터를 불러오는 데 실패했습니다.');
+      console.error('Error in fetchJobs:', err);
+      setError('데이터를 불러오는 데 실패했습니다.');
     } finally {
       setIsLoading(false);
     }

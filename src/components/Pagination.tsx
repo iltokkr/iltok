@@ -19,13 +19,32 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, pageCount, onPageC
   }
 
   const handlePageChange = (newPage: number) => {
-    onPageChange(newPage);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (newPage >= 1 && newPage <= pageCount) {
+      onPageChange(newPage);
+    }
   };
 
   return (
     <div className={styles.pager}>
       <div className={styles.pages}>
+        {currentPage > 1 && (
+          <a
+            className={styles.first}
+            onClick={() => handlePageChange(1)}
+          >
+            &lt;&lt;
+          </a>
+        )}
+
+        {currentPage > pagesPerSet && (
+          <a
+            className={styles.prev}
+            onClick={() => handlePageChange(firstPageInCurrentSet - 1)}
+          >
+            &lt;
+          </a>
+        )}
+
         {pageNumbers.map((number) => (
           <a
             key={number}
@@ -35,12 +54,22 @@ const Pagination: React.FC<PaginationProps> = ({ currentPage, pageCount, onPageC
             {number}
           </a>
         ))}
-        {lastPageInCurrentSet < pageCount && (
+
+        {pageCount > lastPageInCurrentSet && (
           <a
             className={styles.next}
             onClick={() => handlePageChange(lastPageInCurrentSet + 1)}
           >
             &gt;
+          </a>
+        )}
+
+        {currentPage < pageCount && (
+          <a
+            className={styles.last}
+            onClick={() => handlePageChange(pageCount)}
+          >
+            &gt;&gt;
           </a>
         )}
       </div>
