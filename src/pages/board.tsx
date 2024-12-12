@@ -256,7 +256,7 @@ const BoardPage: React.FC = () => {
     setIsLoading(true);
     try {
       const { city1, city2, cate1, cate2, keyword, searchType } = currentFilters;
-      const pageSize = 50;
+      const pageSize = 40;
       const offset = (page - 1) * pageSize;
 
       // 기본 쿼리 설정
