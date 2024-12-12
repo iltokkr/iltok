@@ -302,9 +302,9 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail }) => {
         <MainCarousel  
           images={[
             { 
-              src: '/image copy.png', 
+              src: '/jddetail.png', 
               link: 'https://open.kakao.com/me/114114KR',
-              mobileSrc: '/image copy_mo.png'
+              mobileSrc: '/jddetail_mo.png'
             }
           ]}
         />
