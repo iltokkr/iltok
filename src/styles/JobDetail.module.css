@@ -44,7 +44,6 @@
 
 .articleDetail {
   padding: 10px 15px;
-  margin-bottom: 20px;
   line-height: 1.6;
   border-top: 1px solid #ccc;
 }
@@ -55,7 +54,7 @@
 }
 
 .articleFoot {
-  margin-bottom: 20px;
+  margin-top: 0;
   padding: 10px 15px 30px;
   border-top: 1px solid #ccc;
 }
@@ -271,6 +270,10 @@
   padding-bottom: 4px;
   border-bottom: 1px solid #eee;
   padding-top: 10px;
+}
+
+.carouselWrapper {
+  margin: 20px 0;
 }
 
 

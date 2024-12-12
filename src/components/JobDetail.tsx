@@ -4,6 +4,7 @@ import style from '@/styles/JobDetail.module.css';
 import { parseISO, format, subHours } from 'date-fns';
 import { useLanguage } from '@/hooks/useLanguage';
 import { GA_TRACKING_ID } from '@/lib/gtag';
+import MainCarousel from '@/components/MainCarousel';
 
 interface JobDetailType {
   id: number;
@@ -190,6 +191,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail }) => {
         </button>
         <button 
           className={currentLanguage === 'en' ? style.activeLanguage : ''} 
+          
           onClick={() => changeLanguage('en')}
         >
           English
@@ -294,6 +296,20 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail }) => {
         )}
         <li>*114114KR 통해서 연락한다고 말씀해주세요.</li>
       </div>
+
+      {/* 메인 캐러셀 추가 - wrapper div 추가 */}
+      <div className={style.carouselWrapper}>
+        <MainCarousel  
+          images={[
+            { 
+              src: '/image copy.png', 
+              link: 'https://open.kakao.com/me/114114KR',
+              mobileSrc: '/image copy_mo.png'
+            }
+          ]}
+        />
+      </div>
+
       <div className={style.articleFoot}>
         <div className={style.txt}>
           ※ 위 내용에 대한 오류와 사용자가 이를 신뢰하여 취한 조치에 대해 114114KR은 책임을 지지 않습니다.
