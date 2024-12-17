@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import { addHours, format, subHours } from 'date-fns';
 import { AuthContext } from '@/contexts/AuthContext';
 import BusinessVerificationModal from '@/components/BusinessVerificationModal';
+import { event } from '@/lib/gtag';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -57,8 +58,20 @@ const Mylist: React.FC<MylistProps> = ({
       // Check if reload_times is available
       if (reloadTimes <= 0) {
         alert('재등록 가능 횟수가 소진되었습니다. 내일 다시 시도해주세요.');
+        event({
+          action: 'reload_post_failed',
+          category: 'my_list',
+          label: 'no_remaining_reload_times'
+        });
         return;
       }
+
+      event({
+        action: 'reload_post',
+        category: 'my_list',
+        label: `post_id_${postId}`,
+        value: reloadTimes - 1  // 남은 재등록 횟수를 value로 전달
+      });
 
       // Update both the post's updated_time and user's reload_times
       const [postUpdate, userUpdate] = await Promise.all([
@@ -82,6 +95,11 @@ const Mylist: React.FC<MylistProps> = ({
       }, 2000);
     } catch (error) {
       console.error('재등록 실패:', error);
+      event({
+        action: 'reload_post_error',
+        category: 'my_list',
+        label: `post_id_${postId}`
+      });
     }
   };
 
@@ -155,7 +173,7 @@ const Mylist: React.FC<MylistProps> = ({
               </div>
               <div className={styles.buttonGroup}>
                 <span className={styles.recall}>
-                  <a href={`/write?id=${post.id}`}>[수정]</a>
+                  <a href={`/write?id=${post.id}`}>[수��]</a>
                 </span>
                 <span className={styles.recall}>
                   <a onClick={() => handleReload(post.id)}>[재업로드]</a>

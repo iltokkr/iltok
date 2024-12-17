@@ -8,6 +8,7 @@ import { useReadPosts } from '@/hooks/useReadPosts';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useRouter } from 'next/router';
 import { useTranslation } from '@/contexts/TranslationContext';
+import { event } from '@/lib/gtag';
 
 interface Job {
   id: number;
@@ -98,6 +99,16 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
     markAsRead(postId);
   };
 
+  const handleAdGuideClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    event({
+      action: 'click_ad_guide',
+      category: 'job_list',
+      label: 'top_ad_guide_button'
+    });
+    setShowAdPopup(true);
+  };
+
   return (
     <div className={styles.layout}>
       {/* 언어 선택 버튼 추가 */}
@@ -107,7 +118,7 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
           <ul className={`${styles.listWrap} ${styles.listText} ${styles.topArea}`}>
             <div className={styles.topDiv}>
               <span className={styles.topTitle}>TOP광고</span>
-              <a href="#" onClick={() => setShowAdPopup(true)} className={styles.btnTop}>등록안내</a>
+              <a href="#" onClick={handleAdGuideClick} className={styles.btnTop}>등록안내</a>
             </div>
             {adJobs.map(job => (
               <li key={`ad-${job.id}`} className={`${styles.jobItem} ${isRead(job.id) ? styles.readPost : ''} ${!job.salary_type || !job.salary_detail ? 'no-salary' : ''}`}>
