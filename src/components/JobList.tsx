@@ -12,7 +12,7 @@ import { event } from '@/lib/gtag';
 import { useContext } from 'react';
 import { AuthContext } from '@/contexts/AuthContext';
 import { createClient } from '@supabase/supabase-js'
-import { BsBookmark, BsBookmarkFill } from 'react-icons/bs';
+import { BsHeart, BsHeartFill } from 'react-icons/bs';
 import { toast } from 'react-hot-toast';
 import LoginPopup from './LoginPopup';
 
@@ -234,13 +234,13 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
         className={styles.bookmarkContainer}
         onClick={(e) => {
           e.preventDefault();
-          e.stopPropagation();  // 상위 요소로의 이벤트 전파 방지
+          e.stopPropagation();
           handleBookmark(job.id);
         }}
       >
         {bookmarkedJobs.includes(job.id) ? 
-          <BsBookmarkFill className={styles.filledBookmark} /> : 
-          <BsBookmark className={styles.emptyBookmark} />
+          <BsHeartFill className={styles.filledBookmark} /> : 
+          <BsHeart className={styles.emptyBookmark} />
         }
         <span className={styles.bookmarkCount}>
           {bookmarkCounts[job.id] || 0}
