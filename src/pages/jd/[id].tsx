@@ -10,7 +10,10 @@ import { useLanguage } from '@/hooks/useLanguage';
 import MainMenu from '@/components/MainMenu';
 
 // Supabase 클라이언트 설정
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 interface JobDetailType {
   id: number;
@@ -39,39 +42,42 @@ interface JobDetailType {
   };
 }
 
-export const getServerSideProps = async (context: any) => {
-  const { id } = context.params;
-  
-  const { data, error } = await supabase
-    .from('jd')
-    .select(`
-      *,
-      uploader:users (company_name, name, number)
-    `)
-    .eq('id', id)
-    .single();
+// getServerSideProps 수정
+export async function getServerSideProps({ params }: { params: { id: string } }) {
+  try {
+    const { data, error } = await supabase
+      .from('jd')
+      .select(`
+        *,
+        uploader:users (company_name, name, number)
+      `)
+      .eq('id', params.id)
+      .single();
 
-  if (error) {
-    console.error('Error fetching job detail:', error);
+    if (error || !data) {
+      return {
+        notFound: true // 404 페이지 표시
+      };
+    }
+
+    const processedData = {
+      ...data,
+      uploader: data.uploader || { company_name: "정보 없음", name: "정보 없음" },
+      board_type: data.board_type
+    };
+
     return {
       props: {
-        initialJobDetail: null
+        initialJobDetail: processedData
       }
     };
+  } catch (error) {
+    console.error('Error fetching job detail:', error);
+    return {
+      notFound: true // 404 페이지 표시
+    };
   }
-
-  const processedData = {
-    ...data,
-    uploader: data.uploader || { company_name: "정보 없음", name: "정보 없음" },
-    board_type: data.board_type
-  };
-
-  return {
-    props: {
-      initialJobDetail: processedData
-    }
-  };
-};
+}
 
 const JobDetailPage: React.FC<{ initialJobDetail: JobDetailType | null }> = ({ initialJobDetail }) => {
   const router = useRouter();

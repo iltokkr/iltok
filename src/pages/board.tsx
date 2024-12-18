@@ -11,6 +11,8 @@ import styles from '@/styles/Board.module.css';
 import { createClient } from '@supabase/supabase-js'
 import Head from 'next/head'// 사용자에게 알림을 표시하기 위해 추가
 import { useLanguage } from '@/hooks/useLanguage';  // 추가
+import { useContext } from 'react';
+import { AuthContext } from '@/contexts/AuthContext';
 
 // Supabase 클라이언트 생성
 const supabase = createClient(
@@ -40,6 +42,7 @@ interface Job {
   '2depth_category': string;
   ad: boolean;
   board_type: number;
+  bookmarked?: boolean;
 }
 
 interface AdJob extends Job {
@@ -204,6 +207,13 @@ function CustomerSupport() {
   );
 }
 
+// 페이지를 정적으로 생성하도록 설정
+export async function getStaticProps() {
+  return {
+    props: {}
+  }
+}
+
 const BoardPage: React.FC = () => {
 
   const router = useRouter();
@@ -223,13 +233,20 @@ const BoardPage: React.FC = () => {
   const [cate2Options, setCate2Options] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [boardType, setBoardType] = useState<string>('0'); // ��값을 '0'으로 설정
+  const [boardType, setBoardType] = useState<string>('0'); // 값을 '0'으로 설정
   const scrollPositionRef = useRef<number | null>(null);
   const isBackRef = useRef<boolean>(false);
   const contentRef = useRef<HTMLDivElement>(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [isPaginationChange, setIsPaginationChange] = useState(false);
   const { currentLanguage, changeLanguage } = useLanguage();  // 추가
+  const auth = useContext(AuthContext);
+  const [bookmarkedJobs, setBookmarkedJobs] = useState<number[]>([]);
+
+  // AuthContext가 ���는 경우 에러 처리
+  if (!auth) throw new Error("AuthContext not found");
+  
+  const { user, isLoggedIn } = auth;
 
   const handleFilterChange = useCallback((newFilters: FilterOptions) => {
     // city1이 변경되었는지 확인
@@ -315,10 +332,11 @@ const BoardPage: React.FC = () => {
       const totalPages = Math.ceil((totalCount || 0) / pageSize);
       setTotalPages(totalPages);
 
-      // 데이터 매핑
+      // 북마크 상태를 포함하여 jobs 매핑
       const mappedJobs = (jobs || []).map((job: any) => ({
         ...job,
-        board_type: parseInt(currentBoardType)
+        board_type: parseInt(currentBoardType),
+        bookmarked: bookmarkedJobs.includes(job.id)
       }));
 
       setRegularJobs(mappedJobs);
@@ -407,7 +425,8 @@ const BoardPage: React.FC = () => {
             .map(job => ({
               ...job,
               board_type: parseInt(currentBoardType),
-              ad: true as const
+              ad: true as const,
+              bookmarked: bookmarkedJobs.includes(job.id)
             }));
 
           setAdJobs(allAdJobs);
@@ -461,7 +480,8 @@ const BoardPage: React.FC = () => {
             .map(job => ({
               ...job,
               board_type: parseInt(currentBoardType),
-              ad: true as const
+              ad: true as const,
+              bookmarked: bookmarkedJobs.includes(job.id)
             }));
 
           setAdJobs(allAdJobs);
@@ -499,7 +519,7 @@ const BoardPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [bookmarkedJobs]);
 
   const restoreScrollPosition = useCallback(() => {
     const savedPosition = sessionStorage.getItem('boardScrollPosition');
@@ -617,6 +637,44 @@ const BoardPage: React.FC = () => {
     handleFilterChange(newFilters);
   }, [filters, handleFilterChange]);
 
+  // 북마크 데이터를 가져오는 함수 추가
+  const fetchBookmarks = useCallback(async () => {
+    if (!isLoggedIn || !user) return;
+    
+    const { data, error } = await supabase
+      .from('bookmark')
+      .select('jd_id')
+      .eq('users_id', user.id);
+      
+    if (data && !error) {
+      setBookmarkedJobs(data.map(bookmark => bookmark.jd_id));
+    }
+  }, [isLoggedIn, user]);
+
+  // 컴포넌트 마운트 시 북마크 데이터 가져오기
+  useEffect(() => {
+    fetchBookmarks();
+  }, [fetchBookmarks]);
+
+  // fetchJobs를 다시 호출하여 북마크 상태 업데이트
+  useEffect(() => {
+    if (router.isReady) {
+      const { city1, city2, cate1, cate2, keyword, page, board_type, searchType } = router.query;
+      const currentFilters = {
+        city1: city1 as string || '',
+        city2: city2 as string || '',
+        cate1: cate1 as string || '',
+        cate2: cate2 as string || '',
+        keyword: keyword as string || '',
+        searchType: (searchType as 'title' | 'contents' | 'both') || 'both'
+      };
+      const currentPage = page ? parseInt(page as string) : 1;
+      const currentBoardType = board_type as string || '0';
+      
+      fetchJobs(currentFilters, currentPage, currentBoardType);
+    }
+  }, [router.isReady, bookmarkedJobs]);
+
   return (
     <div className={styles.container}>
       <Head>
@@ -628,9 +686,9 @@ const BoardPage: React.FC = () => {
             : "Find job opportunities across various industries."
           } 
         />
-        <meta name="keywords" content="114114, 114114코리아, 114114korea, 114114kr, 114114구인구직, 조선동포, 교포, 재외동, 해외교포, 동포 구인구직, 일자리 정보, 구직자, 구인체, 경력직 채용, 구인구직, 기업 채용, 기 알바, 드림 구인구직, 무료 채용 공고, 아르바이트, 알바, 알바 구인구직, 월급, 일당, 주급, 채용 정보, 취업 정보, 직업 정보 제공, 지역별 구인구직, 헤드헌팅 비스, 신입 채용 공고, 포 취업, 동포 일자리" />
+        <meta name="keywords" content="114114, 114114코리아, 114114korea, 114114kr, 114114구인구직, 조선동포, 교포, 재외동, 해외교포, 동포 구인구직, 일자리 정보, 구직자, 구인체, 경력직 채용, 구인구직, 기업 채용, 기 알바, 드림 구인구직, 무료 채용 공고, 아르바이트, 알바, 알바 구인구직, 월급, 일당, ��급, 채용 정보, 취업 정보, 직업 정보 제공, 지역별 구인구직, 헤드헌팅 비스, 신입 채용 공고, 포 취업, 동포 일자리" />
         <meta property="og:title" content="구인구직 게시판 | 114114KR" />
-        <meta property="og:description" content="다양한 직종의 구인구직 정보를 찾아보세요. 지역별, 카테고리별로 필터링하여 원하는 일자리를 쉽게 찾을 수 있습니다." />
+        <meta property="og:description" content="다양한 직종의 구인구직 정보를 찾아보세요. 지역별, 카테고리별로 필터링하여 원하는 일자리를 쉽게 찾을 수 있습다." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://114114KR.com/board" />
         <meta property="og:image" content="https://114114KR.com/ogimage.png" />

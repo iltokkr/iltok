@@ -1,10 +1,11 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import styles from '@/styles/Mylist.module.css';
 import { createClient } from '@supabase/supabase-js';
 import { addHours, format, subHours } from 'date-fns';
 import { AuthContext } from '@/contexts/AuthContext';
 import BusinessVerificationModal from '@/components/BusinessVerificationModal';
 import { event } from '@/lib/gtag';
+import { BsBookmark, BsBookmarkFill } from 'react-icons/bs';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -20,13 +21,18 @@ interface MyPost {
   '2depth_category': string;
 }
 
+interface BookmarkedPost extends MyPost {
+  salary_type?: string;
+  salary_detail?: string;
+  bookmark_count?: number;
+}
+
 interface MylistProps {
   posts: MyPost[];
   isAccept: boolean;
   isUpload: boolean;
   reloadTimes: number;
 }
-
 
 const Mylist: React.FC<MylistProps> = ({ 
   posts, 
@@ -37,6 +43,8 @@ const Mylist: React.FC<MylistProps> = ({
   const [showModal, setShowModal] = useState(false);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const authContext = useContext(AuthContext);
+  const [bookmarkedPosts, setBookmarkedPosts] = useState<BookmarkedPost[]>([]);
+  const [bookmarkCounts, setBookmarkCounts] = useState<Record<number, number>>({});
 
   const businessStatus = isAccept ? "인증" : "대기중";  
 
@@ -52,6 +60,48 @@ const Mylist: React.FC<MylistProps> = ({
   const formatToday = (date: Date) => {
     return format(date, 'yyyy년 MM월 dd일');
   };
+
+  useEffect(() => {
+    const fetchBookmarkedPosts = async () => {
+      if (!authContext?.user?.id) return;
+
+      // First get all bookmarked post IDs
+      const { data: bookmarkData } = await supabase
+        .from('bookmark')
+        .select('jd_id')
+        .eq('users_id', authContext.user.id);
+
+      if (bookmarkData) {
+        // Then fetch the actual posts
+        const { data: postsData } = await supabase
+          .from('jd')
+          .select('*')
+          .in('id', bookmarkData.map(b => b.jd_id));
+
+        if (postsData) {
+          setBookmarkedPosts(postsData);
+        }
+      }
+    };
+
+    const fetchBookmarkCounts = async () => {
+      const { data } = await supabase
+        .from('bookmark')
+        .select('jd_id');
+
+      if (data) {
+        const counts = data.reduce((acc, item) => {
+          acc[item.jd_id] = (acc[item.jd_id] || 0) + 1;
+          return acc;
+        }, {} as Record<number, number>);
+        
+        setBookmarkCounts(counts);
+      }
+    };
+
+    fetchBookmarkedPosts();
+    fetchBookmarkCounts();
+  }, [authContext?.user?.id]);
 
   const handleReload = async (postId: number) => {
     try {
@@ -129,10 +179,30 @@ const Mylist: React.FC<MylistProps> = ({
     }
   };
 
+  const handleRemoveBookmark = async (postId: number) => {
+    try {
+      const { error } = await supabase
+        .from('bookmark')
+        .delete()
+        .eq('users_id', authContext?.user?.id)
+        .eq('jd_id', postId);
+
+      if (error) throw error;
+
+      setBookmarkedPosts(prev => prev.filter(post => post.id !== postId));
+      setBookmarkCounts(prev => ({
+        ...prev,
+        [postId]: (prev[postId] || 1) - 1
+      }));
+    } catch (error) {
+      console.error('북마크 삭제 실패:', error);
+    }
+  };
+
   return (
     <div className={styles.layout}>
       <div className={styles.listHead}>
-        총 {posts.length}개 <span className={styles.delAll}>(3개월이 지난글은 삭제될 수 있습니다.)</span>
+        업로드 게시글 (총 {posts.length}개) <span className={styles.delAll}>(3개월이 지난글은 삭제될 수 있습니다.)</span>
       </div>
 
       <div className={styles.businessStatus}>
@@ -158,7 +228,35 @@ const Mylist: React.FC<MylistProps> = ({
       </div>
       </div>
 
+      <div className={styles.listHead} style={{ marginTop: '40px' }}>
+        북마크한 공고 ({bookmarkedPosts.length}개)
+      </div>
 
+      <ul className={styles.listWrap}>
+        {bookmarkedPosts.map((post) => (
+          <li key={post.id}>
+            <div className={styles.postInfo}>
+              <div className={styles.postContent}>
+                <span className={styles.time}>{formatDate(post.updated_time)}</span>
+                <a href={`/jd/${post.id}`} className={styles.title}>
+                  {post.title}
+                </a>
+                <em>
+                  ({post['1depth_region']} {post['2depth_region']})
+                </em>
+              </div>
+              <div className={styles.buttonGroup}>
+                <span 
+                  className={styles.recall}
+                  onClick={() => handleRemoveBookmark(post.id)}
+                >
+                  <BsBookmarkFill /> {bookmarkCounts[post.id] || 0}
+                </span>
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
 
       <ul className={styles.listWrap}>
         {posts.map((post) => (
@@ -173,7 +271,7 @@ const Mylist: React.FC<MylistProps> = ({
               </div>
               <div className={styles.buttonGroup}>
                 <span className={styles.recall}>
-                  <a href={`/write?id=${post.id}`}>[수��]</a>
+                  <a href={`/write?id=${post.id}`}>[수정]</a>
                 </span>
                 <span className={styles.recall}>
                   <a onClick={() => handleReload(post.id)}>[재업로드]</a>

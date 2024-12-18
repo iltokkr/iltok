@@ -1,10 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useRouter } from 'next/router';
 import style from '@/styles/JobDetail.module.css';
 import { parseISO, format, subHours } from 'date-fns';
 import { useLanguage } from '@/hooks/useLanguage';
 import { GA_TRACKING_ID } from '@/lib/gtag';
 import MainCarousel from '@/components/MainCarousel';
+import { BsBookmark, BsBookmarkFill } from 'react-icons/bs';
+import { AuthContext } from '@/contexts/AuthContext';
+import { createClient } from '@supabase/supabase-js'
+import { toast } from 'react-hot-toast';
+import LoginPopup from '@/components/LoginPopup';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
+
 
 interface JobDetailType {
   id: number;
@@ -44,6 +55,12 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail }) => {
   const [isTranslating, setIsTranslating] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
   const [isFloating, setIsFloating] = useState(false);
+  const auth = useContext(AuthContext);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
+
+  if (!auth) throw new Error("AuthContext not found");
+  const { user, isLoggedIn } = auth;
 
   useEffect(() => {
     const handleResize = () => {
@@ -164,6 +181,74 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail }) => {
     translateContent();
   }, [currentLanguage, jobDetail]);
 
+  // 북마크 상태 확인
+  useEffect(() => {
+    const checkBookmarkStatus = async () => {
+      if (!isLoggedIn || !user) return;
+      
+      const { data, error } = await supabase
+        .from('bookmark')
+        .select('id')
+        .eq('users_id', user.id)
+        .eq('jd_id', jobDetail.id)
+        .single();
+        
+      if (data && !error) {
+        setIsBookmarked(true);
+      }
+    };
+
+    checkBookmarkStatus();
+  }, [isLoggedIn, user, jobDetail.id]);
+
+  const handleBookmark = async () => {
+    if (!isLoggedIn || !user) {
+      // 로그인 팝업 표시
+      setShowLoginPopup(true);
+      return;
+    }
+
+    try {
+      if (isBookmarked) {
+        // Remove bookmark
+        const { error: deleteError } = await supabase
+          .from('bookmark')
+          .delete()
+          .eq('users_id', user.id)
+          .eq('jd_id', jobDetail.id);
+
+        if (deleteError) throw deleteError;
+        
+        setIsBookmarked(false);
+        toast.success(currentLanguage === 'ko' 
+          ? '북마크가 해제되었습니다.' 
+          : 'Bookmark removed');
+      } else {
+        // Add bookmark
+        const { error: insertError } = await supabase
+          .from('bookmark')
+          .insert([
+            {
+              users_id: user.id,
+              jd_id: jobDetail.id
+            }
+          ]);
+
+        if (insertError) throw insertError;
+        
+        setIsBookmarked(true);
+        toast.success(currentLanguage === 'ko' 
+          ? '북마크에 추가되었습니다.' 
+          : 'Bookmark added');
+      }
+    } catch (error) {
+      console.error('Error toggling bookmark:', error);
+      toast.error(currentLanguage === 'ko' 
+        ? '북마크 처리 중 오류가 발생했습니다.' 
+        : 'An error occurred while toggling bookmark.');
+    }
+  };
+
   return (
     <div className={style.layout}>
 
@@ -176,10 +261,6 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail }) => {
       <ul className={style.articleMeta}>
         <li>등록일: {formatDate(jobDetail.updated_time)}</li>
         <li>글번호: {jobDetail.id}</li>
-      </ul>
-      <ul className={`${style.articleMeta} ${style.bold}`}>
-        <li>업체명: {jobDetail.uploader.company_name || "정보없음"}</li>
-        <li>대표자명: {jobDetail.uploader.name || "정보없음"}</li>
       </ul>
       <div className={style.articleDetail}>
       <div className={style.languageSelector}>
@@ -278,23 +359,52 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail }) => {
             </>
           )} 
         </div>
-        {jobDetail.uploader.number && (
-          <li>
-            <span 
-              onClick={() => handleCopyPhoneNumber(formatPhoneNumber(jobDetail.uploader.number))} 
-            >
-              전화번호: <span style={{ cursor: 'pointer', color: '#ff3900', textDecoration: 'underline' }}
-              >{formatPhoneNumber(jobDetail.uploader.number)}</span>
-            </span>
-            <button 
-              className={style.applyButton} 
-              onClick={() => handleApplyButtonClick(formatPhoneNumber(jobDetail.uploader.number))}
-            >
-              문자 지원하기
-            </button>
-          </li>
-        )}
-        <li>*114114KR 통해서 연락한다고 말씀해주세요.</li>
+        <div className={style.actionArea}>
+          {jobDetail.uploader.number && (
+            <>
+              <div className={style.companyInfo}>
+                <div className={style.infoRow}>
+                  <span className={style.infoLabel}>업체명</span>
+                  <span className={style.infoValue}>{jobDetail.uploader.company_name || "정보없음"}</span>
+                </div>
+                <div className={style.infoRow}>
+                  <span className={style.infoLabel}>대표자명</span>
+                  <span className={style.infoValue}>{jobDetail.uploader.name || "정보없음"}</span>
+                </div>
+                <div className={style.infoRow}>
+                  <span className={style.infoLabel}>전화번호</span>
+                  <span 
+                    className={style.phoneNumber}
+                    onClick={() => handleCopyPhoneNumber(formatPhoneNumber(jobDetail.uploader.number))}
+                  >
+                    {formatPhoneNumber(jobDetail.uploader.number)}
+                  </span>
+                </div>
+              </div>
+              <div className={style.buttonGroup}>
+                <button 
+                  className={style.applyButton} 
+                  onClick={() => handleApplyButtonClick(formatPhoneNumber(jobDetail.uploader.number))}
+                >
+                  문자 지원하기
+                </button>
+                <button 
+                  className={`${style.bookmarkButton} ${isBookmarked ? style.bookmarked : ''}`}
+                  onClick={handleBookmark}
+                >
+                  {isBookmarked ? <BsBookmarkFill /> : <BsBookmark />}
+                  <span>공고 저장하기</span>
+                </button>
+              </div>
+              <div className={style.notice}>
+              ※ 공고에 대한 오류 및 이로인한 책임은 114114KR에서 책임지지 않습니다.
+              </div>
+              <div className={style.notice}>
+              ※ 114114KR 통해서 연락한다고 말씀해주세요.
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       {/* 메인 캐러셀 추가 - wrapper div 추가 */}
@@ -311,16 +421,15 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail }) => {
       </div>
 
       <div className={style.articleFoot}>
-        <div className={style.txt}>
-          ※ 위 내용에 대한 오류와 사용자가 이를 신뢰하여 취한 조치에 대해 114114KR은 책임을 지지 않습니다.
-        </div>
-        <div className={style.txt}>
-          ※ 114114KR 통해서 연락한다고 말씀해주세요.
-        </div>
         <ul className={style.acts}>
           <li><a href="#" onClick={handleListClick}>목록</a></li>
         </ul>
       </div>
+
+      {/* LoginPopup 컴포넌트 추가 */}
+      {showLoginPopup && (
+        <LoginPopup onClose={() => setShowLoginPopup(false)} />
+      )}
     </div>
   );
 };

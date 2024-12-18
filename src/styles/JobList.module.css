@@ -185,8 +185,26 @@
 }
 
 .time {
-  flex: 0 0 45px;
+  flex: 0 0 35px;
   color: #888;
+  font-size: 0.9em;
+  margin-right: 0;
+}
+
+.timeBookmarkContainer {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 85px;
+  order: 1;
+}
+
+.bookmarkButton {
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  order: 2;
 }
 
 .jobContent {
@@ -196,6 +214,7 @@
   flex: 1;
   gap: 8px;
   min-width: 0;
+  order: 3;
 }
 
 .title {
@@ -223,7 +242,7 @@
   gap: 8px;
   min-width: 200px;
   justify-content: flex-end;
-  padding-right: 30px;
+  padding-right: 15px;
 }
 
 .salaryInfo, .locationInfo, .categoryInfo {
@@ -256,7 +275,8 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    max-width: calc(100% - 80px);
+    max-width: calc(100% - 100px);
+    padding-right: 10px;
   }
 
   .detailsContainer {
@@ -316,6 +336,23 @@
 
   .jobContent .detailsContainer {
     flex: 0 0 auto; /* Keep detailsContainer at its natural size */
+  }
+
+  .timeBookmarkContainer {
+    min-width: auto;
+  }
+
+  .time {
+    font-size: 0.9em;
+  }
+
+  .bookmarkButton {
+    padding: 2px;
+  }
+
+  .bookmarkButton svg {
+    width: 13px;
+    height: 13px;
   }
 }
 
@@ -388,5 +425,123 @@
   color: #666;
   font-size: 0.9em;
   margin-left: 8px;
+}
+
+.timeBookmarkContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 85px;
+}
+
+.bookmarkButton {
+  background: none;
+  border: none;
+  padding: 3px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+}
+
+.bookmarkButton svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* 북마크되지 않은 상태 */
+.emptyBookmark {
+  color: #888;  /* 테두리 회색 */
+}
+
+/* 북마크된 상태 */
+.filledBookmark {
+  color: #ff6b00;  /* 채워진 주황색 */
+}
+
+/* 호버 상태 */
+.bookmarkButton:hover svg {
+  color: #888;
+}
+
+@media (max-width: 768px) {
+  .timeBookmarkContainer {
+    min-width: 75px;
+  }
+  
+  .bookmarkButton {
+    padding: 3px;
+  }
+  
+  .bookmarkButton svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+.bookmarkContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ddd;
+  padding: 1.5px;
+  width: 20px;
+  height: 26px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: white;
+  margin-right: 8px;
+  user-select: none;
+}
+
+.bookmarkContainer:hover {
+  background-color: #f8f9fa;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.bookmarkContainer svg {
+  width: 12px;
+  height: 12px;
+  margin-bottom: 2px;
+}
+
+.bookmarkCount {
+  font-size: 9px;
+  color: #666;
+  line-height: 1;
+}
+
+.filledBookmark {
+  color: #ff6b00;
+}
+
+.emptyBookmark {
+  color: #666;
+}
+
+@media (max-width: 768px) {
+  .bookmarkContainer {
+    width: 18px;
+    height: 24px;
+    margin-right: 6px;
+  }
+
+  .bookmarkButton {
+    margin-bottom: 2px;
+  }
+
+  .bookmarkButton svg {
+    width: 10px;
+    height: 10px;
+  }
+
+  .bookmarkCount {
+    font-size: 8px;
+  }
 }
 

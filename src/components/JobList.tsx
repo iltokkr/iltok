@@ -9,6 +9,17 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { useRouter } from 'next/router';
 import { useTranslation } from '@/contexts/TranslationContext';
 import { event } from '@/lib/gtag';
+import { useContext } from 'react';
+import { AuthContext } from '@/contexts/AuthContext';
+import { createClient } from '@supabase/supabase-js'
+import { BsBookmark, BsBookmarkFill } from 'react-icons/bs';
+import { toast } from 'react-hot-toast';
+import LoginPopup from './LoginPopup';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 
 interface Job {
   id: number;
@@ -22,6 +33,8 @@ interface Job {
   '2depth_category': string;
   ad: boolean;
   board_type: number;
+  bookmarked?: boolean;
+  bookmark_count?: number;
 }
 
 interface AdJob extends Job {
@@ -42,6 +55,53 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
   const { markAsRead, isRead } = useReadPosts();
   const previousJobsRef = useRef<string>('');
   const router = useRouter();
+  const auth = useContext(AuthContext);
+  
+  // AuthContext가 없는 경우 에러 처리
+  if (!auth) throw new Error("AuthContext not found");
+  
+  const { user, isLoggedIn } = auth;
+  const [bookmarkedJobs, setBookmarkedJobs] = useState<number[]>([]);
+  const [bookmarkCounts, setBookmarkCounts] = useState<Record<number, number>>({});
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
+
+  useEffect(() => {
+    const fetchBookmarks = async () => {
+      if (!isLoggedIn || !user) return;
+      
+      const { data, error } = await supabase
+        .from('bookmark')
+        .select('jd_id')
+        .eq('users_id', user.id);
+        
+      if (data && !error) {
+        setBookmarkedJobs(data.map(bookmark => bookmark.jd_id));
+      }
+    };
+
+    fetchBookmarks();
+  }, [isLoggedIn, user]);
+
+  const fetchBookmarkCounts = async () => {
+    const { data, error } = await supabase
+      .from('bookmark')
+      .select('jd_id');
+
+    if (data && !error) {
+      // 각 job_id별로 북마크 수를 계산
+      const counts = data.reduce((acc, item) => {
+        acc[item.jd_id] = (acc[item.jd_id] || 0) + 1;
+        return acc;
+      }, {} as Record<number, number>);
+      
+      console.log('Bookmark counts:', counts); // 디버깅용
+      setBookmarkCounts(counts);
+    }
+  };
+
+  useEffect(() => {
+    fetchBookmarkCounts();
+  }, []);
 
   const formatDate = (dateString: string) => {
     const date = parseISO(dateString);
@@ -109,9 +169,99 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
     setShowAdPopup(true);
   };
 
+  const handleBookmark = async (jobId: number) => {
+    if (!isLoggedIn || !user) {
+      setShowLoginPopup(true);
+      return;
+    }
+
+    try {
+      if (bookmarkedJobs.includes(jobId)) {
+        // Remove bookmark
+        const { error: deleteError } = await supabase
+          .from('bookmark')
+          .delete()
+          .eq('users_id', user.id)
+          .eq('jd_id', jobId);
+
+        if (deleteError) throw deleteError;
+        
+        setBookmarkedJobs(prev => prev.filter(id => id !== jobId));
+        setBookmarkCounts(prev => ({
+          ...prev,
+          [jobId]: (prev[jobId] || 1) - 1
+        }));
+        toast.success(currentLanguage === 'ko' 
+          ? '북마크가 해제되었습니다.' 
+          : 'Bookmark removed');
+      } else {
+        // Add bookmark
+        const { data, error: insertError } = await supabase
+          .from('bookmark')
+          .insert([
+            {
+              users_id: user.id,
+              jd_id: jobId
+            }
+          ])
+          .select();
+
+        if (insertError) throw insertError;
+        
+        if (data && data.length > 0) {
+          setBookmarkedJobs(prev => [...prev, jobId]);
+          setBookmarkCounts(prev => ({
+            ...prev,
+            [jobId]: (prev[jobId] || 0) + 1
+          }));
+          toast.success(currentLanguage === 'ko' 
+            ? '북마크에 추가되었습니다.' 
+            : 'Bookmark added');
+        }
+      }
+    } catch (error) {
+      console.error('Error toggling bookmark:', error);
+      toast.error(currentLanguage === 'ko' 
+        ? '북마크 처리 중 오류가 발생했습니다.' 
+        : 'Error processing bookmark');
+    }
+  };
+
+  const renderJobItem = (job: Job, isAd = false) => (
+    <li key={`${isAd ? 'ad-' : ''}${job.id}`} className={`${styles.jobItem} ${isRead(job.id) ? styles.readPost : ''} ${!job.salary_type || !job.salary_detail ? 'no-salary' : ''}`}>
+      <span className={styles.time}>{formatDate(job.updated_time)}</span>
+      <div 
+        className={styles.bookmarkContainer}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();  // 상위 요소로의 이벤트 전파 방지
+          handleBookmark(job.id);
+        }}
+      >
+        {bookmarkedJobs.includes(job.id) ? 
+          <BsBookmarkFill className={styles.filledBookmark} /> : 
+          <BsBookmark className={styles.emptyBookmark} />
+        }
+        <span className={styles.bookmarkCount}>
+          {bookmarkCounts[job.id] || 0}
+        </span>
+      </div>
+      <div className={styles.jobContent}>
+        <p className={styles.title}>
+          <Link href={`/jd/${job.id}`} onClick={() => handlePostClick(job.id)}>
+            {formatTitle(job)}
+          </Link>
+        </p>
+        <p className={styles.jobDetails}>
+          {formatJobDetails(job)}
+        </p>
+      </div>
+    </li>
+  );
+
   return (
     <div className={styles.layout}>
-      {/* 언어 선택 버튼 추가 */}
+      {/* 언어 택 버튼 추가 */}
 
       <section className={styles.mainList}>
         {showAdJobs && adJobs.length > 0 && (
@@ -120,40 +270,12 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
               <span className={styles.topTitle}>TOP광고</span>
               <a href="#" onClick={handleAdGuideClick} className={styles.btnTop}>등록안내</a>
             </div>
-            {adJobs.map(job => (
-              <li key={`ad-${job.id}`} className={`${styles.jobItem} ${isRead(job.id) ? styles.readPost : ''} ${!job.salary_type || !job.salary_detail ? 'no-salary' : ''}`}>
-                <span className={styles.time}>{formatDate(job.updated_time)}</span>
-                <div className={styles.jobContent}>
-                  <p className={styles.title}>
-                    <Link href={`/jd/${job.id}`} onClick={() => handlePostClick(job.id)}>
-                      {formatTitle(job)}
-                    </Link>
-                  </p>
-                  <p className={styles.jobDetails}>
-                    {formatJobDetails(job)}
-                  </p>
-                </div>
-              </li>
-            ))}
+            {adJobs.map(job => renderJobItem(job, true))}
           </ul>
         )}
 
         <ul className={`${styles.listWrap} ${styles.listText}`}>
-          {jobs.map(job => (
-            <li key={job.id} className={`${styles.jobItem} ${isRead(job.id) ? styles.readPost : ''} ${!job.salary_type || !job.salary_detail ? 'no-salary' : ''}`}>
-              <span className={styles.time}>{formatDate(job.updated_time)}</span>
-              <div className={styles.jobContent}>
-                <p className={styles.title}>
-                  <Link href={`/jd/${job.id}`} onClick={() => handlePostClick(job.id)}>
-                    {formatTitle(job)}
-                  </Link>
-                </p>
-                <p className={styles.jobDetails}>
-                  {formatJobDetails(job)}
-                </p>
-              </div>
-            </li>
-          ))}
+          {jobs.map(job => renderJobItem(job))}
         </ul>
       </section>
       
@@ -165,6 +287,7 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
       />
 
       {showAdPopup && <AdPopup onClose={() => setShowAdPopup(false)} />}
+      {showLoginPopup && <LoginPopup onClose={() => setShowLoginPopup(false)} />}
     </div>
   );
 };
