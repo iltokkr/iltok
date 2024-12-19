@@ -184,7 +184,7 @@ function CustomerSupport() {
   
   return (
     <a
-      href="https://open.kakao.com/me/114114KR"
+      href="http://pf.kakao.com/_ywaMn"
       target="_blank"
       rel="noopener noreferrer"
       className={styles.customerSupport}
@@ -705,7 +705,7 @@ const BoardPage: React.FC = () => {
             },
             { 
               src: '/image copy.png', 
-              link: 'https://open.kakao.com/me/114114KR',
+              link: 'http://pf.kakao.com/_ywaMn',
               mobileSrc: '/image copy_mo.png'
             },
             { 
