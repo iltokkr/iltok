@@ -15,6 +15,9 @@ import { createClient } from '@supabase/supabase-js'
 import { BsHeart, BsHeartFill } from 'react-icons/bs';
 import { toast } from 'react-hot-toast';
 import LoginPopup from './LoginPopup';
+import Slider from 'react-slick';
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -259,9 +262,76 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
     </li>
   );
 
+  const sliderSettings = {
+    dots: false,
+    infinite: false,
+    speed: 500,
+    slidesToShow: boardType === '4' ? 4 : 4,
+    slidesToScroll: 1,
+    responsive: [
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: boardType === '4' ? 2 : 3,
+        }
+      },
+      {
+        breakpoint: 768,
+        settings: {
+          slidesToShow: 1,
+        }
+      },
+      {
+        breakpoint: 480,
+        settings: {
+          slidesToShow: 1,
+        }
+      }
+    ]
+  };
+
+  const renderHotItem = (job: Job) => (
+    <div key={job.id} className={styles.hotItem}>
+      <div className={styles.hotTag}>공지</div>
+      <Link href={`/jd/${job.id}`} onClick={() => handlePostClick(job.id)}>
+        <div className={styles.hotContent}>
+          <h3 className={styles.hotTitle}>{job.title}</h3>
+          <div className={styles.hotFooter}>
+            <span className={styles.time}>{formatDate(job.updated_time)}</span>
+            <div 
+              className={styles.bookmarkContainer}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleBookmark(job.id);
+              }}
+            >
+              {bookmarkedJobs.includes(job.id) ? 
+                <BsHeartFill className={styles.filledBookmark} /> : 
+                <BsHeart className={styles.emptyBookmark} />
+              }
+              <span className={styles.bookmarkCount}>
+                {bookmarkCounts[job.id] || 0}
+              </span>
+            </div>
+          </div>
+        </div>
+      </Link>
+    </div>
+  );
+
   return (
-    <div className={styles.layout}>
-      {/* 언어 택 버튼 추가 */}
+    <div className={styles.layout} data-board-type={boardType}>
+      {boardType === '4' && (
+        <div className={styles.hotSection}>
+          <h2 className={styles.hotSectionTitle}>실시간 HOT 게시글</h2>
+          <div className={styles.hotContainer}>
+            <Slider {...sliderSettings}>
+              {jobs.slice(0, 8).map(job => renderHotItem(job))}
+            </Slider>
+          </div>
+        </div>
+      )}
 
       <section className={styles.mainList}>
         {showAdJobs && adJobs.length > 0 && (
@@ -278,8 +348,7 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
           {jobs.map(job => renderJobItem(job))}
         </ul>
       </section>
-      
-      {/* Replace the existing pagination with the new Pagination component */}
+
       <Pagination
         currentPage={currentPage}
         pageCount={totalPages}

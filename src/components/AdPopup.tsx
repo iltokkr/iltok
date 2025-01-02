@@ -35,9 +35,13 @@ const AdPopup: React.FC<AdPopupProps> = ({ onClose }) => {
       
       // 파일 업로드 (세금계산서 선택 시)
       if (receipt === 'T' && file) {
+        // 파일 이름에서 한글과 특수문자 제거
+        const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
+        const fileKey = `${Date.now()}_${sanitizedFileName}`;
+        
         const { data, error } = await supabase.storage
           .from('ad_file')
-          .upload(`${Date.now()}_${file.name}`, file);
+          .upload(fileKey, file);
         
         if (error) throw error;
         
@@ -111,7 +115,7 @@ const AdPopup: React.FC<AdPopupProps> = ({ onClose }) => {
             <dt>등록절차 :</dt>
             <dd>입금 후 신청</dd>
             <dt>등록문의 :</dt>
-            <dd><a href="http://pf.kakao.com/_ywaMn" target="_blank" rel="noopener noreferrer">https://open.kakao.com/me/114114KR</a></dd>
+            <dd><a href="http://pf.kakao.com/_ywaMn" target="_blank" rel="noopener noreferrer">http://pf.kakao.com/_ywaMn</a></dd>
           </dl>
         </div>
         <form onSubmit={handleSubmit} className={styles.formContainer}>

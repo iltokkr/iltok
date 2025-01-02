@@ -545,3 +545,868 @@
   }
 }
 
+/* HOT 섹션 스타일 */
+.hotSection {
+  background: #f8f9fa;
+  padding: 20px 0;
+  position: relative;
+}
+
+.hotSectionTitle {
+  font-size: 18px;
+  font-weight: bold;
+  margin: 0 0 20px 20px;
+  color: #333;
+}
+
+.hotContainer {
+  position: relative;
+  padding: 0 30px;
+  margin: 0 auto;
+  max-width: 1200px;
+}
+
+.hotItem {
+  padding: 15px;
+  margin: 0 8px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  background: white;
+  height: 120px;
+  width: 100%;
+  max-width: 800px;
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+  margin: 0 auto;
+}
+
+.hotItem:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.hotTag {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: #ff6b6b;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: bold;
+  z-index: 1;
+}
+
+.hotContent {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding-top: 20px;
+  box-sizing: border-box;
+}
+
+.hotTitle {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.4;
+  max-height: 2.8em;
+  width: 100%;
+  word-break: break-word;
+}
+
+.hotLocation {
+  color: #666;
+  font-size: 12px;
+  margin-bottom: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hotFooter {
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 8px;
+  border-top: 1px solid #eee;
+  width: 100%;
+}
+
+/* Slick carousel custom styles */
+.hotContainer :global(.slick-list) {
+  max-width: 900px;
+}
+
+.hotContainer :global(.slick-slide) {
+  padding: 0 4px;
+  box-sizing: border-box;
+}
+
+.hotContainer :global(.slick-prev),
+.hotContainer :global(.slick-next) {
+  z-index: 1;
+  width: 30px;
+  height: 30px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.hotContainer :global(.slick-prev) {
+  left: -5px;
+}
+
+.hotContainer :global(.slick-next) {
+  right: -5px;
+}
+
+.hotContainer :global(.slick-prev:before),
+.hotContainer :global(.slick-next:before) {
+  color: #666;
+  font-size: 20px;
+}
+
+@media (max-width: 768px) {
+  .hotSection {
+    padding: 15px 0;
+  }
+
+  .hotSectionTitle {
+    font-size: 16px;
+    margin-left: 15px;
+  }
+
+  .hotItem {
+    height: 160px;
+    margin: 0 6px;
+  }
+
+  .hotTitle {
+    font-size: 13px;
+  }
+
+  .hotLocation {
+    font-size: 11px;
+  }
+}
+
+
+
+.listWrap li .title {
+  display: inline;
+  word-break: break-all;
+}
+
+.listWrap li .title em {
+  color: #aaa;
+  padding: 0 0 0 3px;
+}
+
+.listWrap li .txt,
+.listWrap li .txt a {
+  color: #ff3900;
+}
+
+.listWrap li .txt {
+  padding: 0 6px 0 0;
+}
+
+.listP {
+  background-color: #FFFCF5;
+  border-bottom: 1px solid #CCCCCC;
+  border-top: 1px solid #CCCCCC;
+  margin-top: 15px;
+}
+
+.listP font {
+  color: #FF3900;
+  padding-right: 10px;
+}
+
+.listPA {
+  text-decoration: underline;
+  color: #999999;
+}
+
+.jobItem {
+  display: flex;
+  align-items: center;
+  padding: 2px 0;
+  width: 100%;
+}
+
+.time {
+  flex: 0 0 35px;
+  color: #888;
+  font-size: 0.9em;
+  margin-right: 0;
+}
+
+.timeBookmarkContainer {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 85px;
+  order: 1;
+}
+
+.bookmarkButton {
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  order: 2;
+}
+
+.jobContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex: 1;
+  gap: 8px;
+  min-width: 0;
+  order: 3;
+}
+
+.title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding-right: 8px;
+}
+
+.title a {
+  display: block;
+  white-space: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
+  max-height: 3em;
+  line-height: 1.5em;
+}
+
+.detailsContainer {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  gap: 8px;
+  min-width: 200px;
+  justify-content: flex-end;
+  padding-right: 15px;
+}
+
+.salaryInfo, .locationInfo, .categoryInfo {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+/* 구분선 수정 - 최상위 span 사이에만 구분선 적용 */
+.detailsContainer > span:not(:last-child)::after {
+  content: '|';
+  margin: 0 4px;
+  color: #ddd;
+}
+
+/* 모바일 대응 */
+@media (max-width: 768px) {
+  .jobContent {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .title {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: calc(100% - 100px);
+    padding-right: 10px;
+  }
+
+  .detailsContainer {
+    flex: 0 0 auto;
+    min-width: 80px;
+    font-size: 0.85rem;
+    padding-right: 4px;
+  }
+
+  .salaryInfo {
+    font-size: 0.85rem;
+  }
+
+  .locationText {
+    font-size: 0.85em;
+    color: #888;
+  }
+
+  /* 급여 정보가 없을 때 제목 영역 최대화 */
+  .jobContent.no-salary .title {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+
+  .jobContent.no-salary .detailsContainer {
+    display: none;
+  }
+
+  /* 모바일에서도 동일하게 최상위 span에만 구분선 적용 */
+  .detailsContainer > span:not(:last-child)::after {
+    content: '|';
+    margin: 0 4px;
+    color: #ddd;
+    display: inline;
+  }
+
+  /* 모바일에서 1차 지역정보 숨김 */
+  .locationInfo .firstDepth {
+    display: none;
+  }
+
+  /* 모바일에서 1차 지역정보 뒤의 공백 제거 */
+  .locationInfo .secondDepth {
+    margin-left: 0;
+  }
+
+  /* 급여 정보가 없을 때 제목 영역 최대화 */
+  .jobContent {
+    display: flex;
+    align-items: center;
+  }
+
+  .jobContent .title {
+    flex: 1 1 0; /* Allow the title to grow and fill available space */
+    min-width: 0;
+  }
+
+  .jobContent .detailsContainer {
+    flex: 0 0 auto; /* Keep detailsContainer at its natural size */
+  }
+
+  .timeBookmarkContainer {
+    min-width: auto;
+  }
+
+  .time {
+    font-size: 0.9em;
+  }
+
+  .bookmarkButton {
+    padding: 2px;
+  }
+
+  .bookmarkButton svg {
+    width: 13px;
+    height: 13px;
+  }
+}
+
+.languageSelector {
+  display: flex;
+  padding: 5px 0;
+  gap: 5px;
+  justify-content: flex-start;
+}
+
+.languageSelector button {
+  padding: 3px 6px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.languageSelector button:hover {
+  background: #f5f5f5;
+}
+
+.languageSelector button.activeLanguage {
+  background: #ff4800;
+  color: white;
+  border-color: #ff3900;
+}
+
+.readPost {
+  opacity: 0.6;
+}
+
+.readPost .title a {
+  color: #666;
+}
+
+.salaryInfo {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.salaryType {
+  color: #ff6b00;
+  font-weight: 600;
+}
+
+.salaryDetail {
+  color: inherit; /* 부모 요소의 색상 상속 */
+  font-weight: normal;
+}
+
+/* 이미 읽은 게시물의 경우에도 급여 유형 색상 유지 */
+.readPost .salaryType {
+  color: #ff6b00;
+  opacity: 0.8;
+}
+
+.jobContent.no-salary .title {
+  flex: 1 1 100%; /* Allow the title to take full width */
+}
+
+.jobContent.no-salary .detailsContainer {
+  display: none; /* Hide the detailsContainer */
+}
+
+.locationText {
+  color: #666;
+  font-size: 0.9em;
+  margin-left: 8px;
+}
+
+.timeBookmarkContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 85px;
+}
+
+.bookmarkButton {
+  background: none;
+  border: none;
+  padding: 3px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  border-radius: 4px;
+}
+
+.bookmarkButton svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* 북마크되지 않은 상태 */
+.emptyBookmark {
+  color: #888;  /* 테두리 회색 */
+}
+
+/* 북마크된 상태 */
+.filledBookmark {
+  color: #ff6b00;  /* 채워진 주황색 */
+}
+
+/* 호버 상태 */
+.bookmarkButton:hover svg {
+  color: #888;
+}
+
+@media (max-width: 768px) {
+  .timeBookmarkContainer {
+    min-width: 75px;
+  }
+  
+  .bookmarkButton {
+    padding: 3px;
+  }
+  
+  .bookmarkButton svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+.bookmarkContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ddd;
+  padding: 1.5px;
+  width: 20px;
+  height: 26px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: white;
+  margin-right: 8px;
+  user-select: none;
+}
+
+.bookmarkContainer:hover {
+  background-color: #f8f9fa;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.bookmarkContainer svg {
+  width: 12px;
+  height: 12px;
+  margin-bottom: 2px;
+}
+
+.bookmarkCount {
+  font-size: 9px;
+  color: #666;
+  line-height: 1;
+}
+
+.filledBookmark {
+  color: #ff6b00;
+}
+
+.emptyBookmark {
+  color: #666;
+}
+
+@media (max-width: 768px) {
+  .bookmarkContainer {
+    width: 18px;
+    height: 24px;
+    margin-right: 6px;
+  }
+
+  .bookmarkButton {
+    margin-bottom: 2px;
+  }
+
+  .bookmarkButton svg {
+    width: 10px;
+    height: 10px;
+  }
+
+  .bookmarkCount {
+    font-size: 8px;
+  }
+}
+
+.hotContainer {
+  padding: 20px;
+  margin: 20px 0;
+}
+
+.hotItem {
+  padding: 15px;
+  margin: 0 12px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  background: white;
+  height: 160px;
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.hotItem:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.hotTag {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: #ff6b6b;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.hotContent {
+  padding: 25px 8px 8px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.hotTitle {
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.3;
+}
+
+.hotLocation {
+  color: #666;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.hotFooter {
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 8px;
+  border-top: 1px solid #eee;
+}
+
+/* Slick carousel custom styles */
+.hotContainer :global(.slick-prev),
+.hotContainer :global(.slick-next) {
+  z-index: 1;
+}
+
+.hotContainer :global(.slick-prev) {
+  left: -25px;
+}
+
+.hotContainer :global(.slick-next) {
+  right: -25px;
+}
+
+.hotContainer :global(.slick-dots) {
+  bottom: -30px;
+}
+
+
+.hotSectionTitle {
+  font-size: 18px;
+  font-weight: bold;
+  margin: 0 0 15px 20px;
+  color: #333;
+}
+
+.hotContainer {
+  position: relative;
+  padding: 0 20px;
+}
+
+.hotItem {
+  padding: 15px;
+  margin: 0 8px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  background: white;
+  height: 180px;
+  width: 280px;
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  flex-shrink: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.hotItem:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.hotTag {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: #ff6b6b;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: bold;
+  z-index: 1;
+}
+
+.hotContent {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding-top: 20px;
+  box-sizing: border-box;
+}
+
+.hotTitle {
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.4;
+  max-height: 2.8em;
+  width: 100%;
+  word-break: break-word;
+}
+
+.hotLocation {
+  color: #666;
+  font-size: 12px;
+  margin-bottom: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hotFooter {
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 8px;
+  border-top: 1px solid #eee;
+  width: 100%;
+}
+
+/* Slick carousel custom styles */
+.hotContainer :global(.slick-prev),
+.hotContainer :global(.slick-next) {
+  z-index: 1;
+  width: 30px;
+  height: 30px;
+  background: white;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.hotContainer :global(.slick-prev) {
+  left: -5px;
+}
+
+.hotContainer :global(.slick-next) {
+  right: -5px;
+}
+
+.hotContainer :global(.slick-prev:before),
+.hotContainer :global(.slick-next:before) {
+  color: #666;
+  font-size: 20px;
+}
+
+@media (max-width: 768px) {
+  .hotSection {
+    padding: 15px 0;
+  }
+
+  .hotSectionTitle {
+    font-size: 16px;
+    margin-left: 15px;
+  }
+
+  .hotItem {
+    height: 160px;
+    margin: 0 6px;
+  }
+
+  .hotTitle {
+    font-size: 13px;
+  }
+
+  .hotLocation {
+    font-size: 11px;
+  }
+}
+
+
+
+  .hotLocation {
+    font-size: 11px;
+  }
+
+
+
+  
+
+  .hotLocation {
+    font-size: 11px;
+  }
+
+
+
+
+
+
+  .hotLocation {
+    font-size: 11px;
+  }
+
+
+
+/* board_type 4에 대한 특별 스타일 */
+[data-board-type="4"] .jobItem {
+  display: flex;
+  align-items: center;
+  padding: 2px 0;
+  width: 100%;
+}
+
+[data-board-type="4"] .jobContent {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex: 1;
+  gap: 4px;
+  min-width: 0;
+  padding-right: 0;
+}
+
+[data-board-type="4"] .title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding-right: 0;
+  max-width: 100%;
+}
+
+[data-board-type="4"] .title a {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
+  line-height: 1.5em;
+  max-height: 1.5em;
+  padding-right: 0;
+}
+
+[data-board-type="4"] .locationText,
+[data-board-type="4"] .detailsContainer {
+  display: none;
+}
+
+/* 시간 표시 영역 최소화 */
+[data-board-type="4"] .timeBookmarkContainer {
+  min-width: 45px;
+  gap: 2px;
+}
+
+

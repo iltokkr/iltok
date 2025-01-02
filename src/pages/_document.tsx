@@ -1,4 +1,6 @@
 import { Html, Head, Main, NextScript } from 'next/document'
+import { NaverAnalytics } from 'react-naver-analytics';
+
 
 export default function Document() {
   return (
@@ -25,6 +27,9 @@ export default function Document() {
       <body>
         <Main />
         <NextScript />
+        <NaverAnalytics
+              accountId={'19c978f09ef06c'}
+          />
       </body>
     </Html>
   )

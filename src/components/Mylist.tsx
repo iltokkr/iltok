@@ -228,6 +228,34 @@ const Mylist: React.FC<MylistProps> = ({
       </div>
       </div>
 
+
+      <ul className={styles.listWrap}>
+        {posts.map((post) => (
+          <li key={post.id}>
+            <div className={styles.postInfo}>
+              <div className={styles.postContent}>
+                <span className={styles.time}>{formatDate(post.updated_time)}</span>
+                <a href={`/jd/${post.id}`} className={styles.title}>
+                  {post.title}
+                </a>
+                <em>({post['1depth_region']} {post['2depth_region']}) - {post['1depth_category']} {post['2depth_category']}</em>
+              </div>
+              <div className={styles.buttonGroup}>
+                <span className={styles.recall}>
+                  <a href={`/write?id=${post.id}`}>[수정]</a>
+                </span>
+                <span className={styles.recall}>
+                  <a onClick={() => handleReload(post.id)}>[재업로드]</a>
+                </span>
+                <span className={styles.recall}>
+                  <a onClick={() => handleDelete(post.id)}>[삭제]</a>
+                </span>
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
+
       <div className={styles.listHead} style={{ marginTop: '40px' }}>
         북마크한 공고 ({bookmarkedPosts.length}개)
       </div>
@@ -251,33 +279,6 @@ const Mylist: React.FC<MylistProps> = ({
                   onClick={() => handleRemoveBookmark(post.id)}
                 >
                   <BsBookmarkFill /> {bookmarkCounts[post.id] || 0}
-                </span>
-              </div>
-            </div>
-          </li>
-        ))}
-      </ul>
-
-      <ul className={styles.listWrap}>
-        {posts.map((post) => (
-          <li key={post.id}>
-            <div className={styles.postInfo}>
-              <div className={styles.postContent}>
-                <span className={styles.time}>{formatDate(post.updated_time)}</span>
-                <a href={`/jd/${post.id}`} className={styles.title}>
-                  {post.title}
-                </a>
-                <em>({post['1depth_region']} {post['2depth_region']}) - {post['1depth_category']} {post['2depth_category']}</em>
-              </div>
-              <div className={styles.buttonGroup}>
-                <span className={styles.recall}>
-                  <a href={`/write?id=${post.id}`}>[수정]</a>
-                </span>
-                <span className={styles.recall}>
-                  <a onClick={() => handleReload(post.id)}>[재업로드]</a>
-                </span>
-                <span className={styles.recall}>
-                  <a onClick={() => handleDelete(post.id)}>[삭제]</a>
                 </span>
               </div>
             </div>

@@ -5,7 +5,7 @@ import { parseISO, format, subHours } from 'date-fns';
 import { useLanguage } from '@/hooks/useLanguage';
 import { GA_TRACKING_ID } from '@/lib/gtag';
 import MainCarousel from '@/components/MainCarousel';
-import { BsHeart, BsHeartFill } from 'react-icons/bs';
+import { BsBookmark, BsBookmarkFill } from 'react-icons/bs';
 import { AuthContext } from '@/contexts/AuthContext';
 import { createClient } from '@supabase/supabase-js'
 import { toast } from 'react-hot-toast';
@@ -392,7 +392,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail }) => {
                   className={`${style.bookmarkButton} ${isBookmarked ? style.bookmarked : ''}`}
                   onClick={handleBookmark}
                 >
-                  {isBookmarked ? <BsHeartFill /> : <BsHeart />}
+                  {isBookmarked ? <BsBookmarkFill /> : <BsBookmark />}
                   <span>공고 저장하기</span>
                 </button>
               </div>
