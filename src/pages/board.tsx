@@ -242,8 +242,9 @@ const BoardPage: React.FC = () => {
   const { currentLanguage, changeLanguage } = useLanguage();  // 추가
   const auth = useContext(AuthContext);
   const [bookmarkedJobs, setBookmarkedJobs] = useState<number[]>([]);
+  const [showModal, setShowModal] = useState(true); // 모달 상태 추가
 
-  // AuthContext가 ���는 경우 에러 처리
+  // AuthContext가 는 경우 에러 처리
   if (!auth) throw new Error("AuthContext not found");
   
   const { user, isLoggedIn } = auth;
@@ -675,6 +676,11 @@ const BoardPage: React.FC = () => {
     }
   }, [router.isReady, bookmarkedJobs]);
 
+  // 모달 닫기 핸들러 추가
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
+
   return (
     <div className={styles.container}>
       <Head>
@@ -738,6 +744,30 @@ const BoardPage: React.FC = () => {
       <InstallPWA /> {/* PWA 설치 버튼 추가 */}
       <ScrollToTop /> {/* ScrollToTop 컴포넌트 추가 */}
       <CustomerSupport /> {/* 고객센터 버튼 추가 */}
+      
+      {/* 긴급공지 모달 추가 */}
+      {showModal && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
+            <h2 className={styles.modalTitle}>[긴급공지] 서비스 전수 조사 안내</h2>
+            <div className={styles.modalContent}>
+              <p>안녕하세요, 운영자입니다.</p>
+              <br />
+              <p>불법 구인글이 많아짐에 따라 모든 게시글에 대한 전수 조사를 시작하게 되었습니다. 전수 조사 기간 중 공고 열람 및 업로드는 불가능하오니 참고부탁드립니다.</p>
+              <br />
+              <p>[검수 기간] 25년 1월 2일 기준 3~7일 소요</p>
+              <p>[검수 내용] 불법 구인 공고</p>
+              <br />
+              <p><a href="https://www.114114kr.com/jd/3323" target="_blank" rel="noopener noreferrer">자세히 보러가기</a></p>
+              <br />
+              <p>감사합니다.</p>
+            </div>
+            <button className={styles.modalCloseButton} onClick={handleCloseModal}>
+              닫기
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -44,6 +44,16 @@ interface JobDetailType {
 
 // getServerSideProps 수정
 export async function getServerSideProps({ params }: { params: { id: string } }) {
+  // 모든 요청을 3323으로 리다이렉트
+  if (params.id !== '3323') {
+    return {
+      redirect: {
+        destination: '/jd/3323',
+        permanent: false,
+      }
+    };
+  }
+
   try {
     const { data, error } = await supabase
       .from('jd')
@@ -51,7 +61,7 @@ export async function getServerSideProps({ params }: { params: { id: string } })
         *,
         uploader:users (company_name, name, number)
       `)
-      .eq('id', params.id)
+      .eq('id', '3323')  // 항상 3323 데이터를 가져옴
       .single();
 
     if (error || !data) {

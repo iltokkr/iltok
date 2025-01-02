@@ -185,3 +185,58 @@
     bottom: 80px;
   }
 }
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modalTitle {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  color: #e53e3e;
+}
+
+.modalContent {
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.modalContent a {
+  color: #3182ce;
+  text-decoration: underline;
+}
+
+.modalCloseButton {
+  margin-top: 1.5rem;
+  padding: 0.5rem 1rem;
+  background-color: #e53e3e;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.modalCloseButton:hover {
+  background-color: #c53030;
+}
