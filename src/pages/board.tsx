@@ -746,7 +746,7 @@ const BoardPage: React.FC = () => {
       <CustomerSupport /> {/* 고객센터 버튼 추가 */}
       
       {/* 긴급공지 모달 추가 */}
-      {showModal && (
+      {/* {showModal && (
         <div className={styles.modalOverlay}>
           <div className={styles.modal}>
             <h2 className={styles.modalTitle}>[긴급공지] 서비스 전수 조사 안내</h2>
@@ -767,7 +767,7 @@ const BoardPage: React.FC = () => {
             </button>
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 };
