@@ -111,7 +111,7 @@ const AdPopup: React.FC<AdPopupProps> = ({ onClose }) => {
             <dt>등록절차 :</dt>
             <dd>입금 후 신청</dd>
             <dt>등록문의 :</dt>
-            <dd><a href="https://open.kakao.com/me/114114KR" target="_blank" rel="noopener noreferrer">https://open.kakao.com/me/114114KR</a></dd>
+            <dd><a href="http://pf.kakao.com/_ywaMn" target="_blank" rel="noopener noreferrer">https://open.kakao.com/me/114114KR</a></dd>
           </dl>
         </div>
         <form onSubmit={handleSubmit} className={styles.formContainer}>

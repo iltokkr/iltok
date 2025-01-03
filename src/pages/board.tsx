@@ -184,7 +184,7 @@ function CustomerSupport() {
   
   return (
     <a
-      href="https://open.kakao.com/me/114114KR"
+      href="http://pf.kakao.com/_ywaMn"
       target="_blank"
       rel="noopener noreferrer"
       className={styles.customerSupport}

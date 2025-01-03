@@ -60,7 +60,7 @@ const WritePage: React.FC = () => {
     education: '무관',
     age_limit: '무관',
     salary_type: '시급',
-    salary_detail: '9,860',
+    salary_detail: '10030',
     '1depth_category': '',
     '2depth_category': '',
     '1depth_region': '',
