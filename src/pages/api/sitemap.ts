@@ -1,61 +1,42 @@
 import { NextApiRequest, NextApiResponse } from 'next'
-import { SitemapStream, streamToPromise } from 'sitemap'
-import { Readable } from 'stream'
 import { createClient } from '@supabase/supabase-js'
 
-// Supabase 클라이언트 생성
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
-
-export default async (req: NextApiRequest, res: NextApiResponse) => {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   try {
-    // 정적 페이지 목록
-    const staticPages = [
-      { url: '/', changefreq: 'monthly', priority: 0.5 },
-      { url: '/board', changefreq: 'daily', priority: 1 },
-      { url: '/my', changefreq: 'daily', priority: 0.5 },
-      { url: '/write', changefreq: 'monthly', priority: 0.5 },
-    ]
+    // XML 헤더 설정
+    res.setHeader('Content-Type', 'application/xml')
 
-    // 모든 job ID 가져오기
-    const { data: jobs, error } = await supabase
-      .from('jd')
-      .select('id')
+    // 기본 URL 설정
+    const baseUrl = 'https://114114kr.com'
 
-    if (error) {
-      throw new Error('Error fetching job IDs')
-    }
+    // sitemap XML 생성
+    let xml = `<?xml version="1.0" encoding="UTF-8"?>
+    <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+      <url>
+        <loc>${baseUrl}</loc>
+        <lastmod>${new Date().toISOString()}</lastmod>
+        <priority>1.0</priority>
+      </url>
+      <url>
+        <loc>${baseUrl}/board</loc>
+        <lastmod>${new Date().toISOString()}</lastmod>
+        <priority>0.8</priority>
+      </url>
+      <url>
+        <loc>${baseUrl}/privacy-policy</loc>
+        <lastmod>${new Date().toISOString()}</lastmod>
+        <priority>0.5</priority>
+      </url>
+    </urlset>`
 
-    // Sitemap 스트림 생성
-    const stream = new SitemapStream({ hostname: 'https://114114kr.com' })
-
-    res.writeHead(200, {
-      'Content-Type': 'application/xml'
-    })
-
-    // 정적 페이지 추가
-    staticPages.forEach((page) => {
-      stream.write(page)
-    })
-
-    // 동적 페이지 (JobDetailPage) 추가
-    jobs.forEach((job) => {
-      stream.write({
-        url: `/jd/${job.id}`,
-        changefreq: 'daily',
-        priority: 1,
-      })
-    })
-
-    stream.end()
-
-    const xmlString = await streamToPromise(stream).then((data) => data.toString())
-
-    res.end(xmlString)
+    // XML 응답 전송
+    res.write(xml)
+    res.end()
   } catch (error) {
-    console.error('Error generating sitemap:', error)
-    res.status(500).end('Error generating sitemap')
+    console.error(error)
+    res.status(500).json({ error: 'Error generating sitemap' })
   }
 }
