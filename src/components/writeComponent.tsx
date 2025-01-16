@@ -107,6 +107,11 @@ const WritePage: React.FC = () => {
     }
   };
 
+  const handleLoginPopupClose = () => {
+    setShowLoginPopup(false);
+    router.push('/board');
+  };
+
   const fetchJobData = async (jobId: number) => {
     try {
       console.log('Fetching job data for ID:', jobId);
@@ -578,10 +583,7 @@ const WritePage: React.FC = () => {
         }} />
       )}
       {showLoginPopup && (
-        <LoginPopup onClose={() => {
-          setShowLoginPopup(false);
-          checkLoginStatus(); // 로그인 팝업이 닫힌 후 다시 로그인 상태 확인
-        }} />
+        <LoginPopup onClose={handleLoginPopupClose} />
       )}
     </div>
   );

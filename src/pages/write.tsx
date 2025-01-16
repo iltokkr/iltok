@@ -1,12 +1,12 @@
 import Head from 'next/head';
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useContext } from 'react';
 import { createClient } from '@supabase/supabase-js'
 import { AuthContext } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import WritePage from '@/components/writeComponent';
-import BusinessVerificationModal from '@/components/BusinessVerificationModal';
 import styles from '@/styles/Write.module.css';
+import { useRouter } from 'next/router';
 
 // Supabase 클라이언트 생성
 const supabase = createClient(
@@ -28,12 +28,15 @@ const supabase = createClient(
  * @returns {JSX.Element} 구인 공고 작성 페이지의 렌더링된 컴포넌트
  */
 const Write: React.FC = () => {
-  const [showModal, setShowModal] = useState(false);
+  const router = useRouter();
   const authContext = useContext(AuthContext);
 
   useEffect(() => {
-    const checkUserAcceptance = async () => {
-      if (authContext?.user) {
+    // 로그인한 경우에만 사용자 인증 상태 확인
+    if (authContext?.user) {
+      const checkUserAcceptance = async () => {
+        if (!authContext?.user?.id) return;
+
         const { data, error } = await supabase
           .from('users')
           .select('is_accept')
@@ -43,12 +46,12 @@ const Write: React.FC = () => {
         if (error) {
           console.error('Error fetching user data:', error);
         } else if (data && !data.is_accept) {
-          setShowModal(true);
+          router.push('/board');
         }
-      }
-    };
+      };
 
-    checkUserAcceptance();
+      checkUserAcceptance();
+    }
   }, [authContext?.user]);
 
   return (
