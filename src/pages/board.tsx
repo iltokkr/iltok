@@ -692,7 +692,7 @@ const BoardPage: React.FC = () => {
             : "Find job opportunities across various industries."
           } 
         />
-        <meta name="keywords" content="114114, 114114코리아, 114114korea, 114114kr, 114114구인구직, 조선동포, 교포, 재외동, 해외교포, 동포 구인구직, 일자리 정보, 구직자, 구인체, 경력직 채용, 구인구직, 기업 채용, 기 알바, 드림 구인구직, 무료 채용 공고, 아르바이트, 알바, 알바 구인구직, 월급, 일당, ��급, 채용 정보, 취업 정보, 직업 정보 제공, 지역별 구인구직, 헤드헌팅 비스, 신입 채용 공고, 포 취업, 동포 일자리" />
+        <meta name="keywords" content="114114, 114114코리아, 114114korea, 114114kr, 114114구인구직, 조선동포, 교포, 재외동, 해외교포, 동포 구인구직, 일자리 정보, 구직자, 구인체, 경력직 채용, 구인구직, 기업 채용, 기 알바, 드림 구인구직, 무료 채용 공고, 아르바이트, 알바, 알바 구인구직, 월급, 일당, 채용 정보, 취업 정보, 직업 정보 제공, 지역별 구인구직, 헤드헌팅 비스, 신입 채용 공고, 포 취업, 동포 일자리" />
         <meta property="og:title" content="구인구직 게시판 | 114114KR" />
         <meta property="og:description" content="다양한 직종의 구인구직 정보를 찾아보세요. 지역별, 카테고리별로 필터링하여 원하는 일자리를 쉽게 찾을 수 있습다." />
         <meta property="og:type" content="website" />
@@ -740,29 +740,24 @@ const BoardPage: React.FC = () => {
       <ScrollToTop /> {/* ScrollToTop 컴포넌트 추가 */}
       <CustomerSupport /> {/* 고객센터 버튼 추가 */}
       
-      {/* 긴급공지 모달 추가 */}
-      {/* {showModal && (
+      {showModal && (
         <div className={styles.modalOverlay}>
           <div className={styles.modal}>
-            <h2 className={styles.modalTitle}>[긴급공지] 서비스 전수 조사 안내</h2>
+            <h2 className={styles.modalTitle}>[114114KR 서비스 개선 안내]</h2>
             <div className={styles.modalContent}>
-              <p>안녕하세요, 운영자입니다.</p>
+              <p>114114KR은 약 2개월간 2,000여곳의 구인기업이 가입해주셨는데요!</p>
               <br />
-              <p>더 좋은 서비스 경험을 위해 게시글에 대한 전수 조사를 하며, 불법 구인 공고 및 중복된 공고들을 줄이고자 합니다. 전수 조사기간 중 공고 열람 및 업로드는 불가능하오니 참고부탁드립니다.</p>
+              <p>더 많은 구직자가 사이트를 이용하여 구인에 큰 도움이 되시도록,</p>
+              <p>새로운 기능 도입 및 플랫폼 개선 작업을 위해 약 2주간 재정비 기간을 가지려합니다 😊</p>
               <br />
-              <p>[검수기간] 25년 1월 2일 기준 3~7일 소요</p>
-              <p>[검수내용] 불법 구인 공고 및 중복된 공고</p>
-              <br />
-              <p><a href="https://www.114114kr.com/jd/3323" target="_blank" rel="noopener noreferrer">자세히 보러가기</a></p>
-              <br />
-              <p>감사합니다.</p>
+              <p>곧 더 편리하고 강력한 기능으로 찾아뵙겠습니다.</p>
             </div>
             <button className={styles.modalCloseButton} onClick={handleCloseModal}>
               닫기
             </button>
           </div>
         </div>
-      )} */}
+      )}
     </div>
   );
 };
