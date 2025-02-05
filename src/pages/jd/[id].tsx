@@ -45,14 +45,13 @@ interface JobDetailType {
 // getServerSideProps 수정
 export async function getServerSideProps({ params }: { params: { id: string } }) {
   try {
-    // 실제 ID와 관계없이 항상 3323 데이터를 가져옴
     const { data, error } = await supabase
       .from('jd')
       .select(`
         *,
         uploader:users (company_name, name, number)
       `)
-      .eq('id', '3323')  // 항상 3323 데이터를 가져옴
+      .eq('id', params.id)  // 하드코딩된 '3323' 대신 실제 params.id 사용
       .single();
 
     if (error || !data) {

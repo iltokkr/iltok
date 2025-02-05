@@ -242,7 +242,6 @@ const BoardPage: React.FC = () => {
   const { currentLanguage, changeLanguage } = useLanguage();  // 추가
   const auth = useContext(AuthContext);
   const [bookmarkedJobs, setBookmarkedJobs] = useState<number[]>([]);
-  const [showModal, setShowModal] = useState(true); // 모달 상태 추가
 
   // AuthContext가 는 경우 에러 처리
   if (!auth) throw new Error("AuthContext not found");
@@ -676,11 +675,6 @@ const BoardPage: React.FC = () => {
     }
   }, [router.isReady, bookmarkedJobs]);
 
-  // 모달 닫기 핸들러 추가
-  const handleCloseModal = () => {
-    setShowModal(false);
-  };
-
   return (
     <div className={styles.container}>
       <Head>
@@ -736,28 +730,9 @@ const BoardPage: React.FC = () => {
       </div>
       <Footer />
       {error && <div className={styles.error}>{error}</div>}
-      <InstallPWA /> {/* PWA 설치 버튼 추가 */}
-      <ScrollToTop /> {/* ScrollToTop 컴포넌트 추가 */}
-      <CustomerSupport /> {/* 고객센터 버튼 추가 */}
-      
-      {showModal && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modal}>
-            <h2 className={styles.modalTitle}>[114114KR 서비스 개선 안내]</h2>
-            <div className={styles.modalContent}>
-              <p>114114KR은 약 2개월간 2,000여곳의 구인기업이 가입해주셨는데요!</p>
-              <br />
-              <p>더 많은 구직자가 사이트를 이용하여 구인에 큰 도움이 되시도록,</p>
-              <p>새로운 기능 도입 및 플랫폼 개선 작업을 위해 약 2주간 재정비 기간을 가지려합니다 😊</p>
-              <br />
-              <p>곧 더 편리하고 강력한 기능으로 찾아뵙겠습니다.</p>
-            </div>
-            <button className={styles.modalCloseButton} onClick={handleCloseModal}>
-              닫기
-            </button>
-          </div>
-        </div>
-      )}
+      <InstallPWA />
+      <ScrollToTop />
+      <CustomerSupport />
     </div>
   );
 };
