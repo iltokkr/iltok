@@ -21,6 +21,11 @@ const MainMenu: React.FC<MainMenuProps> = ({ currentBoardType }) => {
               구직정보
             </Link>
           </li>
+          <li>
+            <Link href="/board?board_type=4" className={currentBoardType === '1' ? styles.focus : ''}>
+              자유게시판
+            </Link>
+          </li>
         </div>
       </div>
     </ul>

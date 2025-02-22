@@ -10,44 +10,55 @@ import { AuthContext } from '@/contexts/AuthContext';
 import { createClient } from '@supabase/supabase-js'
 import { toast } from 'react-hot-toast';
 import LoginPopup from '@/components/LoginPopup';
+import Comment from './Comment';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
-
-interface JobDetailType {
+interface CommentType {
   id: number;
-  updated_time: string;
-  title: string;
-  contents: string;
-  experience: string;
-  gender: string;
-  education: string;
-  age_limit: string;
-  salary_type: string;
-  salary_detail: string;
-  '1depth_category': string;
-  '2depth_category': string;
-  '1depth_region': string;
-  '2depth_region': string;
-  work_location_detail: string;
-  work_start_time: string;
-  work_end_time: string;
-  uploader: {
-    company_name: string;
+  created_at: string;
+  text: string;
+  user_id: string;
+  jd_id: number;
+  user?: {
     name: string;
-    number: string;
   };
-  board_type: string;
 }
 
 interface JobDetailProps {
-  jobDetail: JobDetailType;
+  jobDetail: {
+    id: number;
+    updated_time: string;
+    title: string;
+    contents: string;
+    ad: boolean;
+    board_type: string;
+    experience: string;
+    gender: string;
+    education: string;
+    age_limit: string;
+    salary_type: string;
+    salary_detail: string;
+    '1depth_category': string;
+    '2depth_category': string;
+    '1depth_region': string;
+    '2depth_region': string;
+    work_location_detail: string;
+    work_start_time: string;
+    work_end_time: string;
+    uploader: {
+      company_name: string;
+      name: string;
+      number: string;
+    };
+  };
+  initialComments: CommentType[];
 }
 
-const JobDetail: React.FC<JobDetailProps> = ({ jobDetail }) => {
+const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => {
   const router = useRouter();
   const { currentLanguage, changeLanguage } = useLanguage();
   const [translatedTitle, setTranslatedTitle] = useState(jobDetail.title);
@@ -359,52 +370,54 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail }) => {
             </>
           )} 
         </div>
-        <div className={style.actionArea}>
-          {jobDetail.uploader.number && (
-            <>
-              <div className={style.companyInfo}>
-                <div className={style.infoRow}>
-                  <span className={style.infoLabel}>업체명</span>
-                  <span className={style.infoValue}>{jobDetail.uploader.company_name || "정보없음"}</span>
+        {jobDetail.board_type !== '4' && (
+          <div className={style.actionArea}>
+            {jobDetail.uploader.number && (
+              <>
+                <div className={style.companyInfo}>
+                  <div className={style.infoRow}>
+                    <span className={style.infoLabel}>업체명</span>
+                    <span className={style.infoValue}>{jobDetail.uploader.company_name || "정보없음"}</span>
+                  </div>
+                  <div className={style.infoRow}>
+                    <span className={style.infoLabel}>대표자명</span>
+                    <span className={style.infoValue}>{jobDetail.uploader.name || "정보없음"}</span>
+                  </div>
+                  <div className={style.infoRow}>
+                    <span className={style.infoLabel}>전화번호</span>
+                    <span 
+                      className={style.phoneNumber}
+                      onClick={() => handleCopyPhoneNumber(formatPhoneNumber(jobDetail.uploader.number))}
+                    >
+                      {formatPhoneNumber(jobDetail.uploader.number)}
+                    </span>
+                  </div>
                 </div>
-                <div className={style.infoRow}>
-                  <span className={style.infoLabel}>대표자명</span>
-                  <span className={style.infoValue}>{jobDetail.uploader.name || "정보없음"}</span>
-                </div>
-                <div className={style.infoRow}>
-                  <span className={style.infoLabel}>전화번호</span>
-                  <span 
-                    className={style.phoneNumber}
-                    onClick={() => handleCopyPhoneNumber(formatPhoneNumber(jobDetail.uploader.number))}
+                <div className={style.buttonGroup}>
+                  <button 
+                    className={style.applyButton} 
+                    onClick={() => handleApplyButtonClick(formatPhoneNumber(jobDetail.uploader.number))}
                   >
-                    {formatPhoneNumber(jobDetail.uploader.number)}
-                  </span>
+                    문자 지원하기
+                  </button>
+                  <button 
+                    className={`${style.bookmarkButton} ${isBookmarked ? style.bookmarked : ''}`}
+                    onClick={handleBookmark}
+                  >
+                    {isBookmarked ? <BsHeartFill /> : <BsHeart />}
+                    <span>공고 저장하기</span>
+                  </button>
                 </div>
-              </div>
-              <div className={style.buttonGroup}>
-                <button 
-                  className={style.applyButton} 
-                  onClick={() => handleApplyButtonClick(formatPhoneNumber(jobDetail.uploader.number))}
-                >
-                  문자 지원하기
-                </button>
-                <button 
-                  className={`${style.bookmarkButton} ${isBookmarked ? style.bookmarked : ''}`}
-                  onClick={handleBookmark}
-                >
-                  {isBookmarked ? <BsHeartFill /> : <BsHeart />}
-                  <span>공고 저장하기</span>
-                </button>
-              </div>
-              <div className={style.notice}>
-              ※ 공고에 대한 오류 및 이로인한 책임은 114114KR에서 책임지지 않습니다.
-              </div>
-              <div className={style.notice}>
-              ※ 114114KR 통해서 연락한다고 말씀해주세요.
-              </div>
-            </>
-          )}
-        </div>
+                <div className={style.notice}>
+                ※ 공고에 대한 오류 및 이로인한 책임은 114114KR에서 책임지지 않습니다.
+                </div>
+                <div className={style.notice}>
+                ※ 114114KR 통해서 연락한다고 말씀해주세요.
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       {/* 메인 캐러셀 추가 - wrapper div 추가 */}
@@ -425,6 +438,12 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail }) => {
           <li><a href="#" onClick={handleListClick}>목록</a></li>
         </ul>
       </div>
+
+      {/* Comment section with updated props */}
+      <Comment 
+        jdId={jobDetail.id} 
+        initialComments={initialComments as CommentType[]} 
+      />
 
       {/* LoginPopup 컴포넌트 추가 */}
       {showLoginPopup && (

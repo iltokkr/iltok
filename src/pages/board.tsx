@@ -273,7 +273,7 @@ const BoardPage: React.FC = () => {
     setIsLoading(true);
     try {
       const { city1, city2, cate1, cate2, keyword, searchType } = currentFilters;
-      const pageSize = 40;
+      const pageSize = currentBoardType === '4' ? 20 : 40; // board_type 4일 때는 페이지당 20개
       const offset = (page - 1) * pageSize;
 
       // 기본 쿼리 설정
@@ -343,7 +343,7 @@ const BoardPage: React.FC = () => {
       setError(null);
 
       // 광고 게시물 처리 (첫 페이지에만)
-      if (page === 1) {
+      if (page === 1 && currentBoardType !== '4') {
         let adQuery;
         
         if (currentBoardType === '0') {
