@@ -218,6 +218,7 @@ const WritePage: React.FC = () => {
       const submissionData = {
         ...formData,
         uploader_id: user.id,
+        ad: false,
       };
 
       let response;

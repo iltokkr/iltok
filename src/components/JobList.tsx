@@ -35,9 +35,11 @@ interface Job {
   '1depth_category': string;
   '2depth_category': string;
   ad: boolean;
-  board_type: number;
+  board_type: string;
   bookmarked?: boolean;
   bookmark_count?: number;
+  comment_count?: number;
+  community_tag?: string;
 }
 
 interface AdJob extends Job {
@@ -256,6 +258,11 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
         <p className={styles.title}>
           <Link href={`/jd/${job.id}`} onClick={() => handlePostClick(job.id)}>
             {formatTitle(job)}
+            {boardType === '4' && job.comment_count !== undefined && job.comment_count > 0 && (
+              <span className={styles.commentCount}>
+                [{job.comment_count}]
+              </span>
+            )}
           </Link>
         </p>
         <p className={styles.jobDetails}>
@@ -295,10 +302,17 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
 
   const renderHotItem = (job: Job) => (
     <div key={job.id} className={styles.hotItem}>
-      <div className={styles.hotTag}>공지</div>
+      <div className={styles.hotTag}>{job.community_tag || '공지'}</div>
       <Link href={`/jd/${job.id}`} onClick={() => handlePostClick(job.id)}>
         <div className={styles.hotContent}>
-          <h3 className={styles.hotTitle}>{job.title}</h3>
+          <h3 className={styles.hotTitle}>
+            {job.title}
+            {boardType === '4' && job.comment_count !== undefined && job.comment_count > 0 && (
+              <span className={styles.commentCount}>
+                [{job.comment_count}]
+              </span>
+            )}
+          </h3>
           <div className={styles.hotFooter}>
             <span className={styles.time}>{formatDate(job.updated_time)}</span>
             <div 
@@ -330,7 +344,10 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
           <h2 className={styles.hotSectionTitle}>실시간 HOT 게시글</h2>
           <div className={styles.hotContainer}>
             <Slider {...sliderSettings}>
-              {jobs.slice(0, 8).map(job => renderHotItem(job))}
+              {jobs
+                .filter(job => job.community_tag)
+                .slice(0, 8)
+                .map(job => renderHotItem(job))}
             </Slider>
           </div>
         </div>

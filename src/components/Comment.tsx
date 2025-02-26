@@ -121,13 +121,22 @@ const Comment: React.FC<CommentProps> = ({ jdId, initialComments }) => {
       </h3>
       
       <form onSubmit={handleSubmit} className={styles.commentForm}>
-        <textarea
-          value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}
-          placeholder={isLoggedIn ? "댓글을 입력하세요" : "로그인 후 댓글을 작성할 수 있습니다"}
-          disabled={!isLoggedIn}
-          className={styles.commentInput}
-        />
+        {!isLoggedIn ? (
+          <div 
+            className={styles.commentInput}
+            onClick={() => setShowLoginPopup(true)}
+            style={{ cursor: 'pointer' }}
+          >
+            로그인 후 댓글을 작성할 수 있습니다
+          </div>
+        ) : (
+          <textarea
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            placeholder="댓글을 입력하세요"
+            className={styles.commentInput}
+          />
+        )}
         <button 
           type="submit" 
           disabled={!isLoggedIn || !newComment.trim()}

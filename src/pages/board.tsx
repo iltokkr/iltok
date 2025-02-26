@@ -41,7 +41,7 @@ interface Job {
   '1depth_category': string;
   '2depth_category': string;
   ad: boolean;
-  board_type: number;
+  board_type: string;
   bookmarked?: boolean;
 }
 
@@ -207,6 +207,44 @@ function CustomerSupport() {
   );
 }
 
+// WriteButton 컴포넌트 수정
+function WriteButton() {
+  const [isMobile, setIsMobile] = useState(false);
+  const router = useRouter();
+  const { currentLanguage } = useLanguage();
+  const { board_type } = router.query;
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const handleClick = () => {
+    router.push('/write');
+  };
+
+  // board_type이 4가 아니거나 모바일이 아닐 경우 렌더링하지 않음
+  if (!isMobile || board_type !== '4') return null;
+
+  return (
+    <button
+      className={styles.writeButton}
+      onClick={handleClick}
+      aria-label={currentLanguage === 'ko' ? '글쓰기' : 'Write Post'}
+    >
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+      </svg>
+      <span>{currentLanguage === 'ko' ? '글쓰기' : 'Write'}</span>
+    </button>
+  );
+}
+
 // 페이지를 정적으로 생성하도록 설정
 export async function getStaticProps() {
   return {
@@ -272,6 +310,8 @@ const BoardPage: React.FC = () => {
   const fetchJobs = useCallback(async (currentFilters: FilterOptions, page: number, currentBoardType: string) => {
     setIsLoading(true);
     try {
+      console.log('Fetching jobs with filters:', currentFilters, 'Page:', page, 'Board Type:', currentBoardType);
+
       const { city1, city2, cate1, cate2, keyword, searchType } = currentFilters;
       const pageSize = currentBoardType === '4' ? 20 : 40; // board_type 4일 때는 페이지당 20개
       const offset = (page - 1) * pageSize;
@@ -335,7 +375,7 @@ const BoardPage: React.FC = () => {
       // 북마크 상태를 포함하여 jobs 매핑
       const mappedJobs = (jobs || []).map((job: any) => ({
         ...job,
-        board_type: parseInt(currentBoardType),
+        board_type: currentBoardType,
         bookmarked: bookmarkedJobs.includes(job.id)
       }));
 
@@ -424,7 +464,7 @@ const BoardPage: React.FC = () => {
             .sort((a, b) => new Date(b.updated_time).getTime() - new Date(a.updated_time).getTime())
             .map(job => ({
               ...job,
-              board_type: parseInt(currentBoardType),
+              board_type: currentBoardType,
               ad: true as const,
               bookmarked: bookmarkedJobs.includes(job.id)
             }));
@@ -479,7 +519,7 @@ const BoardPage: React.FC = () => {
             .sort((a, b) => new Date(b.updated_time).getTime() - new Date(a.updated_time).getTime())
             .map(job => ({
               ...job,
-              board_type: parseInt(currentBoardType),
+              board_type: currentBoardType,
               ad: true as const,
               bookmarked: bookmarkedJobs.includes(job.id)
             }));
@@ -733,6 +773,7 @@ const BoardPage: React.FC = () => {
       <InstallPWA />
       <ScrollToTop />
       <CustomerSupport />
+      <WriteButton />
     </div>
   );
 };
