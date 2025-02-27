@@ -121,15 +121,24 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
 
   const formatTitle = (job: Job) => {
     if (boardType === '4') {
-      return job.title;
+      return (
+        <span className={styles.titleText}>
+          {job.title}
+          {job.comment_count !== undefined && job.comment_count > 0 && (
+            <span className={styles.commentCount}>
+              [{job.comment_count}]
+            </span>
+          )}
+        </span>
+      );
     }
     return (
-      <>
-        <span className={styles.titleText}>{job.title}</span>
+      <span className={styles.titleText}>
+        {job.title}
         <span className={styles.locationText}>
-          ({job['1depth_region']} {job['2depth_region']})
+          {` (${job['1depth_region']} ${job['2depth_region']})`}
         </span>
-      </>
+      </span>
     );
   };
 
@@ -258,11 +267,6 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
         <p className={styles.title}>
           <Link href={`/jd/${job.id}`} onClick={() => handlePostClick(job.id)}>
             {formatTitle(job)}
-            {boardType === '4' && job.comment_count !== undefined && job.comment_count > 0 && (
-              <span className={styles.commentCount}>
-                [{job.comment_count}]
-              </span>
-            )}
           </Link>
         </p>
         <p className={styles.jobDetails}>
@@ -307,11 +311,6 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
         <div className={styles.hotContent}>
           <h3 className={styles.hotTitle}>
             {job.title}
-            {boardType === '4' && job.comment_count !== undefined && job.comment_count > 0 && (
-              <span className={styles.commentCount}>
-                [{job.comment_count}]
-              </span>
-            )}
           </h3>
           <div className={styles.hotFooter}>
             <span className={styles.time}>{formatDate(job.updated_time)}</span>
