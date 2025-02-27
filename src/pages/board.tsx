@@ -323,7 +323,8 @@ const BoardPage: React.FC = () => {
           *,
           users!inner (
             is_accept
-          )
+          ),
+          comment:comment(count)
         `, { count: 'exact' })
         .eq('ad', false)
         .eq('board_type', currentBoardType)
@@ -373,11 +374,15 @@ const BoardPage: React.FC = () => {
       setTotalPages(totalPages);
 
       // 북마크 상태를 포함하여 jobs 매핑
-      const mappedJobs = (jobs || []).map((job: any) => ({
-        ...job,
-        board_type: currentBoardType,
-        bookmarked: bookmarkedJobs.includes(job.id)
-      }));
+      const mappedJobs = (jobs || []).map((job: any) => {
+        console.log('Comment data for job:', job.comment); // 디버깅용
+        return {
+          ...job,
+          board_type: currentBoardType,
+          bookmarked: bookmarkedJobs.includes(job.id),
+          comment_count: job.comment[0]?.count || 0  // count 결과를 올바르게 추출
+        };
+      });
 
       setRegularJobs(mappedJobs);
       setError(null);

@@ -125,7 +125,7 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
     }
     return (
       <>
-        {job.title}
+        <span className={styles.titleText}>{job.title}</span>
         <span className={styles.locationText}>
           ({job['1depth_region']} {job['2depth_region']})
         </span>

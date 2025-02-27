@@ -420,25 +420,6 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
         )}
       </div>
 
-      {/* 메인 캐러셀 추가 - wrapper div 추가 */}
-      <div className={style.carouselWrapper}>
-        <MainCarousel  
-          images={[
-            { 
-              src: '/jddetail.png', 
-              link: 'https://open.kakao.com/me/114114KR',
-              mobileSrc: '/jddetail_mo.png'
-            }
-          ]}
-        />
-      </div>
-
-      <div className={style.articleFoot}>
-        <ul className={style.acts}>
-          <li><a href="#" onClick={handleListClick}>목록</a></li>
-        </ul>
-      </div>
-
       {/* Comment section with updated props */}
       <Comment 
         jdId={jobDetail.id} 

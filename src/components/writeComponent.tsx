@@ -235,9 +235,9 @@ const WritePage: React.FC = () => {
 
       if (response.error) throw response.error;
 
-      // 자유게시판이거나 비즈니스 인증이 된 경우 바로 board 페이지로 이동
+      // 자유게시판이거나 비즈니스 인증이 된 경우 board 페이지로 이동
       if (formData.board_type === '4') {
-        router.push('/board');
+        router.push('/board?board_type=4');
       } else {
         const { data: userData } = await supabase
           .from('users')
