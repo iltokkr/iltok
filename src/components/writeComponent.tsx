@@ -182,6 +182,16 @@ const WritePage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // 시급 유효성 검사 추가
+    if (formData.board_type === '0' && formData.salary_type === '시급') {
+      const hourlyWage = parseInt(formData.salary_detail);
+      if (!isNaN(hourlyWage) && hourlyWage < 10300) {
+        setErrorMessage('최저임금(10,300원)보다 적은 금액을 입력할 수 없습니다.');
+        setIsModalOpen(true);
+        return;
+      }
+    }
+
     if (!validateForm()) return;
 
     try {
