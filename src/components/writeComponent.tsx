@@ -185,8 +185,8 @@ const WritePage: React.FC = () => {
     // 시급 유효성 검사 추가
     if (formData.board_type === '0' && formData.salary_type === '시급') {
       const hourlyWage = parseInt(formData.salary_detail);
-      if (!isNaN(hourlyWage) && hourlyWage < 10300) {
-        setErrorMessage('최저임금(10,300원)보다 적은 금액을 입력할 수 없습니다.');
+      if (!isNaN(hourlyWage) && hourlyWage < 10030) {
+        setErrorMessage('최저임금(10,030원)보다 적은 금액을 입력할 수 없습니다.');
         setIsModalOpen(true);
         return;
       }
@@ -425,7 +425,7 @@ const WritePage: React.FC = () => {
                     </div>
                   </div>
                   <div className={style.warningText}>
-                    ⚠️ 최저임금(10,300원)에 미달하는 급여는 법적 처벌 대상이 될 수 있습니다.<br/>
+                    ⚠️ 최저임금(10,030원)에 미달하는 급여는 법적 처벌 대상이 될 수 있습니다.<br/>
                     ⚠️ 최저임금법 위반 시 3년 이하의 징역 또는 2천만 원 이하의 벌금이 부과될 수 있습니다.
                   </div>
                 </div>
