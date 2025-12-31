@@ -41,7 +41,7 @@ interface Job {
   '1depth_category': string;
   '2depth_category': string;
   ad: boolean;
-  board_type: number;
+  board_type: string;
   bookmarked?: boolean;
 }
 
@@ -336,7 +336,7 @@ const BoardPage: React.FC = () => {
       // 북마크 상태를 포함하여 jobs 매핑
       const mappedJobs = (jobs || []).map((job: any) => ({
         ...job,
-        board_type: parseInt(currentBoardType),
+        board_type: currentBoardType,
         bookmarked: bookmarkedJobs.includes(job.id)
       }));
 
@@ -425,7 +425,7 @@ const BoardPage: React.FC = () => {
             .sort((a, b) => new Date(b.updated_time).getTime() - new Date(a.updated_time).getTime())
             .map(job => ({
               ...job,
-              board_type: parseInt(currentBoardType),
+              board_type: currentBoardType,
               ad: true as const,
               bookmarked: bookmarkedJobs.includes(job.id)
             }));
@@ -480,7 +480,7 @@ const BoardPage: React.FC = () => {
             .sort((a, b) => new Date(b.updated_time).getTime() - new Date(a.updated_time).getTime())
             .map(job => ({
               ...job,
-              board_type: parseInt(currentBoardType),
+              board_type: currentBoardType,
               ad: true as const,
               bookmarked: bookmarkedJobs.includes(job.id)
             }));
