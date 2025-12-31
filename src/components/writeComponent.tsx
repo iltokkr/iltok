@@ -333,7 +333,7 @@ const WritePage: React.FC = () => {
         <div className={style.subSection}>
           <div className={style.formRow}>
             <div className={style.formLabel}>게시판 <span className={style.required}>*</span></div>
-            <div className={style.formInput}>
+            <div className={style.titleFormInput}>
               <select
                 name="board_type"
                 value={formData.board_type}

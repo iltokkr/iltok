@@ -197,7 +197,7 @@
 }
 
 .timeInput {
-  width: 90px;
+  width: 130px;
   padding: 0 8px;
   border: 1px solid #ddd;
   border-radius: 4px;
@@ -371,12 +371,40 @@
   white-space: nowrap;
 }
 
+.titleFormInput {
+  flex: 1;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+@media screen and (max-width: 768px) {
+  .titleFormInput {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .titleFormInput .boardSelect {
+    width: 100%;
+  }
+  
+  .titleFormInput .titleField {
+    width: 100%;
+    flex: none;
+  }
+  
+  .titleFormInput .titleCharCount {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
 .dayPayCheckbox {
+  margin-left: 10px;
   display: flex;
   align-items: center;
   gap: 5px;
   cursor: pointer;
-  margin-left: 10px;
 }
 
 .dayPayCheckbox input {
