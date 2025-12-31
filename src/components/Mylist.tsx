@@ -160,6 +160,27 @@ const Mylist: React.FC<MylistProps> = ({
         return;
       }
 
+      // 먼저 해당 게시글의 북마크 삭제
+      const { error: bookmarkError } = await supabase
+        .from('bookmark')
+        .delete()
+        .eq('jd_id', postId);
+
+      if (bookmarkError) {
+        console.error('북마크 삭제 실패:', bookmarkError);
+      }
+
+      // 해당 게시글의 댓글 삭제
+      const { error: commentError } = await supabase
+        .from('comment')
+        .delete()
+        .eq('jd_id', postId);
+
+      if (commentError) {
+        console.error('댓글 삭제 실패:', commentError);
+      }
+
+      // 게시글 삭제
       const { error } = await supabase
         .from('jd')
         .delete()
