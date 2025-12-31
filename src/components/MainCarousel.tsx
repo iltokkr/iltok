@@ -23,14 +23,14 @@ const Carousel: React.FC<CarouselProps> = ({ images }) => {
 
   const settings = {
     dots: false,
-    infinite: true,
+    infinite: images.length > 1,
     speed: 700,
     slidesToShow: 1,
     slidesToScroll: 1,
-    autoplay: true,
+    autoplay: images.length > 1,
     autoplaySpeed: 5000,
     pauseOnHover: false,
-    arrows: true,
+    arrows: images.length > 1,
     fade: false,
     cssEase: "linear",
     responsive: [

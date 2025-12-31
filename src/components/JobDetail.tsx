@@ -69,9 +69,37 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
   const auth = useContext(AuthContext);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [showLoginPopup, setShowLoginPopup] = useState(false);
+  const [showMinWagePopup, setShowMinWagePopup] = useState(false);
+  const [dontShowAgain, setDontShowAgain] = useState(false);
 
   if (!auth) throw new Error("AuthContext not found");
   const { user, isLoggedIn } = auth;
+
+  // 최저임금 미달 팝업 체크
+  useEffect(() => {
+    if (jobDetail.salary_type === '시급') {
+      const wage = parseInt(jobDetail.salary_detail);
+      if (!isNaN(wage) && wage < 10320) {
+        // localStorage에서 "다시 보지 않기" 체크 여부 확인
+        const hiddenPosts = JSON.parse(localStorage.getItem('hiddenMinWagePopup') || '[]');
+        if (!hiddenPosts.includes(jobDetail.id)) {
+          setShowMinWagePopup(true);
+        }
+      }
+    }
+  }, [jobDetail]);
+
+  const handleCloseMinWagePopup = () => {
+    if (dontShowAgain) {
+      // localStorage에 저장
+      const hiddenPosts = JSON.parse(localStorage.getItem('hiddenMinWagePopup') || '[]');
+      if (!hiddenPosts.includes(jobDetail.id)) {
+        hiddenPosts.push(jobDetail.id);
+        localStorage.setItem('hiddenMinWagePopup', JSON.stringify(hiddenPosts));
+      }
+    }
+    setShowMinWagePopup(false);
+  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -429,6 +457,35 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
       {/* LoginPopup 컴포넌트 추가 */}
       {showLoginPopup && (
         <LoginPopup onClose={() => setShowLoginPopup(false)} />
+      )}
+
+      {/* 최저임금 미달 팝업 */}
+      {showMinWagePopup && (
+        <div className={style.minWagePopupOverlay}>
+          <div className={style.minWagePopup}>
+            <button className={style.minWageCloseBtn} onClick={handleCloseMinWagePopup}>×</button>
+            <h2 className={style.minWageTitle}>2026 최저임금 준수 안내</h2>
+            <div className={style.minWageContent}>
+              <p className={style.minWageText}>
+                2026년 적용 <span className={style.minWageHighlight}>최저시급은 10,320원</span>입니다.
+              </p>
+              <p className={style.minWageSubtext}>
+                변경된 최저임금이 준수되었는 지 공고 내용을 미리 확인해 주세요.
+              </p>
+              <p className={style.minWageDeadline}>
+                최저임금 미만 게시글 수정 유예기간 : 2026년 1월 1일 ~ 2026년 1월 9일
+              </p>
+            </div>
+            <label className={style.minWageCheckbox}>
+              <input 
+                type="checkbox" 
+                checked={dontShowAgain} 
+                onChange={(e) => setDontShowAgain(e.target.checked)} 
+              />
+              다시 보지 않기
+            </label>
+          </div>
+        </div>
       )}
     </div>
   );

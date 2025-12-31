@@ -51,6 +51,7 @@
   .layout {
     width: 100%;
     gap: 5px;
+    padding-top: 0;
   }
 }
 

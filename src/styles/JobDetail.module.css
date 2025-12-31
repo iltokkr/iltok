@@ -404,4 +404,106 @@
   }
 }
 
+/* 최저임금 미달 팝업 */
+.minWagePopupOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.minWagePopup {
+  background: white;
+  border-radius: 8px;
+  padding: 25px 30px 20px;
+  max-width: 500px;
+  width: 90%;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.minWageCloseBtn {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #999;
+  line-height: 1;
+}
+
+.minWageCloseBtn:hover {
+  color: #333;
+}
+
+.minWageTitle {
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 25px;
+  color: #333;
+  text-align: left;
+}
+
+.minWageContent {
+  background: #f5f5f5;
+  border-radius: 8px;
+  padding: 25px 20px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.minWageText {
+  font-size: 15px;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.minWageHighlight {
+  color: #ff3900;
+  font-weight: bold;
+}
+
+.minWageSubtext {
+  font-size: 13px;
+  color: #888;
+  margin: 0;
+}
+
+.minWageDeadline {
+  font-size: 12px;
+  color: #ff3900;
+  margin: 12px 0 0 0;
+  font-weight: 500;
+}
+
+@media (max-width: 480px) {
+  .minWageDeadline {
+    font-size: 11px;
+    word-break: keep-all;
+  }
+}
+
+.minWageCheckbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #888;
+  cursor: pointer;
+}
+
+.minWageCheckbox input {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+}
 
