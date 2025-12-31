@@ -358,6 +358,27 @@
   padding: 0 15px;
 }
 
+.titleInputWrapper {
+  display: flex;
+  flex: 1;
+  align-items: center;
+}
+
+.titleCharCount {
+  color: #999;
+  font-size: 12px;
+  margin-left: 10px;
+  white-space: nowrap;
+}
+
+.titleErrorText {
+  color: #ff4444;
+  font-size: 12px;
+  margin-top: 5px;
+  margin-left: 0;
+  width: 100%;
+}
+
 .formInput {
   flex: 1;
   display: flex;

@@ -84,7 +84,15 @@ const WritePage: React.FC = () => {
     work_location_detail: false,
     contents: false
   });
+  const [titleInvalid, setTitleInvalid] = useState(false);
   const auth = useContext(AuthContext);
+
+  // 제목 유효성 검사 함수
+  const validateTitle = (value: string): boolean => {
+    // 허용되는 문자: 한글, 영문, 숫자, 공백, 특수문자(- + # ( ) [ ] % & , . ' / ~ : ; = ★ ! ?)
+    const allowedPattern = /^[가-힣ㄱ-ㅎㅏ-ㅣa-zA-Z0-9\s\-\+#\(\)\[\]%&,\.'\/~:;=★!?\u0020]*$/;
+    return allowedPattern.test(value);
+  };
 
   useEffect(() => {
     if (auth?.user) {
@@ -172,6 +180,14 @@ const WritePage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // 제목 특수문자 유효성 검사
+    if (!validateTitle(formData.title)) {
+      setTitleInvalid(true);
+      setErrorMessage('공고제목에는 한글, 영문, 숫자, 일부 특수문자(- + # () [] % & , . (주) (사) \' / ~ : ; = ★ ! ?) 만 사용할 수 있습니다.');
+      setIsModalOpen(true);
+      return;
+    }
 
     // 시급 유효성 검사 추가
     if (formData.board_type === '0' && formData.salary_type === '시급') {
@@ -262,6 +278,12 @@ const WritePage: React.FC = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
+    
+    // 제목 입력 시 유효성 검사
+    if (name === 'title') {
+      setTitleInvalid(!validateTitle(value));
+    }
+    
     setFormData(prevState => ({
       ...prevState,
       [name]: value
@@ -325,13 +347,15 @@ const WritePage: React.FC = () => {
               <input
                 name="title"
                 type="text"
-                className={getInputClassName('title', `${style.input} ${style.titleField}`)}
-                placeholder="제목을 입력해주세요 (최대 50자)"
+                className={`${getInputClassName('title', `${style.input} ${style.titleField}`)} ${titleInvalid ? style.errorInput : ''}`}
+                placeholder="제목을 입력해주세요 (최대 40자)"
                 value={formData.title}
                 onChange={handleInputChange}
-                maxLength={50}
+                maxLength={40}
               />
-              {errors.title && <div className={style.errorText}>제목을 입력해주세요</div>}
+              <div className={style.titleCharCount}>{formData.title.length}/40 [최소2자]</div>
+              {titleInvalid && <div className={style.errorText}>공고제목에는 한글, 영문, 숫자, 일부 특수문자(- + # () [] % &amp; , . (주) (사) ' / ~ : ; = ★ ! ?) 만 사용할 수 있습니다.</div>}
+              {errors.title && !titleInvalid && <div className={style.errorText}>제목을 입력해주세요</div>}
             </div>
           </div>
         </div>
