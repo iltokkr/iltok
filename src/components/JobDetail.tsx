@@ -321,7 +321,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
                 <h3>
                   급여·근무
                   <span style={{ fontSize: '0.8em', marginLeft: '8px', color: '#666' }}>
-                    2025년 최저임금은 10,030원입니다
+                    2025년 최저임금은 10,320원입니다
                   </span>
                 </h3>
                 
