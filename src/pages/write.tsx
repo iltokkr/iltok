@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import React, { useEffect, useContext } from 'react';
+import React, { useEffect, useContext, useState } from 'react';
 import { createClient } from '@supabase/supabase-js'
 import { AuthContext } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
@@ -7,6 +7,7 @@ import Footer from '@/components/Footer';
 import WritePage from '@/components/writeComponent';
 import styles from '@/styles/Write.module.css';
 import { useRouter } from 'next/router';
+import LoginPopup from '@/components/LoginPopup';
 
 // Supabase 클라이언트 생성
 const supabase = createClient(
@@ -30,29 +31,42 @@ const supabase = createClient(
 const Write: React.FC = () => {
   const router = useRouter();
   const authContext = useContext(AuthContext);
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
 
   useEffect(() => {
-    // 로그인한 경우에만 사용자 인증 상태 확인
-    if (authContext?.user) {
-      const checkUserAcceptance = async () => {
-        if (!authContext?.user?.id) return;
-
-        const { data, error } = await supabase
-          .from('users')
-          .select('is_accept')
-          .eq('id', authContext.user.id)
-          .single();
-
-        if (error) {
-          console.error('Error fetching user data:', error);
-        } else if (data && !data.is_accept) {
-          router.push('/board');
-        }
-      };
-
-      checkUserAcceptance();
+    // 로그인하지 않은 경우 로그인 팝업 표시
+    if (!authContext?.user) {
+      setShowLoginPopup(true);
+      return;
     }
+
+    // 로그인한 경우에만 사용자 인증 상태 확인
+    const checkUserAcceptance = async () => {
+      if (!authContext?.user?.id) return;
+
+      const { data, error } = await supabase
+        .from('users')
+        .select('is_accept')
+        .eq('id', authContext.user.id)
+        .single();
+
+      if (error) {
+        console.error('Error fetching user data:', error);
+      }
+      // is_accept가 false인 경우에만 board로 리다이렉트
+      if (data && data.is_accept === false) {
+        router.push('/board');
+      }
+    };
+
+    checkUserAcceptance();
   }, [authContext?.user]);
+
+  const handleLoginPopupClose = () => {
+    if (authContext?.user) {
+      setShowLoginPopup(false);
+    }
+  };
 
   return (
     <div className={styles.container}>
@@ -74,6 +88,7 @@ const Write: React.FC = () => {
       <Header />
       <main className={styles.layout}>
         <WritePage />
+        {showLoginPopup && <LoginPopup onClose={handleLoginPopupClose} />}
       </main>
       <Footer />
     </div>

@@ -2,55 +2,50 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 40px 20px;
-  background-color: #fff;
-}
-
-.content {
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 32px;
-}
-
-.mainTitle {
-  font-size: 2.5rem;
+  line-height: 1.6;
   color: #333;
-  text-align: center;
-  margin-bottom: 40px;
+}
+
+.container h1 {
+  font-size: 32px;
   font-weight: 700;
+  margin-bottom: 40px;
+  text-align: center;
+  color: #1a1a1a;
 }
 
-.section {
-  margin-bottom: 32px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid #eee;
-}
-
-.sectionTitle {
-  font-size: 1.5rem;
-  color: #2c3e50;
-  margin-bottom: 16px;
+.container h2 {
+  font-size: 24px;
   font-weight: 600;
+  margin-top: 40px;
+  margin-bottom: 20px;
+  color: #2c2c2c;
+  border-bottom: 2px solid #eee;
+  padding-bottom: 10px;
 }
 
-.paragraph {
-  font-size: 1rem;
-  line-height: 1.7;
-  color: #4a4a4a;
+.container p {
   margin-bottom: 16px;
+  font-size: 16px;
 }
 
-.orderedList {
+.container ul, 
+.container ol {
+  margin-bottom: 16px;
   padding-left: 24px;
-  margin-bottom: 16px;
 }
 
-.listItem {
-  font-size: 1rem;
-  line-height: 1.7;
-  color: #4a4a4a;
-  margin-bottom: 12px;
-  padding-left: 8px;
+.container li {
+  margin-bottom: 8px;
+  font-size: 16px;
+}
+
+.container ul li {
+  list-style-type: disc;
+}
+
+.container ol li {
+  list-style-type: decimal;
 }
 
 @media (max-width: 768px) {
@@ -58,15 +53,19 @@
     padding: 20px 16px;
   }
 
-  .content {
-    padding: 24px 16px;
+  .container h1 {
+    font-size: 24px;
+    margin-bottom: 30px;
   }
 
-  .mainTitle {
-    font-size: 2rem;
+  .container h2 {
+    font-size: 20px;
+    margin-top: 30px;
+    margin-bottom: 15px;
   }
 
-  .sectionTitle {
-    font-size: 1.25rem;
+  .container p,
+  .container li {
+    font-size: 14px;
   }
 } 

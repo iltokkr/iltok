@@ -31,7 +31,7 @@ const Carousel: React.FC<CarouselProps> = ({ images }) => {
     autoplaySpeed: 5000,
     pauseOnHover: false,
     arrows: true,
-    fade: true,
+    fade: false,
     cssEase: "linear",
     responsive: [
       {
@@ -47,8 +47,8 @@ const Carousel: React.FC<CarouselProps> = ({ images }) => {
     <div className={styles.carousel}>
       <Slider {...settings}>
         {images.map((image, index) => (
-          <div key={index}>
-            <a href={image.link} rel="noopener noreferrer">
+          <div key={index} className={styles.slideWrapper}>
+            <a href={image.link} target="_blank" rel="noopener noreferrer">
               <img
                 src={isMobile && image.mobileSrc ? image.mobileSrc : image.src}
                 alt={`Slide ${index + 1}`}

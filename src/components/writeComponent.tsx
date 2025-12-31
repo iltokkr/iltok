@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useRouter } from 'next/router';
 import style from '@/styles/WriteComponent.module.css';
 import { createClient } from '@supabase/supabase-js';
@@ -8,6 +8,7 @@ import { toZonedTime } from 'date-fns-tz';
 import Link from 'next/link';
 import BusinessVerificationModal from '@/components/BusinessVerificationModal';
 import LoginPopup from '@/components/LoginPopup';
+import { AuthContext } from '@/contexts/AuthContext';
 
 // Supabase 클라이언트 설정
 const supabase = createClient(
@@ -85,10 +86,14 @@ const WritePage: React.FC = () => {
     work_location_detail: false,
     contents: false
   });
+  const auth = useContext(AuthContext);
 
   useEffect(() => {
-    checkLoginStatus();
-  }, []);
+    if (auth?.user) {
+      setCurrentUserId(auth.user.id);
+      setShowLoginPopup(false); // 로그인된 상태면 팝업 숨김
+    }
+  }, [auth?.user]);
 
   useEffect(() => {
     if (id && currentUserId) {
@@ -99,17 +104,16 @@ const WritePage: React.FC = () => {
   }, [id, currentUserId]);
 
   const checkLoginStatus = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      setCurrentUserId(user.id);
-    } else {
+    if (!auth?.user) {
       setShowLoginPopup(true);
     }
   };
 
   const handleLoginPopupClose = () => {
-    setShowLoginPopup(false);
-    router.push('/board');
+    if (auth?.user) {
+      setShowLoginPopup(false);
+      setCurrentUserId(auth.user.id);
+    }
   };
 
   const fetchJobData = async (jobId: number) => {

@@ -8,69 +8,55 @@
 }
 
 .carousel {
-  padding-top: 10px;
   width: 100%;
   max-width: 980px;
   margin: 0 auto;
-  position: relative;
+  padding: 10px 0;
 }
 
-.slide {
-  width: 100%;
+.carousel :global(.slick-prev),
+.carousel :global(.slick-next) {
+  z-index: 1;
+}
+
+.carousel :global(.slick-prev) {
+  left: 10px;
+}
+
+.carousel :global(.slick-next) {
+  right: 10px;
+}
+
+.carousel :global(.slick-prev:before),
+.carousel :global(.slick-next:before) {
+  color: #666;
+}
+
+.slideWrapper {
   position: relative;
+  width: 100%;
+  aspect-ratio: 980/70;
 }
 
 .image {
   width: 100%;
-  height: auto;
+  height: 100%;
   object-fit: cover;
-  border-radius: 0.8vw;
-  display: block;
-  vertical-align: top;
+  border-radius: 5px;
+  border: 1px solid #eee;
 }
 
-/* 슬라이더 화살표 커스텀 스타일 */
-.carousel :global(.slick-prev),
-.carousel :global(.slick-next) {
-  z-index: 1;
-  width: 40px;
-  height: 40px;
-}
+@media (max-width: 768px) {
+  .carousel {
+    padding: 5px 0;
+  }
+  
+  .image {
+    border-radius: 0;
+  }
 
-.carousel :global(.slick-prev) {
-  left: 20px;
-}
-
-.carousel :global(.slick-next) {
-  right: 20px;
-}
-
-/* 도트 네비게이션 커스텀 스타일 */
-.carousel :global(.slick-dots) {
-  bottom: -10%;
-}
-
-.carousel :global(.slick-dots li button:before) {
-  color: #ff3900;
-  opacity: 0.7;
-}
-
-.carousel :global(.slick-dots li.slick-active button:before) {
-  color: #ff3900;
-  opacity: 1;
-}
-
-/* 페이드 효과를 위한 스타일 */
-.carousel :global(.slick-slide) {
-  opacity: 0;
-  transition: opacity 0.5s ease;
-  line-height: 0;
-}
-
-.carousel :global(.slick-slide.slick-active) {
-  opacity: 1;
-}
-
-.carousel :global(.slick-slide > div) {
-  line-height: 0;
+  .carousel :global(.slick-prev),
+  .carousel :global(.slick-next) {
+    display: none !important;
+  }
 } 
