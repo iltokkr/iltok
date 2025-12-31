@@ -41,7 +41,7 @@ interface Job {
   '1depth_category': string;
   '2depth_category': string;
   ad: boolean;
-  board_type: string;
+  board_type: number;
   bookmarked?: boolean;
 }
 
@@ -207,44 +207,6 @@ function CustomerSupport() {
   );
 }
 
-// WriteButton 컴포넌트 수정
-function WriteButton() {
-  const [isMobile, setIsMobile] = useState(false);
-  const router = useRouter();
-  const { currentLanguage } = useLanguage();
-  const { board_type } = router.query;
-
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  const handleClick = () => {
-    router.push('/write');
-  };
-
-  // board_type이 4가 아니거나 모바일이 아닐 경우 렌더링하지 않음
-  if (!isMobile || board_type !== '4') return null;
-
-  return (
-    <button
-      className={styles.writeButton}
-      onClick={handleClick}
-      aria-label={currentLanguage === 'ko' ? '글쓰기' : 'Write Post'}
-    >
-      <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
-      </svg>
-      <span>{currentLanguage === 'ko' ? '글쓰기' : 'Write'}</span>
-    </button>
-  );
-}
-
 // 페이지를 정적으로 생성하도록 설정
 export async function getStaticProps() {
   return {
@@ -280,6 +242,7 @@ const BoardPage: React.FC = () => {
   const { currentLanguage, changeLanguage } = useLanguage();  // 추가
   const auth = useContext(AuthContext);
   const [bookmarkedJobs, setBookmarkedJobs] = useState<number[]>([]);
+  const [showModal, setShowModal] = useState(true); // 모달 상태 추가
 
   // AuthContext가 는 경우 에러 처리
   if (!auth) throw new Error("AuthContext not found");
@@ -310,10 +273,8 @@ const BoardPage: React.FC = () => {
   const fetchJobs = useCallback(async (currentFilters: FilterOptions, page: number, currentBoardType: string) => {
     setIsLoading(true);
     try {
-      console.log('Fetching jobs with filters:', currentFilters, 'Page:', page, 'Board Type:', currentBoardType);
-
       const { city1, city2, cate1, cate2, keyword, searchType } = currentFilters;
-      const pageSize = currentBoardType === '4' ? 20 : 40; // board_type 4일 때는 페이지당 20개
+      const pageSize = 40;
       const offset = (page - 1) * pageSize;
 
       // 기본 쿼리 설정
@@ -323,8 +284,7 @@ const BoardPage: React.FC = () => {
           *,
           users!inner (
             is_accept
-          ),
-          comment:comment(count)
+          )
         `, { count: 'exact' })
         .eq('ad', false)
         .eq('board_type', currentBoardType)
@@ -374,21 +334,17 @@ const BoardPage: React.FC = () => {
       setTotalPages(totalPages);
 
       // 북마크 상태를 포함하여 jobs 매핑
-      const mappedJobs = (jobs || []).map((job: any) => {
-        console.log('Comment data for job:', job.comment); // 디버깅용
-        return {
-          ...job,
-          board_type: currentBoardType,
-          bookmarked: bookmarkedJobs.includes(job.id),
-          comment_count: job.comment[0]?.count || 0  // count 결과를 올바르게 추출
-        };
-      });
+      const mappedJobs = (jobs || []).map((job: any) => ({
+        ...job,
+        board_type: parseInt(currentBoardType),
+        bookmarked: bookmarkedJobs.includes(job.id)
+      }));
 
       setRegularJobs(mappedJobs);
       setError(null);
 
       // 광고 게시물 처리 (첫 페이지에만)
-      if (page === 1 && currentBoardType !== '4') {
+      if (page === 1) {
         let adQuery;
         
         if (currentBoardType === '0') {
@@ -469,7 +425,7 @@ const BoardPage: React.FC = () => {
             .sort((a, b) => new Date(b.updated_time).getTime() - new Date(a.updated_time).getTime())
             .map(job => ({
               ...job,
-              board_type: currentBoardType,
+              board_type: parseInt(currentBoardType),
               ad: true as const,
               bookmarked: bookmarkedJobs.includes(job.id)
             }));
@@ -524,7 +480,7 @@ const BoardPage: React.FC = () => {
             .sort((a, b) => new Date(b.updated_time).getTime() - new Date(a.updated_time).getTime())
             .map(job => ({
               ...job,
-              board_type: currentBoardType,
+              board_type: parseInt(currentBoardType),
               ad: true as const,
               bookmarked: bookmarkedJobs.includes(job.id)
             }));
@@ -720,6 +676,11 @@ const BoardPage: React.FC = () => {
     }
   }, [router.isReady, bookmarkedJobs]);
 
+  // 모달 닫기 핸들러 추가
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
+
   return (
     <div className={styles.container}>
       <Head>
@@ -731,7 +692,7 @@ const BoardPage: React.FC = () => {
             : "Find job opportunities across various industries."
           } 
         />
-        <meta name="keywords" content="114114, 114114코리아, 114114korea, 114114kr, 114114구인구직, 조선동포, 교포, 재외동, 해외교포, 동포 구인구직, 일자리 정보, 구직자, 구인체, 경력직 채용, 구인구직, 기업 채용, 기 알바, 드림 구인구직, 무료 채용 공고, 아르바이트, 알바, 알바 구인구직, 월급, 일당, 채용 정보, 취업 정보, 직업 정보 제공, 지역별 구인구직, 헤드헌팅 비스, 신입 채용 공고, 포 취업, 동포 일자리" />
+        <meta name="keywords" content="114114, 114114코리아, 114114korea, 114114kr, 114114구인구직, 조선동포, 교포, 재외동, 해외교포, 동포 구인구직, 일자리 정보, 구직자, 구인체, 경력직 채용, 구인구직, 기업 채용, 기 알바, 드림 구인구직, 무료 채용 공고, 아르바이트, 알바, 알바 구인구직, 월급, 일당, ��급, 채용 정보, 취업 정보, 직업 정보 제공, 지역별 구인구직, 헤드헌팅 비스, 신입 채용 공고, 포 취업, 동포 일자리" />
         <meta property="og:title" content="구인구직 게시판 | 114114KR" />
         <meta property="og:description" content="다양한 직종의 구인구직 정보를 찾아보세요. 지역별, 카테고리별로 필터링하여 원하는 일자리를 쉽게 찾을 수 있습다." />
         <meta property="og:type" content="website" />
@@ -749,9 +710,9 @@ const BoardPage: React.FC = () => {
               mobileSrc: '/image copy_mo.png'
             },
             { 
-              src: '/image_3.png', 
+              src: '/웬제중한국제결혼.png', 
               link: 'https://88pandacar.framer.website/',
-              mobileSrc: '/image_3_mo.png'
+              mobileSrc: '/웬제중한국제결혼_mo.png'
             }
             // 추가 이미지와 링크를 여기에 추가
         ]}
@@ -775,10 +736,33 @@ const BoardPage: React.FC = () => {
       </div>
       <Footer />
       {error && <div className={styles.error}>{error}</div>}
-      <InstallPWA />
-      <ScrollToTop />
-      <CustomerSupport />
-      <WriteButton />
+      <InstallPWA /> {/* PWA 설치 버튼 추가 */}
+      <ScrollToTop /> {/* ScrollToTop 컴포넌트 추가 */}
+      <CustomerSupport /> {/* 고객센터 버튼 추가 */}
+      
+      {/* 긴급공지 모달 추가 */}
+      {/* {showModal && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modal}>
+            <h2 className={styles.modalTitle}>[긴급공지] 서비스 전수 조사 안내</h2>
+            <div className={styles.modalContent}>
+              <p>안녕하세요, 운영자입니다.</p>
+              <br />
+              <p>더 좋은 서비스 경험을 위해 게시글에 대한 전수 조사를 하며, 불법 구인 공고 및 중복된 공고들을 줄이고자 합니다. 전수 조사기간 중 공고 열람 및 업로드는 불가능하오니 참고부탁드립니다.</p>
+              <br />
+              <p>[검수기간] 25년 1월 2일 기준 3~7일 소요</p>
+              <p>[검수내용] 불법 구인 공고 및 중복된 공고</p>
+              <br />
+              <p><a href="https://www.114114kr.com/jd/3323" target="_blank" rel="noopener noreferrer">자세히 보러가기</a></p>
+              <br />
+              <p>감사합니다.</p>
+            </div>
+            <button className={styles.modalCloseButton} onClick={handleCloseModal}>
+              닫기
+            </button>
+          </div>
+        </div>
+      )} */}
     </div>
   );
 };
