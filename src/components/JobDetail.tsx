@@ -318,12 +318,10 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
 
             {(jobDetail.salary_type || (jobDetail.work_start_time && jobDetail.work_end_time)) && (
               <div className={style.infoCard}>
-                <h3>
-                  급여·근무
-                  <span style={{ fontSize: '0.8em', marginLeft: '8px', color: '#666' }}>
-                    2026년 최저임금은 10,320원입니다
-                  </span>
-                </h3>
+                <h3>급여·근무</h3>
+                <div style={{ fontSize: '0.75em', color: '#666', marginBottom: '8px' }}>
+                  2026년 최저임금은 10,320원입니다
+                </div>
                 
                 {jobDetail.salary_type && jobDetail.salary_detail && (
                   <span>{jobDetail.salary_type} {jobDetail.salary_detail}원</span>
