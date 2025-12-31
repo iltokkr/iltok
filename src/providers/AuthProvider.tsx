@@ -13,12 +13,14 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export const AuthProvider: React.FC<PropsWithChildren> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // 현재 세션 확인
     const checkSession = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
+      setIsLoading(false);
     };
 
     checkSession();
@@ -27,6 +29,7 @@ export const AuthProvider: React.FC<PropsWithChildren> = ({ children }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setUser(session?.user ?? null);
+        setIsLoading(false);
       }
     );
 
@@ -54,6 +57,7 @@ export const AuthProvider: React.FC<PropsWithChildren> = ({ children }) => {
   const value = {
     user,
     isLoggedIn: !!user,
+    isLoading,
     signIn,
     signOut,
     verifyOtp,

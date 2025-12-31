@@ -34,6 +34,11 @@ const Write: React.FC = () => {
   const [showLoginPopup, setShowLoginPopup] = useState(false);
 
   useEffect(() => {
+    // 로딩 중에는 팝업 표시하지 않음
+    if (authContext?.isLoading) {
+      return;
+    }
+
     // 로그인하지 않은 경우 로그인 팝업 표시
     if (!authContext?.user) {
       setShowLoginPopup(true);
@@ -63,7 +68,7 @@ const Write: React.FC = () => {
     };
 
     checkUserAcceptance();
-  }, [authContext?.user]);
+  }, [authContext?.user, authContext?.isLoading]);
 
   const handleLoginPopupClose = async () => {
     // Supabase 세션을 직접 확인 (context가 아직 업데이트되지 않았을 수 있음)
