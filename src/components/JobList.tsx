@@ -15,6 +15,9 @@ import { createClient } from '@supabase/supabase-js'
 import { BsHeart, BsHeartFill } from 'react-icons/bs';
 import { toast } from 'react-hot-toast';
 import LoginPopup from './LoginPopup';
+import Slider from 'react-slick';
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -32,9 +35,11 @@ interface Job {
   '1depth_category': string;
   '2depth_category': string;
   ad: boolean;
-  board_type: number;
+  board_type: string;
   bookmarked?: boolean;
   bookmark_count?: number;
+  comment_count?: number;
+  community_tag?: string;
 }
 
 interface AdJob extends Job {
@@ -115,18 +120,30 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
   const [showAdPopup, setShowAdPopup] = useState(false);
 
   const formatTitle = (job: Job) => {
+    if (boardType === '4') {
+      return (
+        <span className={styles.titleText}>
+          {job.title}
+          {job.comment_count !== undefined && job.comment_count > 0 && (
+            <span className={styles.commentCount}>
+              [{job.comment_count}]
+            </span>
+          )}
+        </span>
+      );
+    }
     return (
-      <>
+      <span className={styles.titleText}>
         {job.title}
         <span className={styles.locationText}>
-          ({job['1depth_region']} {job['2depth_region']})
+          {` (${job['1depth_region']} ${job['2depth_region']})`}
         </span>
-      </>
+      </span>
     );
   };
 
   const formatSalary = (job: Job) => {
-    if (boardType !== '0' || !job.salary_type || !job.salary_detail) return null;
+    if (boardType === '4' || boardType !== '0' || !job.salary_type || !job.salary_detail) return null;
     
     let formattedSalary = job.salary_detail;
     if (!isNaN(Number(job.salary_detail))) {
@@ -259,9 +276,81 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
     </li>
   );
 
+  const sliderSettings = {
+    dots: false,
+    infinite: true,
+    speed: 500,
+    slidesToShow: Math.min(4, jobs.filter(job => job.community_tag).length || 1),
+    slidesToScroll: 1,
+    responsive: [
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: Math.min(2, jobs.filter(job => job.community_tag).length || 1),
+        }
+      },
+      {
+        breakpoint: 768,
+        settings: {
+          slidesToShow: 1,
+        }
+      },
+      {
+        breakpoint: 480,
+        settings: {
+          slidesToShow: 1,
+        }
+      }
+    ]
+  };
+
+  const renderHotItem = (job: Job) => (
+    <div key={job.id} className={styles.hotItem}>
+      <div className={styles.hotTag}>{job.community_tag || '공지'}</div>
+      <Link href={`/jd/${job.id}`} onClick={() => handlePostClick(job.id)}>
+        <div className={styles.hotContent}>
+          <h3 className={styles.hotTitle}>
+            {job.title}
+          </h3>
+          <div className={styles.hotFooter}>
+            <span className={styles.time}>{formatDate(job.updated_time)}</span>
+            <div 
+              className={styles.bookmarkContainer}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleBookmark(job.id);
+              }}
+            >
+              {bookmarkedJobs.includes(job.id) ? 
+                <BsHeartFill className={styles.filledBookmark} /> : 
+                <BsHeart className={styles.emptyBookmark} />
+              }
+              <span className={styles.bookmarkCount}>
+                {bookmarkCounts[job.id] || 0}
+              </span>
+            </div>
+          </div>
+        </div>
+      </Link>
+    </div>
+  );
+
   return (
-    <div className={styles.layout}>
-      {/* 언어 택 버튼 추가 */}
+    <div className={styles.layout} data-board-type={boardType}>
+      {boardType === '4' && (
+        <div className={styles.hotSection}>
+          <h2 className={styles.hotSectionTitle}>실시간 HOT 게시글</h2>
+          <div className={styles.hotContainer}>
+            <Slider {...sliderSettings}>
+              {jobs
+                .filter(job => job.community_tag)
+                .slice(0, 8)
+                .map(job => renderHotItem(job))}
+            </Slider>
+          </div>
+        </div>
+      )}
 
       <section className={styles.mainList}>
         {showAdJobs && adJobs.length > 0 && (

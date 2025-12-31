@@ -240,3 +240,36 @@
 .modalCloseButton:hover {
   background-color: #0056b3;
 }
+
+.writeButton {
+  position: fixed;
+  left: 20px;
+  bottom: 20px;
+  background-color: #ff6b00;
+  color: white;
+  border: none;
+  border-radius: 50px;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  cursor: pointer;
+  transition: transform 0.2s, background-color 0.2s;
+}
+
+.writeButton:hover {
+  background-color: #e65c00;
+  transform: translateY(-2px);
+}
+
+.writeButton svg {
+  width: 20px;
+  height: 20px;
+}
+
+.writeButton span {
+  font-size: 14px;
+  font-weight: 500;
+}

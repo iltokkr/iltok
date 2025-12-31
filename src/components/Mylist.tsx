@@ -19,6 +19,7 @@ interface MyPost {
   '2depth_region': string;
   '1depth_category': string;
   '2depth_category': string;
+  board_type?: string;
 }
 
 interface BookmarkedPost extends MyPost {
@@ -199,10 +200,19 @@ const Mylist: React.FC<MylistProps> = ({
     }
   };
 
+  // Update the filter to compare with string '4' instead of number 4
+  const regularPosts = posts.filter(post => !post.board_type || post.board_type !== '4');
+  const communityPosts = posts.filter(post => post.board_type === '4');
+  
+  console.log('All posts:', posts);
+  console.log('Posts with board_type:', posts.map(p => ({ id: p.id, board_type: p.board_type })));
+  console.log('Community posts:', communityPosts);
+  console.log('Regular posts:', regularPosts);
+
   return (
     <div className={styles.layout}>
       <div className={styles.listHead}>
-        업로드 게시글 (총 {posts.length}개) <span className={styles.delAll}>(3개월이 지난글은 삭제될 수 있습니다.)</span>
+        업로드 게시글 (총 {regularPosts.length}개) <span className={styles.delAll}>(3개월이 지난글은 삭제될 수 있습니다.)</span>
       </div>
 
       <div className={styles.businessStatus}>
@@ -227,6 +237,60 @@ const Mylist: React.FC<MylistProps> = ({
           </ul>
       </div>
       </div>
+
+      <ul className={styles.listWrap}>
+        {regularPosts.map((post) => (
+          <li key={post.id}>
+            <div className={styles.postInfo}>
+              <div className={styles.postContent}>
+                <span className={styles.time}>{formatDate(post.updated_time)}</span>
+                <a href={`/jd/${post.id}`} className={styles.title}>
+                  {post.title}
+                </a>
+                <em>({post['1depth_region']} {post['2depth_region']}) - {post['1depth_category']} {post['2depth_category']}</em>
+              </div>
+              <div className={styles.buttonGroup}>
+                <span className={styles.recall}>
+                  <a href={`/write?id=${post.id}`}>[수정]</a>
+                </span>
+                <span className={styles.recall}>
+                  <a onClick={() => handleReload(post.id)}>[재업로드]</a>
+                </span>
+                <span className={styles.recall}>
+                  <a onClick={() => handleDelete(post.id)}>[삭제]</a>
+                </span>
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      <div className={styles.listHead} style={{ marginTop: '40px' }}>
+        커뮤니티 게시글 ({communityPosts.length}개)
+      </div>
+
+      <ul className={styles.listWrap}>
+        {communityPosts.map((post) => (
+          <li key={post.id}>
+            <div className={styles.postInfo}>
+              <div className={styles.postContent}>
+                <span className={styles.time}>{formatDate(post.updated_time)}</span>
+                <a href={`/jd/${post.id}`} className={styles.title}>
+                  {post.title}
+                </a>
+              </div>
+              <div className={styles.buttonGroup}>
+                <span className={styles.recall}>
+                  <a href={`/write?id=${post.id}`}>[수정]</a>
+                </span>
+                <span className={styles.recall}>
+                  <a onClick={() => handleDelete(post.id)}>[삭제]</a>
+                </span>
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
 
       <div className={styles.listHead} style={{ marginTop: '40px' }}>
         북마크한 공고 ({bookmarkedPosts.length}개)
@@ -258,32 +322,7 @@ const Mylist: React.FC<MylistProps> = ({
         ))}
       </ul>
 
-      <ul className={styles.listWrap}>
-        {posts.map((post) => (
-          <li key={post.id}>
-            <div className={styles.postInfo}>
-              <div className={styles.postContent}>
-                <span className={styles.time}>{formatDate(post.updated_time)}</span>
-                <a href={`/jd/${post.id}`} className={styles.title}>
-                  {post.title}
-                </a>
-                <em>({post['1depth_region']} {post['2depth_region']}) - {post['1depth_category']} {post['2depth_category']}</em>
-              </div>
-              <div className={styles.buttonGroup}>
-                <span className={styles.recall}>
-                  <a href={`/write?id=${post.id}`}>[수정]</a>
-                </span>
-                <span className={styles.recall}>
-                  <a onClick={() => handleReload(post.id)}>[재업로드]</a>
-                </span>
-                <span className={styles.recall}>
-                  <a onClick={() => handleDelete(post.id)}>[삭제]</a>
-                </span>
-              </div>
-            </div>
-          </li>
-        ))}
-      </ul>
+      
       
       {showModal && (
         <div className={styles.modal}>

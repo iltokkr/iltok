@@ -15,6 +15,14 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
+interface CommentType {
+  id: number;
+  created_at: string;
+  text: string;
+  user_id: string;
+  jd_id: number;
+}
+
 interface JobDetailType {
   id: number;
   updated_time: string;
@@ -42,44 +50,69 @@ interface JobDetailType {
   };
 }
 
+interface UserData {
+  name: string;
+}
+
+interface PageProps {
+  initialJobDetail: JobDetailType | null;
+  initialComments: CommentType[];
+}
+
 // getServerSideProps 수정
 export async function getServerSideProps({ params }: { params: { id: string } }) {
   try {
-    const { data, error } = await supabase
-      .from('jd')
-      .select(`
-        *,
-        uploader:users (company_name, name, number)
-      `)
-      .eq('id', params.id)  // 실제 요청된 ID 사용
-      .single();
+    // 채용 정보와 댓글을 병렬로 가져오기
+    const [jobResponse, commentsResponse] = await Promise.all([
+      supabase
+        .from('jd')
+        .select(`
+          *,
+          uploader:users (company_name, name, number)
+        `)
+        .eq('id', params.id)
+        .single(),
+      
+      supabase
+        .from('comment')
+        .select(`
+          id,
+          created_at,
+          text,
+          user_id,
+          jd_id
+        `)
+        .eq('jd_id', params.id)
+        .order('created_at', { ascending: false })
+    ]);
 
-    if (error || !data) {
+    if (jobResponse.error || !jobResponse.data) {
       return {
-        notFound: true // 404 페이지 표시
+        notFound: true
       };
     }
 
     const processedData = {
-      ...data,
-      uploader: data.uploader || { company_name: "정보 없음", name: "정보 없음" },
-      board_type: data.board_type
+      ...jobResponse.data,
+      uploader: jobResponse.data.uploader || { company_name: "정보 없음", name: "정보 없음" },
+      board_type: jobResponse.data.board_type
     };
 
     return {
       props: {
-        initialJobDetail: processedData
+        initialJobDetail: processedData,
+        initialComments: commentsResponse.data || []
       }
     };
   } catch (error) {
-    console.error('Error fetching job detail:', error);
+    console.error('Error fetching data:', error);
     return {
-      notFound: true // 404 페이지 표시
+      notFound: true
     };
   }
 }
 
-const JobDetailPage: React.FC<{ initialJobDetail: JobDetailType | null }> = ({ initialJobDetail }) => {
+const JobDetailPage: React.FC<PageProps> = ({ initialJobDetail, initialComments }) => {
   const router = useRouter();
   const { id } = router.query;
   const { currentLanguage } = useLanguage();
@@ -171,6 +204,7 @@ const JobDetailPage: React.FC<{ initialJobDetail: JobDetailType | null }> = ({ i
         {jobDetail ? (
           <JobDetail 
             jobDetail={jobDetail}
+            initialComments={initialComments}
           />
         ) : (
           <p>채용 정보를 불러오는 중입니다...</p>
