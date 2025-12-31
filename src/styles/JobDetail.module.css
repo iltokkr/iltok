@@ -239,6 +239,7 @@
 
 .infoCard h3 {
   font-size: 12px;
+  font-weight: bold;
   color: #ff3900;
   margin-bottom: 8px;
   padding-bottom: 4px;
@@ -264,6 +265,7 @@
 
 .contentTitle {
   font-size: 13px;
+  font-weight: bold;
   color: #ff3900;
   margin-bottom: 12px;
   padding-bottom: 4px;
