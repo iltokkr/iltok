@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useContext } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import style from '@/styles/WriteComponent.module.css';
 import { createClient } from '@supabase/supabase-js';
@@ -8,9 +8,8 @@ import { toZonedTime } from 'date-fns-tz';
 import Link from 'next/link';
 import BusinessVerificationModal from '@/components/BusinessVerificationModal';
 import LoginPopup from '@/components/LoginPopup';
-import { AuthContext } from '@/contexts/AuthContext';
 
-// Supabase ?�라?�언???�정
+// Supabase 클라이언트 설정
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -28,7 +27,7 @@ interface JobForm {
   // 급여
   salary_type: string;
   salary_detail: string;
-  // 근무?�보
+  // 근무정보
   '1depth_category': string;
   '2depth_category': string;
   '1depth_region': string;
@@ -36,7 +35,7 @@ interface JobForm {
   work_location_detail: string;
   work_start_time: string;
   work_end_time: string;
-  // ?�세?�용
+  // 상세내용
   contents: string;
 }
 
@@ -52,15 +51,15 @@ interface FormErrors {
 
 const WritePage: React.FC = () => {
   const router = useRouter();
-  const { id } = router.query; // URL?�서 id ?�라미터 가?�오�?
+  const { id } = router.query; // URL에서 id 파라미터 가져오기
   const [formData, setFormData] = useState<JobForm>({
     title: '',
     board_type: '0',
-    experience: '무�?',
-    gender: '무�?',
-    education: '무�?',
-    age_limit: '무�?',
-    salary_type: '?�급',
+    experience: '무관',
+    gender: '무관',
+    education: '무관',
+    age_limit: '무관',
+    salary_type: '시급',
     salary_detail: '10320',
     '1depth_category': '',
     '2depth_category': '',
@@ -86,14 +85,10 @@ const WritePage: React.FC = () => {
     work_location_detail: false,
     contents: false
   });
-  const auth = useContext(AuthContext);
 
   useEffect(() => {
-    if (auth?.user) {
-      setCurrentUserId(auth.user.id);
-      setShowLoginPopup(false); // 로그?�된 ?�태�??�업 ?��?
-    }
-  }, [auth?.user]);
+    checkLoginStatus();
+  }, []);
 
   useEffect(() => {
     if (id && currentUserId) {
@@ -104,15 +99,11 @@ const WritePage: React.FC = () => {
   }, [id, currentUserId]);
 
   const checkLoginStatus = async () => {
-    if (!auth?.user) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      setCurrentUserId(user.id);
+    } else {
       setShowLoginPopup(true);
-    }
-  };
-
-  const handleLoginPopupClose = () => {
-    if (auth?.user) {
-      setShowLoginPopup(false);
-      setCurrentUserId(auth.user.id);
     }
   };
 
@@ -127,7 +118,7 @@ const WritePage: React.FC = () => {
       if (error) throw error;
 
       if (!data || data.length === 0) {
-        setErrorMessage('게시글??찾을 ???�습?�다.');
+        setErrorMessage('게시글을 찾을 수 없습니다.');
         setIsModalOpen(true);
         router.push('/board');
         return;
@@ -136,14 +127,14 @@ const WritePage: React.FC = () => {
       const jobData = data[0]; // Get the first row
 
       if (jobData.uploader_id === null) {
-        setErrorMessage('??게시글???�성???�보가 ?�습?�다. 관리자?�게 문의?�주?�요.');
+        setErrorMessage('이 게시글의 작성자 정보가 없습니다. 관리자에게 문의해주세요.');
         setIsModalOpen(true);
         router.push('/board');
         return;
       }
       
       if (jobData.uploader_id !== currentUserId) {
-        setErrorMessage('?�신???�성??글�??�정?????�습?�다.');
+        setErrorMessage('자신이 작성한 글만 수정할 수 있습니다.');
         setIsModalOpen(true);
         router.push('/board');
         return;
@@ -153,14 +144,14 @@ const WritePage: React.FC = () => {
       console.log('Form data set:', jobData);
     } catch (error) {
       console.error('Error fetching job data:', error);
-      setErrorMessage('?�이?��? 불러?�는  ?�류가 발생?�습?�다.');
+      setErrorMessage('데이터를 불러오는  오류가 발생했습니다.');
       setIsModalOpen(true);
     }
   };
 
   const validateForm = (): boolean => {
     if (formData.board_type === '4') {
-      // ?�유게시?�일 ?�는 ?�목�??�용�?검??
+      // 자유게시판일 때는 제목과 내용만 검사
       const newErrors = {
         title: formData.title.trim() === '',
         '1depth_category': false,
@@ -173,7 +164,7 @@ const WritePage: React.FC = () => {
       setErrors(newErrors);
       return !newErrors.title && !newErrors.contents;
     } else {
-      // ?�른 게시?�일 ?�는 기존 검???��?
+      // 다른 게시판일 때는 기존 검사 유지
       const newErrors = {
         title: formData.title.trim() === '',
         '1depth_category': formData['1depth_category'] === '',
@@ -191,11 +182,11 @@ const WritePage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // ?�급 ?�효??검??추�?
-    if (formData.board_type === '0' && formData.salary_type === '?�급') {
+    // 시급 유효성 검사 추가
+    if (formData.board_type === '0' && formData.salary_type === '시급') {
       const hourlyWage = parseInt(formData.salary_detail);
       if (!isNaN(hourlyWage) && hourlyWage < 10320) {
-        setErrorMessage('최�??�금(10,320??보다 ?��? 금액???�력?????�습?�다.');
+        setErrorMessage('최저임금(10,320원)보다 적은 금액을 입력할 수 없습니다.');
         setIsModalOpen(true);
         return;
       }
@@ -206,12 +197,12 @@ const WritePage: React.FC = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        setErrorMessage('로그?�이 ?�요?�니??');
+        setErrorMessage('로그인이 필요합니다.');
         setIsModalOpen(true);
         return;
       }
 
-      // ?�유게시?�이 ?�닐 ?�만 비즈?�스 ?�증 체크
+      // 자유게시판이 아닐 때만 비즈니스 인증 체크
       if (formData.board_type !== '4') {
         const { data: userData, error: userError } = await supabase
           .from('users')
@@ -222,13 +213,13 @@ const WritePage: React.FC = () => {
         if (userError) throw userError;
 
         if (!userData) {
-          setErrorMessage('?�용???�보�?찾을 ???�습?�다.');
+          setErrorMessage('사용자 정보를 찾을 수 없습니다.');
           setIsModalOpen(true);
           return;
         }
 
         if (!isEditing && userData.is_upload) {
-          setErrorMessage('공고???�루???�나�??�릴 ???�습?�다.');
+          setErrorMessage('공고는 하루에 하나만 올릴 수 있습니다.');
           setIsModalOpen(true);
           return;
         }
@@ -254,7 +245,7 @@ const WritePage: React.FC = () => {
 
       if (response.error) throw response.error;
 
-      // ?�유게시?�이거나 비즈?�스 ?�증????경우 board ?�이지�??�동
+      // 자유게시판이거나 비즈니스 인증이 된 경우 board 페이지로 이동
       if (formData.board_type === '4') {
         router.push('/board?board_type=4');
       } else {
@@ -273,7 +264,7 @@ const WritePage: React.FC = () => {
 
     } catch (error) {
       console.error('Error submitting form:', error);
-      setErrorMessage('게시글 ?�록???�패?�습?�다. ?�시 ?�도?�주?�요.');
+      setErrorMessage('게시글 등록에 실패했습니다. 다시 시도해주세요.');
       setIsModalOpen(true);
     }
   };
@@ -287,33 +278,33 @@ const WritePage: React.FC = () => {
   };
 
   const locations: { [key: string]: string[] } = {
-    ?�울: ["종로�?, "중구", "?�산�?, "?�동�?, "광진�?, "?��?문구", "중랑�?, "?�북�?, "강북�?, "?�봉�?, "?�원�?, "?�?�구", "?��?문구", "마포�?, "?�천�?, "강서�?, "구로�?, "금천�?, "?�등?�구", "?�작�?, "관?�구", "?�초�?, "강남�?, "?�파�?,"강동�?],
-    부?? ["중구", "?�구", "?�구", "?�도�?, "부?�진�?, "?�래�?, "?�구", "북구", "?�운?��?, "?�하�?, "금정�?, "강서�?, "?�제�?, "?�영�?, "?�상�?, "기장�?],
-    ?��? ["중구", "?�구", "?�구", "?�구", "북구", "?�성�?, "?�서�?, "?�성�?],
-    ?�천: ["중구", "?�구", "?�구", "미추?��?, "?�수�?, "?�동�?, "부?�구", "계양�?, "?�구", "강화�?, "?�진�?],
-    광주: ["?�구", "?�구", "?�구", "북구", "광산�?],
-    ?�?? ["?�구", "중구", "?�구", "?�성�?, "?�?�구"],
-    ?�산: ["중구", "?�구", "?�구", "북구", "?�주�?],
-    ?�종: [""],
-    경기: ["?�원??, "?�남??, "고양??, "?�인??, "부천시", "?�산??, "?�양??, "?�양주시", "?�성??, "?�택??, "?�정부??, "?�흥??, "?�주??, "광명??, "김?�시", "군포??, "광주??, "?�천??, "?�주??, "?�산??, "구리??, "?�성??, "?�천??, "?�왕??, "?�남??, "?�주??, "?�주�?, "?�평�?, "?�두천시", "과천??, "가?�군", "?�천�?],
-    강원: ["춘천??, "?�주??, "강릉??, "?�해??, "?�백??, "?�초??, "?�척??, "?�천�?, "?�성�?, "?�월�?, "?�창�?, "?�선�?, "철원�?, "?�천�?, "?�구�?, "?�군", "고성�?, "?�양�?],
-    충북: ["�?��??, "충주??, "?�천??, "�?���?, "보�?�?, "?�천�?, "?�군", "진천�?, "괴산�?, "?�성�?, "?�양�?, "증군"],
-    충남: ["천안??, "공주??, "보령??, "?�산??, "?�산??, "?�산??, "계룡??, "?�진??, "?�진�?, "금산�?, "?�기�?, "부?�군", "?�천�?, "�?���?, "?�성�?, "?�산�?, "?�안�?],
-    ?�북: ["?�주??, "군산??, "?�산??, "?�읍??, "?�원??, "김??, "?�주�?, "진안�?, "무주�?, "?�수�?, "?�실�?, "?�창�?, "고창�?, "부?�군"],
-    ?�남: ["목포??, "?�수??, "?�천??, "?�주", "광양??, "?�양�?, "곡성�?, "구�?�?, "고흥�?, "보성�?, "?�순�?, "?�흥�?, "강진�?, "?�남�?, "?�암�?, "무안�?, "?�평�?, "?�광�?, "?�성�?, "?�도�?, "진도�?, "?�안�?],
-    경북: ["?�항??, "경주??, "김천시", "?�동??, "구�???, "?�주??, "?�천??, "?�주??, "문경??, "경산??, "군위�?, "?�성�?, "�?���?, "?�양�?, "?�덕�?, "�?���?, "고령�?, "?�주�?, "칠곡�?, "?�천�?, "봉화�?, "?�진�?, "?�릉�?],
-    경남: ["창원??, "마산??, "진주??, "진해??, "?�영??, "?�천??, "김?�시", "밀?�시", "거제??, "?�산??, "?�령�?, "?�안�?, "창녕�?, "고성�?, "?�해�?, "?�동�?, "?�청�?, "?�양�?, "거창�?, "?�천�?],
-    ?�주: ["?�주??, "?��??�시", "북제주군", "?�제주군"]
+    서울: ["종로구", "중구", "용산구", "성동구", "광진구", "동대문구", "중랑구", "성북구", "강북구", "도봉구", "노원구", "은평구", "서대문구", "마포구", "양천구", "강서구", "구로구", "금천구", "영등포구", "동작구", "관악구", "서초구", "강남구", "송파구","강동구"],
+    부산: ["중구", "서구", "동구", "영도구", "부산진구", "동래구", "남구", "북구", "해운대구", "사하구", "금정구", "강서구", "연제구", "수영구", "사상구", "기장군"],
+    대구: ["중구", "동구", "서구", "남구", "북구", "수성구", "달서구", "달성군"],
+    인천: ["중구", "동구", "남구", "미추홀구", "연수구", "남동구", "부평구", "계양구", "서구", "강화군", "옹진군"],
+    광주: ["동구", "서구", "남구", "북구", "광산구"],
+    대전: ["동구", "중구", "서구", "유성구", "대덕구"],
+    울산: ["중구", "남구", "동구", "북구", "울주군"],
+    세종: [""],
+    경기: ["수원시", "성남시", "고양시", "용인시", "부천시", "안산시", "안양시", "남양주시", "화성시", "평택시", "의정부시", "시흥시", "파주시", "광명시", "김포시", "군포시", "광주시", "이천시", "양주시", "오산시", "구리시", "안성시", "포천시", "의왕시", "하남시", "여주시", "여주군", "양평군", "동두천시", "과천시", "가평군", "연천군"],
+    강원: ["춘천시", "원주시", "강릉시", "동해시", "태백시", "속초시", "삼척시", "홍천군", "횡성군", "영월군", "평창군", "정선군", "철원군", "화천군", "양구군", "제군", "고성군", "양양군"],
+    충북: ["청주시", "충주시", "제천시", "청원군", "보은군", "옥천군", "영군", "진천군", "괴산군", "음성군", "단양군", "증군"],
+    충남: ["천안시", "공주시", "보령시", "아산시", "서산시", "논산시", "계룡시", "당진시", "당진군", "금산군", "연기군", "부여군", "서천군", "청양군", "홍성군", "예산군", "태안군"],
+    전북: ["전주시", "군산시", "익산시", "정읍시", "남원시", "김제", "완주군", "진안군", "무주군", "장수군", "임실군", "순창군", "고창군", "부안군"],
+    전남: ["목포시", "여수시", "순천시", "나주", "광양시", "담양군", "곡성군", "구례군", "고흥군", "보성군", "화순군", "장흥군", "강진군", "해남군", "영암군", "무안군", "함평군", "영광군", "장성군", "완도군", "진도군", "신안군"],
+    경북: ["포항시", "경주시", "김천시", "안동시", "구미시", "영주시", "영천시", "상주시", "문경시", "경산시", "군위군", "의성군", "청송군", "영양군", "영덕군", "청도군", "고령군", "성주군", "칠곡군", "예천군", "봉화군", "울진군", "울릉군"],
+    경남: ["창원시", "마산시", "진주시", "진해시", "통영시", "사천시", "김해시", "밀양시", "거제시", "양산시", "의령군", "함안군", "창녕군", "고성군", "남해군", "하동군", "산청군", "함양군", "거창군", "합천군"],
+    제주: ["제주시", "서귀포시", "북제주군", "남제주군"]
   };
 
   const categories: { [key: string]: string[] } = {
-    "교육·강사": ["?�습지교사", "?�원강사", "방과?�교??, "?�문강사"],
-    "?�무�?: ["?�반?�무", "경리", "?�계", "?�사"],
-    "?�매·?�업": ["매장관�?, "?�매", "?�업", "?�레마�???],
-    "?�산·건설": ["?�산�?, "건설", "기술�?, "?�무�?],
-    "?�비?�직·?�식": ["?�빙", "?�리", "미용", "?�박"],
-    "IT·?�자??: ["?�개�?, "?�개�?, "그래?�디?�인", "UI/UX"],
-    "?�전": ["?�시", "버스", "?�물", "배달"]
+    "교육·강사": ["학습지교사", "학원강사", "방과후교사", "전문강사"],
+    "사무직": ["일반사무", "경리", "회계", "인사"],
+    "판매·영업": ["매장관리", "판매", "영업", "텔레마케터"],
+    "생산·건설": ["생산직", "건설", "기술직", "노무직"],
+    "서비스직·음식": ["서빙", "요리", "미용", "숙박"],
+    "IT·디자인": ["웹개발", "앱개발", "그래픽디자인", "UI/UX"],
+    "운전": ["택시", "버스", "화물", "배달"]
   };
 
   const getInputClassName = (fieldName: string, baseClass: string) => {
@@ -323,10 +314,10 @@ const WritePage: React.FC = () => {
   return (
     <div className={style.layout}>
       <form onSubmit={handleSubmit}>
-        {/* ?�목 �?게시???�택 */}
+        {/* 제목 및 게시판 선택 */}
         <div className={style.subSection}>
           <div className={style.formRow}>
-            <div className={style.formLabel}>게시??<span className={style.required}>*</span></div>
+            <div className={style.formLabel}>게시판 <span className={style.required}>*</span></div>
             <div className={style.formInput}>
               <select
                 name="board_type"
@@ -334,30 +325,30 @@ const WritePage: React.FC = () => {
                 onChange={handleInputChange}
                 className={getInputClassName('board_type', `${style.select} ${style.boardSelect}`)}
               >
-                <option value="0">구인?�보</option>
-                <option value="1">구직?�보</option>
-                <option value="2">중고?�장</option>
-                <option value="3">부?�산?�보</option>
-                <option value="4">?�유게시??/option>
+                <option value="0">구인정보</option>
+                <option value="1">구직정보</option>
+                <option value="2">중고시장</option>
+                <option value="3">부동산정보</option>
+                <option value="4">자유게시판</option>
               </select>
               <input
                 name="title"
                 type="text"
                 className={getInputClassName('title', `${style.input} ${style.titleField}`)}
-                placeholder="?�목???�력?�주?�요 (최�? 50??"
+                placeholder="제목을 입력해주세요 (최대 50자)"
                 value={formData.title}
                 onChange={handleInputChange}
                 maxLength={50}
               />
-              {errors.title && <div className={style.errorText}>?�목???�력?�주?�요</div>}
+              {errors.title && <div className={style.errorText}>제목을 입력해주세요</div>}
             </div>
           </div>
         </div>
 
-        {/* ?�유게시?�이 ?�닐 ?�만 추�? ?�드???�시 */}
+        {/* 자유게시판이 아닐 때만 추가 필드들 표시 */}
         {formData.board_type !== '4' && (
           <>
-            {/* 구인?�보????보이???�션??*/}
+            {/* 구인정보일 때 보이는 섹션들 */}
             {formData.board_type === '0' && (
               <>
                 {/* 채용 조건 */}
@@ -367,52 +358,52 @@ const WritePage: React.FC = () => {
                     <div className={style.formLabel}>조건</div>
                     <div className={style.conditionFormInput}>
                       <select name="experience" value={formData.experience} onChange={handleInputChange} className={style.select}>
-                        <option value="무�?">경력 무�?</option>
-                        <option value="1?�이??>1???�상</option>
-                        <option value="3?�이??>3???�상</option>
-                        <option value="5?�이??>5???�상</option>
-                        <option value="10?�이??>10???�상</option>
+                        <option value="무관">경력 무관</option>
+                        <option value="1년이상">1년 이상</option>
+                        <option value="3년이상">3년 이상</option>
+                        <option value="5년이상">5년 이상</option>
+                        <option value="10년이상">10년 이상</option>
                       </select>
                       <select name="gender" value={formData.gender} onChange={handleInputChange} className={style.select}>
-                        <option value="무�?">?�별 무�?</option>
-                        <option value="?�자">?�자</option>
-                        <option value="?�자">?�자</option>
+                        <option value="무관">성별 무관</option>
+                        <option value="남자">남자</option>
+                        <option value="여자">여자</option>
                       </select>
                       <select name="education" value={formData.education} onChange={handleInputChange} className={style.select}>
-                        <option value="무�?">?�력 무�?</option>
-                        <option value="고졸?�상">고졸?�상</option>
-                        <option value="초�?졸이??>초�?졸이??/option>
-                        <option value="?�졸이??>?�졸이??/option>
+                        <option value="무관">학력 무관</option>
+                        <option value="고졸이상">고졸이상</option>
+                        <option value="초대졸이상">초대졸이상</option>
+                        <option value="대졸이상">대졸이상</option>
                       </select>
                       <select name="age_limit" value={formData.age_limit} onChange={handleInputChange} className={style.select}>
-                        <option value="무�?">?�이 무�?</option>
-                        <option value="55?�이??>55???�하</option>
-                        <option value="50?�이??>50???�하</option>
-                        <option value="45?�이??>45???�하</option>
-                        <option value="40?�이??>40???�하</option>
-                        <option value="35?�이??>35???�하</option>
+                        <option value="무관">나이 무관</option>
+                        <option value="55세이하">55세 이하</option>
+                        <option value="50세이하">50세 이하</option>
+                        <option value="45세이하">45세 이하</option>
+                        <option value="40세이하">40세 이하</option>
+                        <option value="35세이하">35세 이하</option>
                       </select>
                     </div>
                   </div>
                   <div className={style.warningText}>
-                    ?�️ ?�별 ?�한 ???��?고용?�등�??�반?�로 500�????�하??벌금??부과될 ???�습?�다.<br/>
-                    ?�️ ?�령 ?�한 ???�령차별금�?�??�반?�로 500�????�하??벌금??부과될 ???�습?�다.
+                    ⚠️ 성별 제한 시 남녀고용평등법 위반으로 500만 원 이하의 벌금이 부과될 수 있습니다.<br/>
+                    ⚠️ 연령 제한 시 연령차별금지법 위반으로 500만 원 이하의 벌금이 부과될 수 있습니다.
                   </div>
                 </div>
 
-                {/* 급여 ?�보?� 근무?�간 */}
-                <h2 className={style.sectionTitle}>급여 �?근무?�간</h2>
+                {/* 급여 정보와 근무시간 */}
+                <h2 className={style.sectionTitle}>급여 및 근무시간</h2>
                 <div className={style.subSection}>
                   <div className={style.formGrid}>
                     <div className={style.formRow}>
                       <div className={style.formLabel}>급여</div>
                       <div className={style.formInput}>
                         <select name="salary_type" value={formData.salary_type} onChange={handleInputChange} className={style.select}>
-                          <option value="?�급">?�급</option>
-                          <option value="?�급">?�급</option>
+                          <option value="시급">시급</option>
+                          <option value="일급">일급</option>
                           <option value="주급">주급</option>
-                          <option value="?�급">?�급</option>
-                          <option value="?�의">?�의</option>
+                          <option value="월급">월급</option>
+                          <option value="협의">협의</option>
                         </select>
                         <input
                           type="text"
@@ -420,12 +411,12 @@ const WritePage: React.FC = () => {
                           value={formData.salary_detail}
                           onChange={handleInputChange}
                           className={style.input}
-                          placeholder="급여 ?�세 ?�보"
+                          placeholder="급여 상세 정보"
                         />
                       </div>
                     </div>
                     <div className={style.formRow}>
-                      <div className={style.formLabel}>근무?�간</div>
+                      <div className={style.formLabel}>근무시간</div>
                       <div className={style.formInput}>
                         <input type="time" name="work_start_time" value={formData.work_start_time} onChange={handleInputChange} className={style.timeInput} />
                         <span>~</span>
@@ -434,16 +425,16 @@ const WritePage: React.FC = () => {
                     </div>
                   </div>
                   <div className={style.warningText}>
-                    ?�️ 최�??�금(10,320????미달?�는 급여??법적 처벌 ?�?�이 ?????�습?�다.<br/>
-                    ?�️ 최�??�금�??�반 ??3???�하??징역 ?�는 2천만 ???�하??벌금??부과될 ???�습?�다.
+                    ⚠️ 최저임금(10,320원)에 미달하는 급여는 법적 처벌 대상이 될 수 있습니다.<br/>
+                    ⚠️ 최저임금법 위반 시 3년 이하의 징역 또는 2천만 원 이하의 벌금이 부과될 수 있습니다.
                   </div>
                 </div>
               </>
             )}
 
-            {/* 기본 ?�보 (게시???�?�에 ?�라 ?�목 변�? */}
+            {/* 기본 정보 (게시판 타입에 따라 제목 변경) */}
             <h2 className={style.sectionTitle}>
-              {formData.board_type === '0' ? '근무 ?�보' : '기본 ?�보'}
+              {formData.board_type === '0' ? '근무 정보' : '기본 정보'}
             </h2>
             <div className={style.subSection}>
               <div className={style.formRow}>
@@ -457,7 +448,7 @@ const WritePage: React.FC = () => {
                     onChange={handleInputChange} 
                     className={getInputClassName('1depth_category', style.select)}
                   >
-                    <option value="">1�?분류</option>
+                    <option value="">1차 분류</option>
                     {Object.keys(categories).map(category => (
                       <option key={category} value={category}>{category}</option>
                     ))}
@@ -468,18 +459,18 @@ const WritePage: React.FC = () => {
                     onChange={handleInputChange} 
                     className={getInputClassName('2depth_category', style.select)}
                   >
-                    <option value="">2�?분류</option>
+                    <option value="">2차 분류</option>
                     {formData['1depth_category'] && categories[formData['1depth_category']].map(subCategory => (
                       <option key={subCategory} value={subCategory}>{subCategory}</option>
                     ))}
                   </select>
                   {(errors['1depth_category'] || errors['2depth_category']) && 
-                    <div className={style.errorText}>카테고리�??�택?�주?�요</div>}
+                    <div className={style.errorText}>카테고리를 선택해주세요</div>}
                 </div>
               </div>
               <div className={style.formRow}>
                 <div className={style.formLabel}>
-                  {formData.board_type === '0' ? '근무지' : '지??} <span className={style.required}>*</span>
+                  {formData.board_type === '0' ? '근무지' : '지역'} <span className={style.required}>*</span>
                 </div>
                 <div className={style.formInput}>
                   <div className={style.locationSelects}>
@@ -489,7 +480,7 @@ const WritePage: React.FC = () => {
                       onChange={handleInputChange} 
                       className={getInputClassName('1depth_region', style.select)}
                     >
-                      <option value="">????/option>
+                      <option value="">시/도</option>
                       {Object.keys(locations).map(city => (
                         <option key={city} value={city}>{city}</option>
                       ))}
@@ -500,7 +491,7 @@ const WritePage: React.FC = () => {
                       onChange={handleInputChange} 
                       className={getInputClassName('2depth_region', style.select)}
                     >
-                      <option value="">??�?�?/option>
+                      <option value="">시/구/군</option>
                       {formData['1depth_region'] && locations[formData['1depth_region']].map(district => (
                         <option key={district} value={district}>{district}</option>
                       ))}
@@ -512,42 +503,42 @@ const WritePage: React.FC = () => {
                     value={formData.work_location_detail}
                     onChange={handleInputChange}
                     className={getInputClassName('work_location_detail', style.input)}
-                    placeholder="?�세 주소"
+                    placeholder="상세 주소"
                   />
                   {(errors['1depth_region'] || errors['2depth_region'] || errors.work_location_detail) && 
-                    <div className={style.errorText}>지???�보�?모두 ?�력?�주?�요</div>}
+                    <div className={style.errorText}>지역 정보를 모두 입력해주세요</div>}
                 </div>
               </div>
             </div>
           </>
         )}
 
-        {/* ?�세 ?�용 */}
-        <h2 className={style.sectionTitle}>?�세 ?�용</h2>
+        {/* 상세 내용 */}
+        <h2 className={style.sectionTitle}>상세 내용</h2>
         <div className={style.subSection}>
           <textarea
             name="contents"
             className={getInputClassName('contents', style.textarea)}
-            placeholder="?�세 ?�용???�력?�주?�요"
+            placeholder="상세 내용을 입력해주세요"
             value={formData.contents}
             onChange={handleInputChange}
           ></textarea>
-          {errors.contents && <div className={style.errorText}>?�세 ?�용???�력?�주?�요</div>}
+          {errors.contents && <div className={style.errorText}>상세 내용을 입력해주세요</div>}
         </div>
 
         {/* 법적 경고 문구 */}
         {formData.board_type !== '4' && (
           <div className={style.legalWarning}>
-            <p>?�️ ?�매�??�선 ???�위??처벌??관??법률 ??조에 ?�당?�는 ?�용???�함??구인 광고 관??법령???�라 ?�매매�? ?�선??경우, 3???�하??징역???�는 3천만 ???�하??벌금??처해�????�습?�다.</p>
-            <p>?�️ ?�래�?종업??�?BAR 종업?�등 ?�흥?�소???�??공고??게시가 ?�한?�니??</p>
-            <p>?�️ 1개의 공고???�러 ?�사??공고�??�로?�할 경우 게시가 ?�한?�니??</p>
+            <p>⚠️ 성매매 알선 등 행위의 처벌에 관한 법률 제4조에 해당되는 내용이 포함된 구인 광고 관련 법령에 따라 성매매를 알선한 경우, 3년 이하의 징역형 또는 3천만 원 이하의 벌금에 처해질 수 있습니다.</p>
+            <p>⚠️ 노래방 종업원 및 BAR 종업원등 유흥업소에 대한 공고는 게시가 제한됩니다.</p>
+            <p>⚠️ 1개의 공고에 여러 회사의 공고를 업로드할 경우 게시가 제한됩니다.</p>
           </div>
         )}
 
-        {/* ?�출 버튼 */}
+        {/* 제출 버튼 */}
         <div className={`${style.formGroup} ${style.ft}`}>
           <button type="submit" className={style.submitButton}>
-            {isEditing ? '?�정?�기' : '?�록?�기'}
+            {isEditing ? '수정하기' : '등록하기'}
           </button>
         </div>
       </form>
@@ -562,7 +553,10 @@ const WritePage: React.FC = () => {
         }} />
       )}
       {showLoginPopup && (
-        <LoginPopup onClose={handleLoginPopupClose} />
+        <LoginPopup onClose={() => {
+          setShowLoginPopup(false);
+          checkLoginStatus(); // 로그인 팝업이 닫힌 후 다시 로그인 상태 확인
+        }} />
       )}
     </div>
   );

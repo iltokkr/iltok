@@ -1,0 +1,10 @@
+[33m708fde5[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m 최저시급 10030원 -> 10320원 전체 수정 (상세페이지, 유효성 검사 포함)
+[33m1645313[m Merge remote changes and update minimum wage to 10320
+[33m29ec6b5[m 최저시급 10030원 -> 10320원으로 변경
+[33m828408a[m [fix] 최저임금 10030
+[33m6f9c848[m [fix] 최저임금 텍스트
+[33m5752bda[m [fix]최저임금, 모바일 커뮤니티 수정
+[33me8f4d9c[m [fix] 제목 길이 수정
+[33m1bf10d8[m [FIX]핫픽스 수정
+[33m0c8e390[m [Fix] hotfix
+[33mdcc2e4b[m [ADD] 커뮤니티/댓글/개인정보처리방치 추가
