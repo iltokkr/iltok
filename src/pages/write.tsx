@@ -38,6 +38,9 @@ const Write: React.FC = () => {
     if (!authContext?.user) {
       setShowLoginPopup(true);
       return;
+    } else {
+      // 로그인된 경우 팝업 닫기
+      setShowLoginPopup(false);
     }
 
     // 로그인한 경우에만 사용자 인증 상태 확인
@@ -62,9 +65,15 @@ const Write: React.FC = () => {
     checkUserAcceptance();
   }, [authContext?.user]);
 
-  const handleLoginPopupClose = () => {
-    if (authContext?.user) {
+  const handleLoginPopupClose = async () => {
+    // Supabase 세션을 직접 확인 (context가 아직 업데이트되지 않았을 수 있음)
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      // 로그인 성공 - 팝업 닫기
       setShowLoginPopup(false);
+    } else {
+      // 로그인 없이 닫기 - board로 이동
+      router.push('/board');
     }
   };
 
