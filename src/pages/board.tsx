@@ -708,11 +708,6 @@ const BoardPage: React.FC = () => {
               src: '/image copy.png', 
               link: 'https://open.kakao.com/me/114114KR',
               mobileSrc: '/image copy_mo.png'
-            },
-            { 
-              src: '/웬제중한국제결혼.png', 
-              link: 'https://88pandacar.framer.website/',
-              mobileSrc: '/웬제중한국제결혼_mo.png'
             }
             // 추가 이미지와 링크를 여기에 추가
         ]}

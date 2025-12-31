@@ -10,9 +10,10 @@
 .carousel {
   width: 100%;
   max-width: 980px;
-  margin: 0 auto;
-  padding: 10px 0;
+  margin: 10px auto;
+  padding: 0;
   height: 70px !important;
+  max-height: 70px !important;
   overflow: hidden;
 }
 
@@ -21,6 +22,7 @@
 .carousel :global(.slick-slide),
 .carousel :global(.slick-slide > div) {
   height: 70px !important;
+  max-height: 70px !important;
 }
 
 .carousel :global(.slick-prev),
