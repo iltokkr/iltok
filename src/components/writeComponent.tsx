@@ -7,7 +7,6 @@ import { addHours, format, subHours } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
 import Link from 'next/link';
 import BusinessVerificationModal from '@/components/BusinessVerificationModal';
-import LoginPopup from '@/components/LoginPopup';
 import { AuthContext } from '@/contexts/AuthContext';
 
 // Supabase 클라이언트 설정
@@ -76,7 +75,6 @@ const WritePage: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [showBusinessVerificationModal, setShowBusinessVerificationModal] = useState(false);
-  const [showLoginPopup, setShowLoginPopup] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({
     title: false,
     '1depth_category': false,
@@ -91,9 +89,6 @@ const WritePage: React.FC = () => {
   useEffect(() => {
     if (auth?.user) {
       setCurrentUserId(auth.user.id);
-      setShowLoginPopup(false);
-    } else if (auth?.user === null) {
-      setShowLoginPopup(true);
     }
   }, [auth?.user]);
 
@@ -546,11 +541,6 @@ const WritePage: React.FC = () => {
         <BusinessVerificationModal onClose={() => {
           setShowBusinessVerificationModal(false);
           router.push('/board');
-        }} />
-      )}
-      {showLoginPopup && (
-        <LoginPopup onClose={() => {
-          setShowLoginPopup(false);
         }} />
       )}
     </div>
