@@ -27,6 +27,7 @@ interface JobForm {
   // 급여
   salary_type: string;
   salary_detail: string;
+  is_day_pay: boolean;
   // 근무정보
   '1depth_category': string;
   '2depth_category': string;
@@ -61,6 +62,7 @@ const WritePage: React.FC = () => {
     age_limit: '무관',
     salary_type: '시급',
     salary_detail: '10320',
+    is_day_pay: false,
     '1depth_category': '',
     '2depth_category': '',
     '1depth_region': '',
@@ -428,6 +430,15 @@ const WritePage: React.FC = () => {
                           className={style.input}
                           placeholder="급여 상세 정보"
                         />
+                        <label className={style.dayPayCheckbox}>
+                          <input
+                            type="checkbox"
+                            name="is_day_pay"
+                            checked={formData.is_day_pay}
+                            onChange={(e) => setFormData(prev => ({ ...prev, is_day_pay: e.target.checked }))}
+                          />
+                          <span className={style.dayPayLabel}>당일지급</span>
+                        </label>
                       </div>
                     </div>
                     <div className={style.formRow}>

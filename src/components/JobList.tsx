@@ -40,6 +40,7 @@ interface Job {
   bookmark_count?: number;
   comment_count?: number;
   community_tag?: string;
+  is_day_pay?: boolean;
 }
 
 interface AdJob extends Job {
@@ -266,6 +267,9 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
       <div className={styles.jobContent}>
         <p className={styles.title}>
           <Link href={`/jd/${job.id}`} onClick={() => handlePostClick(job.id)}>
+            {job.is_day_pay && (
+              <span className={styles.dayPayBadge}>💰 당일지급</span>
+            )}
             {formatTitle(job)}
           </Link>
         </p>
