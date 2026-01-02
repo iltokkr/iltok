@@ -12,17 +12,26 @@ const MainMenu: React.FC<MainMenuProps> = ({ currentBoardType }) => {
       <div className={styles.layout}>
         <div className={styles.menuItems}>
           <li>
-            <Link href="/board?board_type=0" className={currentBoardType === '0' ? styles.focus : ''}>
+            <Link 
+              href={{ pathname: '/board', query: { board_type: '0' } }}
+              className={currentBoardType === '0' ? styles.focus : ''}
+            >
               구인정보
             </Link>
           </li>
           <li>
-            <Link href="/board?board_type=1" className={currentBoardType === '1' ? styles.focus : ''}>
+            <Link 
+              href={{ pathname: '/board', query: { board_type: '1' } }}
+              className={currentBoardType === '1' ? styles.focus : ''}
+            >
               구직정보
             </Link>
           </li>
           <li>
-            <Link href="/board?board_type=4" className={currentBoardType === '1' ? styles.focus : ''}>
+            <Link 
+              href={{ pathname: '/board', query: { board_type: '4' } }}
+              className={currentBoardType === '4' ? styles.focus : ''}
+            >
               자유게시판
             </Link>
           </li>

@@ -13,6 +13,7 @@ import Head from 'next/head'// 사용자에게 알림을 표시하기 위해 추
 import { useLanguage } from '@/hooks/useLanguage';  // 추가
 import { useContext } from 'react';
 import { AuthContext } from '@/contexts/AuthContext';
+import { FiEdit3 } from 'react-icons/fi';
 
 // Supabase 클라이언트 생성
 const supabase = createClient(
@@ -180,32 +181,23 @@ function ScrollToTop() {
   );
 }
 
-// CustomerSupport 컴포넌트 추가
-function CustomerSupport() {
-  const { currentLanguage } = useLanguage();
+// WriteButton 플로팅 버튼 컴포넌트
+function WriteButton({ boardType }: { boardType: string }) {
+  const router = useRouter();
+  
+  const handleClick = () => {
+    // write 페이지로 이동 (로그인 체크는 write 페이지에서 처리)
+    router.push(`/write?board_type=${boardType}`);
+  };
   
   return (
-    <a
-      href="http://pf.kakao.com/_ywaMn"
-      target="_blank"
-      rel="noopener noreferrer"
-      className={styles.customerSupport}
-      aria-label={currentLanguage === 'ko' ? '고객센터 문의하기' : 'Contact Customer Support'}
+    <button
+      onClick={handleClick}
+      className={styles.writeButton}
+      aria-label="글쓰기"
     >
-      <div className={styles.customerSupportIcon}>
-        <svg 
-          viewBox="0 0 24 24" 
-          width="24" 
-          height="24" 
-          fill="currentColor"
-        >
-          <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 17H11V15H13V17ZM13 13H11V7H13V13Z"/>
-        </svg>
-      </div>
-      <span className={styles.tooltip}>
-        {currentLanguage === 'ko' ? '불편한 점이 있다면 문의하세요' : 'Contact Us'}
-      </span>
-    </a>
+      <FiEdit3 />
+    </button>
   );
 }
 
@@ -572,44 +564,62 @@ const BoardPage: React.FC = () => {
     }
   }, [bookmarkedJobs]);
 
-  const restoreScrollPosition = useCallback(() => {
-    const savedPosition = sessionStorage.getItem('boardScrollPosition');
-    if (savedPosition !== null) {
-      const position = parseInt(savedPosition);
-      window.scrollTo(0, position);
-    }
-  }, []);
+  const [shouldRestoreScroll, setShouldRestoreScroll] = useState(false);
 
+  // 스크롤 위치 저장 (상세 페이지로 이동 시)
   useEffect(() => {
-    const handleRouteChangeStart = () => {
-      if (!isPaginationChange) {
-        const currentPosition = window.pageYOffset;
+    const handleRouteChangeStart = (url: string) => {
+      if (url.startsWith('/jd/')) {
+        const currentPosition = window.pageYOffset || document.documentElement.scrollTop;
         sessionStorage.setItem('boardScrollPosition', currentPosition.toString());
-        // console.log('Board: Route change start. Saving scroll position:', currentPosition);
-      } else {
-        // console.log('Board: Pagination change. Not saving scroll position.');
-      }
-    };
-
-    const handleRouteChangeComplete = () => {
-      // console.log('Board: Route change complete. Attempting to restore scroll position.');
-      if (!isInitialLoad && !isPaginationChange) {
-        restoreScrollPosition();
-      } else if (isPaginationChange) {
-        window.scrollTo(0, 0);
-        // console.log('Board: Pagination change. Scrolling to top.');
-        setIsPaginationChange(false);
+        sessionStorage.setItem('shouldRestoreScroll', 'true');
       }
     };
 
     router.events.on('routeChangeStart', handleRouteChangeStart);
-    router.events.on('routeChangeComplete', handleRouteChangeComplete);
 
     return () => {
       router.events.off('routeChangeStart', handleRouteChangeStart);
-      router.events.off('routeChangeComplete', handleRouteChangeComplete);
     };
-  }, [router, isInitialLoad, isPaginationChange]);
+  }, [router]);
+
+  // 페이지 로드 시 스크롤 복원 플래그 확인
+  useEffect(() => {
+    if (sessionStorage.getItem('shouldRestoreScroll') === 'true') {
+      setShouldRestoreScroll(true);
+    }
+  }, []);
+
+  // 데이터 로딩 완료 후 스크롤 복원
+  useEffect(() => {
+    if (shouldRestoreScroll && !isLoading && regularJobs.length > 0) {
+      const savedPosition = sessionStorage.getItem('boardScrollPosition');
+      if (savedPosition !== null) {
+        const position = parseInt(savedPosition);
+        // 여러 번 시도하여 확실하게 복원
+        const restore = () => {
+          window.scrollTo(0, position);
+        };
+        restore();
+        setTimeout(restore, 50);
+        setTimeout(restore, 100);
+        setTimeout(restore, 200);
+        setTimeout(() => {
+          restore();
+          sessionStorage.removeItem('shouldRestoreScroll');
+          setShouldRestoreScroll(false);
+        }, 300);
+      }
+    }
+  }, [shouldRestoreScroll, isLoading, regularJobs]);
+
+  // 페이지네이션 변경 시 상단으로 스크롤
+  useEffect(() => {
+    if (isPaginationChange) {
+      window.scrollTo(0, 0);
+      setIsPaginationChange(false);
+    }
+  }, [isPaginationChange]);
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -617,7 +627,25 @@ const BoardPage: React.FC = () => {
     // console.log('Router is ready. Current query:', router.query);
 
     const { city1, city2, cate1, cate2, keyword, page, board_type, searchType } = router.query;
-    let newFilters = {
+    
+    // board_type 변경 시 기존 데이터와 필터 초기화
+    const newBoardType = board_type as string || '0';
+    const isBoardTypeChanged = newBoardType !== boardType;
+    
+    if (isBoardTypeChanged) {
+      setRegularJobs([]);
+      setAdJobs([]);
+    }
+    
+    // board_type 변경 시 필터 초기화, 아니면 URL에서 필터 가져오기
+    let newFilters = isBoardTypeChanged ? {
+      city1: '',
+      city2: '',
+      cate1: '',
+      cate2: '',
+      keyword: '',
+      searchType: 'both' as const
+    } : {
       city1: city1 as string || '',
       city2: city2 as string || '',
       cate1: cate1 as string || '',
@@ -626,8 +654,7 @@ const BoardPage: React.FC = () => {
       searchType: (searchType as 'title' | 'contents' | 'both') || 'both'
     };
 
-    const newBoardType = board_type as string || '0';
-    const newPage = page ? parseInt(page as string) : 1;
+    const newPage = isBoardTypeChanged ? 1 : (page ? parseInt(page as string) : 1);
     
     // console.log('Setting new filters:', newFilters);
     // console.log('Setting new board type:', newBoardType);
@@ -640,12 +667,11 @@ const BoardPage: React.FC = () => {
   }, [router.isReady, router.query, fetchJobs]);
 
   useEffect(() => {
-    // 데이터 로드 완료 후 스크롤 위치 복원
+    // 초기 로드 완료 표시
     if (isInitialLoad && regularJobs.length > 0) {
-      restoreScrollPosition();
       setIsInitialLoad(false);
     }
-  }, [restoreScrollPosition, isInitialLoad, regularJobs.length]);
+  }, [isInitialLoad, regularJobs.length]);
 
   const handlePageChange = (newPage: number) => {
     setIsPaginationChange(true);
@@ -777,7 +803,7 @@ const BoardPage: React.FC = () => {
       {error && <div className={styles.error}>{error}</div>}
       <InstallPWA /> {/* PWA 설치 버튼 추가 */}
       <ScrollToTop /> {/* ScrollToTop 컴포넌트 추가 */}
-      <CustomerSupport /> {/* 고객센터 버튼 추가 */}
+      <WriteButton boardType={boardType} /> {/* 글쓰기 버튼 추가 */}
       
       {/* 긴급공지 모달 추가 */}
       {/* {showModal && (

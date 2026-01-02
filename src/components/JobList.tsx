@@ -13,6 +13,7 @@ import { useContext } from 'react';
 import { AuthContext } from '@/contexts/AuthContext';
 import { createClient } from '@supabase/supabase-js'
 import { BsHeart, BsHeartFill } from 'react-icons/bs';
+import { HiLocationMarker } from 'react-icons/hi';
 import { toast } from 'react-hot-toast';
 import LoginPopup from './LoginPopup';
 import Slider from 'react-slick';
@@ -43,7 +44,7 @@ interface Job {
   view_count?: number;
   popularity_score?: number;
   community_tag?: string;
-  is_day_pay?: boolean;
+  is_day_pay?: boolean;  // 기숙사 여부 (컬럼명은 is_day_pay)
 }
 
 interface AdJob extends Job {
@@ -344,19 +345,31 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
     return cleaned.length > 50 ? cleaned.substring(0, 50) + '...' : cleaned;
   };
 
-  // 자유게시판용 아이템 렌더링
+  // 자유게시판/구직정보용 아이템 렌더링
   const renderCommunityItem = (job: Job) => (
     <li key={job.id} className={`${styles.communityItem} ${isRead(job.id) ? styles.readPost : ''} ${job.community_tag === '공지' ? styles.noticeItem : ''}`}>
       <Link href={`/jd/${job.id}`} scroll={false} onClick={() => handlePostClick(job.id)}>
         <div className={styles.communityContent}>
           <h3 className={styles.communityTitle}>
-            {job.community_tag && (
-              <span className={`${styles.communityTag} ${job.community_tag === '공지' ? styles.noticeTag : ''}`}>{job.community_tag}</span>
+            {boardType === '1' && (
+              <span className={`${styles.communityTag} ${styles.jobSeekerTag}`}>구직</span>
+            )}
+            {boardType === '4' && (job.community_tag === '공지' || job.community_tag === '인기') && (
+              <span className={`${styles.communityTag} ${job.community_tag === '공지' ? styles.noticeTag : styles.popularTag}`}>{job.community_tag}</span>
+            )}
+            {boardType === '4' && job.community_tag !== '공지' && job.community_tag !== '인기' && (
+              <span className={`${styles.communityTag} ${styles.freeTag}`}>자유</span>
             )}
             <span className={styles.communityTitleText}>{job.title}</span>
           </h3>
           <p className={styles.communityPreview}>{getContentPreview(job.contents)}</p>
           <div className={styles.communityMeta}>
+            {boardType === '1' && job['1depth_region'] && (
+              <span className={styles.communityRegion}>
+                <HiLocationMarker className={styles.locationIcon} />
+                {job['1depth_region']}{job['2depth_region'] ? ` ${job['2depth_region']}` : ''}
+              </span>
+            )}
             <span className={styles.communityViews}>👁 {job.view_count || 0}</span>
             <span className={styles.communityComments}>💬 {job.comment_count || 0}</span>
             <span 
@@ -372,7 +385,9 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
                 <BsHeart className={styles.communityHeartIcon} />
               } {bookmarkCounts[job.id] || 0}
             </span>
-            <span className={styles.communityTime}>{formatRelativeTime(job.updated_time)}</span>
+            <span className={styles.communityTime}>
+              {(boardType === '4' || boardType === '1') ? formatRelativeTime(job.updated_time) : formatDate(job.updated_time)}
+            </span>
           </div>
         </div>
       </Link>
@@ -402,9 +417,6 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
       <div className={styles.jobContent}>
         <p className={styles.title}>
           <Link href={`/jd/${job.id}`} scroll={false} onClick={() => handlePostClick(job.id)}>
-            {job.is_day_pay && (
-              <span className={styles.dayPayBadge}>💰 당일지급</span>
-            )}
             {formatTitle(job)}
           </Link>
         </p>
@@ -535,7 +547,7 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
         </div>
       )}
 
-      {boardType === '4' && (
+      {(boardType === '4' || boardType === '1') && (
         <div className={styles.totalCountSection}>
           <span className={styles.totalCountLabel}>전체</span>
           <span className={styles.totalCountNumber}>총 {totalCount.toLocaleString()} 건</span>
@@ -553,8 +565,8 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
           </ul>
         )}
 
-        <ul className={`${styles.listWrap} ${styles.listText} ${boardType === '4' ? styles.communityList : ''}`}>
-          {boardType === '4' 
+        <ul className={`${styles.listWrap} ${styles.listText} ${(boardType === '4' || boardType === '1') ? styles.communityList : ''}`}>
+          {(boardType === '4' || boardType === '1')
             ? jobs.map(job => renderCommunityItem(job))
             : jobs.map(job => renderJobItem(job))
           }

@@ -116,74 +116,44 @@
   background: #eee;
 }
 
-.customerSupport {
+/* 글쓰기 플로팅 버튼 */
+.writeButton {
   position: fixed;
   bottom: 90px;
   right: 20px;
   z-index: 1000;
-  text-decoration: none;
-  transition: all 0.3s ease;
-}
-
-.customerSupportIcon {
-  width: 60px;
-  height: 60px;
+  background: #1a1a1a;
+  color: white;
+  border: none;
   border-radius: 50%;
-  background-color: #FEE500;
+  width: 56px;
+  height: 56px;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transition: all 0.3s ease;
-  color: #000000;
 }
 
-.customerSupportIcon:hover {
-  transform: scale(1.1);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+.writeButton:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  background: #333;
 }
 
-.tooltip {
-  position: absolute;
-  right: 70px;
-  top: 50%;
-  transform: translateY(-50%);
-  background-color: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 8px 12px;
-  border-radius: 4px;
-  font-size: 14px;
-  white-space: nowrap;
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.3s ease;
-}
-
-.tooltip::after {
-  content: '';
-  position: absolute;
-  right: -6px;
-  top: 50%;
-  transform: translateY(-50%);
-  border-width: 6px 0 6px 6px;
-  border-style: solid;
-  border-color: transparent transparent transparent rgba(0, 0, 0, 0.8);
-}
-
-.customerSupport:hover .tooltip {
-  opacity: 1;
-  visibility: visible;
-  right: 80px;
+.writeButton:active {
+  transform: scale(0.98);
 }
 
 @media (max-width: 768px) {
-  .customerSupportIcon {
-    width: 45px;
-    height: 45px;
-  }
-  
-  .customerSupport {
-    bottom: 80px;
+  .writeButton {
+    bottom: 24px;
+    right: 16px;
+    width: 52px;
+    height: 52px;
+    font-size: 22px;
   }
 }
 
@@ -240,37 +210,4 @@
 
 .modalCloseButton:hover {
   background-color: #0056b3;
-}
-
-.writeButton {
-  position: fixed;
-  left: 20px;
-  bottom: 20px;
-  background-color: #ff6b00;
-  color: white;
-  border: none;
-  border-radius: 50px;
-  padding: 12px 24px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
-  cursor: pointer;
-  transition: transform 0.2s, background-color 0.2s;
-}
-
-.writeButton:hover {
-  background-color: #e65c00;
-  transform: translateY(-2px);
-}
-
-.writeButton svg {
-  width: 20px;
-  height: 20px;
-}
-
-.writeButton span {
-  font-size: 14px;
-  font-weight: 500;
 }

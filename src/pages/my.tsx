@@ -28,6 +28,12 @@ interface UserData {
   is_accept: boolean;
   is_upload: boolean;
   reload_times: number;
+  biz_file: string | null;
+  company_name: string | null;
+  name: string | null;
+  number: string | null;
+  business_number: string | null;
+  business_address: string | null;
 }
 
 const My: React.FC = () => {
@@ -59,7 +65,7 @@ const My: React.FC = () => {
   const fetchUserData = async () => {
     const { data, error } = await supabase
       .from('users')
-      .select('id, is_accept, is_upload, reload_times')
+      .select('id, is_accept, is_upload, reload_times, biz_file, company_name, name, number, business_number, business_address')
       .eq('id', authContext?.user?.id)
       .single();
 
@@ -95,6 +101,12 @@ const My: React.FC = () => {
           isAccept={userData?.is_accept || false}
           isUpload={userData?.is_upload || false}
           reloadTimes={userData?.reload_times || 0}
+          bizFile={userData?.biz_file || null}
+          companyName={userData?.company_name || null}
+          managerName={userData?.name || null}
+          phoneNumber={userData?.number || null}
+          businessNumber={userData?.business_number || null}
+          businessAddress={userData?.business_address || null}
         />
       </main>
       <Footer />

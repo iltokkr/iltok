@@ -1,0 +1,45 @@
+.main {
+  min-height: calc(100vh - 200px);
+  background: #fff;
+}
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 50vh;
+  color: #666;
+}
+
+.loginRequired {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  gap: 20px;
+  padding: 20px;
+  text-align: center;
+}
+
+.loginRequired p {
+  font-size: 16px;
+  color: #666;
+}
+
+.loginButton {
+  padding: 14px 40px;
+  border: none;
+  border-radius: 8px;
+  background: #4a90d9;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.loginButton:hover {
+  background: #3a7bc8;
+}
+

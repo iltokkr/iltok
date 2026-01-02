@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="50" fill="#2ECC71"/>
+  <g transform="translate(20, 28)">
+    <!-- Handle -->
+    <rect x="5" y="18" width="8" height="12" rx="2" fill="#BDC3C7"/>
+    <rect x="10" y="15" width="6" height="18" fill="#ECF0F1"/>
+    <!-- Megaphone body -->
+    <polygon points="16,12 45,0 45,48 16,36" fill="#E74C3C"/>
+    <polygon points="16,12 16,36 12,34 12,14" fill="#ECF0F1"/>
+    <!-- Sound waves -->
+    <path d="M50 15 Q55 24 50 33" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"/>
+    <path d="M55 10 Q63 24 55 38" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"/>
+    <path d="M60 5 Q70 24 60 43" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</svg>
+

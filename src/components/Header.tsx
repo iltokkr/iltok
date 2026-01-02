@@ -20,7 +20,7 @@ const Header: React.FC = () => {
     if (!isLoggedIn) {
       setShowLoginPopup(true);
     } else {
-      router.push(action === '정보등록' ? '/write' : '/my');
+      router.push(action === '글쓰기' ? '/write' : '/my');
     }
   };
 
@@ -65,7 +65,7 @@ const Header: React.FC = () => {
               </button>
             )}
             <li><a href="/my" onClick={(e) => handleAuthRequiredAction(e, '내가쓴글')}> 마이페이지</a></li>
-            <li><a className={styles.focus} href="/write"> 정보등록</a></li>
+            <li><a className={styles.focus} href="/write"> 글쓰기</a></li>
             {isLoggedIn && (
               <li><a href="#" onClick={handleLogout}> 로그아웃</a></li>
             )}

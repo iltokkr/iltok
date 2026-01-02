@@ -9,82 +9,370 @@
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
 .modalContent {
   background-color: white;
-  padding: 2rem;
-  border-radius: 8px;
-  width: 90%;
-  max-width: 600px;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 420px;
   max-height: 90vh;
   overflow-y: auto;
+  position: relative;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+.modalHeader {
+  padding: 24px 24px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  position: relative;
 }
 
 .modalTitle {
-  font-size: 1.5rem;
-  margin-bottom: 0.5rem;
-}
-
-.modalSubtitle {
-  font-size: 1rem;
-  color: #ff3900;
-  margin-bottom: 1rem;
+  font-size: 20px;
+  font-weight: 700;
+  color: #333;
+  margin: 0;
+  padding-right: 30px;
 }
 
 .closeButton {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
+  top: 20px;
+  right: 20px;
   background: none;
   border: none;
-  font-size: 1.5rem;
+  font-size: 24px;
   cursor: pointer;
+  color: #999;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.closeButton:hover {
+  background: #f5f5f5;
+  color: #333;
+}
+
+.modalBody {
+  padding: 24px;
+}
+
+.warningBox {
+  background: #fff8f5;
+  border: 1px solid #ffe0d5;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.warningText {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.warningText strong {
+  color: #ff5722;
 }
 
 .formGroup {
-  margin-bottom: 1rem;
+  margin-bottom: 20px;
 }
 
-.formGroup label {
+.formLabel {
   display: block;
-  margin-bottom: 0.5rem;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
 }
 
-.formGroup input {
+.formInput {
   width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  padding: 14px 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+  background: #fff;
+}
+
+.formInput:focus {
+  border-color: #ff5722;
+}
+
+.formInput::placeholder {
+  color: #bbb;
+}
+
+.fileInputWrapper {
+  position: relative;
+}
+
+.fileInputLabel {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px dashed #d0d0d0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #fafafa;
+}
+
+.fileInputLabel:hover {
+  border-color: #ff5722;
+  background: #fff8f5;
+}
+
+.fileInputButton {
+  padding: 8px 16px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #333;
+  white-space: nowrap;
+}
+
+.fileName {
+  font-size: 14px;
+  color: #666;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fileInput {
+  display: none;
 }
 
 .checkboxGroup {
-  margin-bottom: 1rem;
+  margin-bottom: 24px;
 }
 
-.checkboxGroup label {
-  display: block;
-  margin-bottom: 0.5rem;
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+}
+
+.checkboxLabel:last-child {
+  margin-bottom: 0;
+}
+
+.checkbox {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  appearance: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.checkbox:checked {
+  background: #ff5722;
+  border-color: #ff5722;
+}
+
+.checkbox:checked::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.checkboxText {
+  flex: 1;
+}
+
+.checkboxText a {
+  color: #ff5722;
+  text-decoration: underline;
 }
 
 .submitButton {
-  background-color: #ff3900;
+  width: 100%;
+  padding: 16px;
+  background: #ff5722;
   color: white;
-  padding: 0.5rem 1rem;
   border: none;
-  border-radius: 4px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
   cursor: pointer;
+  transition: background 0.2s;
+  margin-bottom: 20px;
 }
 
 .submitButton:hover {
-  background-color: #0056b3;
+  background: #e64a19;
+}
+
+.submitButton:disabled {
+  background: #ccc;
+  cursor: not-allowed;
 }
 
 .footer {
-  margin-top: 1rem;
-  font-size: 0.9rem;
+  background: #f8f9fa;
+  padding: 16px 20px;
+  border-radius: 10px;
 }
 
-.footer ul {
-  padding-left: 1.5rem;
+.footerTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+  margin: 0 0 8px 0;
+}
+
+.footerList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footerList li {
+  font-size: 12px;
+  color: #888;
+  padding-left: 12px;
+  position: relative;
+  margin-bottom: 4px;
+  line-height: 1.5;
+}
+
+.footerList li:last-child {
+  margin-bottom: 0;
+}
+
+.footerList li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: #ccc;
+}
+
+/* 로딩 상태 */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+}
+
+.loadingSpinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f0f0f0;
+  border-top: 3px solid #ff5722;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loadingText {
+  font-size: 14px;
+  color: #888;
+}
+
+/* 필수 표시 */
+.required {
+  color: #ff5722;
+  margin-left: 2px;
+}
+
+/* 에러 스타일 */
+.errorText {
+  display: block;
+  color: #e53935;
+  font-size: 12px;
+  margin-top: 6px;
+  padding-left: 2px;
+}
+
+.inputError {
+  border-color: #e53935 !important;
+  background-color: #fff8f7;
+}
+
+.inputError:focus {
+  border-color: #e53935 !important;
+  box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.1);
+}
+
+.fileError {
+  border-color: #e53935 !important;
+  background-color: #fff8f7;
+}
+
+.fileError .fileInputLabel {
+  border-color: #e53935;
+  background-color: #fff8f7;
+}
+
+.checkboxError {
+  color: #e53935;
+}
+
+/* 반응형 */
+@media (max-width: 480px) {
+  .modalOverlay {
+    padding: 15px;
+  }
+
+  .modalHeader {
+    padding: 20px 20px 16px;
+  }
+
+  .modalTitle {
+    font-size: 18px;
+  }
+
+  .modalBody {
+    padding: 20px;
+  }
+
+  .formInput {
+    padding: 12px 14px;
+  }
+
+  .submitButton {
+    padding: 14px;
+  }
+
+  .errorText {
+    font-size: 11px;
+  }
 }

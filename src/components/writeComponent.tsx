@@ -27,6 +27,7 @@ interface JobForm {
   // 급여
   salary_type: string;
   salary_detail: string;
+  // 기숙사 (DB 컬럼명: is_day_pay)
   is_day_pay: boolean;
   // 근무정보
   '1depth_category': string;
@@ -95,8 +96,8 @@ const WritePage: React.FC = () => {
 
   // 제목 유효성 검사 함수
   const validateTitle = (value: string): boolean => {
-    // 허용되는 문자: 한글, 영문, 숫자, 공백, 특수문자(- + # ( ) [ ] % & , . ' / ~ : ; = ★ ! ?)
-    const allowedPattern = /^[가-힣ㄱ-ㅎㅏ-ㅣa-zA-Z0-9\s\-\+#\(\)\[\]%&,\.'\/~:;=★!?\u0020]*$/;
+    // 허용되는 문자: 한글, 중국어, 영문, 숫자, 공백, 특수문자(- + # ( ) [ ] % & , . ' / ~ : ; = ★ ! ?)
+    const allowedPattern = /^[가-힣ㄱ-ㅎㅏ-ㅣ\u4e00-\u9fffa-zA-Z0-9\s\-\+#\(\)\[\]%&,\.'\/~:;=★!?\u0020]*$/;
     return allowedPattern.test(value);
   };
 
@@ -123,6 +124,14 @@ const WritePage: React.FC = () => {
       setCurrentUserId(auth.user.id);
     }
   }, [auth?.user]);
+
+  // URL에서 board_type 파라미터를 읽어서 폼에 설정
+  useEffect(() => {
+    const boardTypeFromUrl = router.query.board_type as string;
+    if (boardTypeFromUrl && !id) {  // 새 글 작성 시에만 적용
+      setFormData(prev => ({ ...prev, board_type: boardTypeFromUrl }));
+    }
+  }, [router.query.board_type, id]);
 
   useEffect(() => {
     if (id && currentUserId) {
@@ -212,7 +221,7 @@ const WritePage: React.FC = () => {
     // 제목 특수문자 유효성 검사
     if (!validateTitle(formData.title)) {
       setTitleInvalid(true);
-      setErrorMessage('공고제목에는 한글, 영문, 숫자, 일부 특수문자(- + # () [] % & , . (주) (사) \' / ~ : ; = ★ ! ?) 만 사용할 수 있습니다.');
+      setErrorMessage('공고제목에는 한글, 중국어, 영문, 숫자, 일부 특수문자(- + # () [] % & , . (주) (사) \' / ~ : ; = ★ ! ?) 만 사용할 수 있습니다.');
       setIsModalOpen(true);
       return;
     }
@@ -320,6 +329,14 @@ const WritePage: React.FC = () => {
 
       if (response.error) throw response.error;
 
+      // 신규 등록이고 자유게시판이 아닌 경우 is_upload를 true로 업데이트
+      if (!isEditing && formData.board_type !== '4') {
+        await supabase
+          .from('users')
+          .update({ is_upload: true })
+          .eq('id', user.id);
+      }
+
       // 자유게시판이거나 비즈니스 인증이 된 경우 board 페이지로 이동
       if (formData.board_type === '4') {
         router.push('/board?board_type=4');
@@ -365,6 +382,7 @@ const WritePage: React.FC = () => {
       setContentsUrlError(false);
     }
     
+
     // 급여 유형 변경 시 기본값 설정
     if (name === 'salary_type') {
       setSalaryWarningConfirmed(false); // 급여 유형 변경 시 경고 확인 초기화
@@ -443,8 +461,6 @@ const WritePage: React.FC = () => {
               >
                 <option value="0">구인정보</option>
                 <option value="1">구직정보</option>
-                <option value="2">중고시장</option>
-                <option value="3">부동산정보</option>
                 <option value="4">자유게시판</option>
               </select>
               <input
@@ -457,7 +473,7 @@ const WritePage: React.FC = () => {
                 maxLength={40}
               />
               <div className={style.titleCharCount}>{formData.title.length}/40 [최소2자]</div>
-              {titleInvalid && <div className={style.errorText}>공고제목에는 한글, 영문, 숫자, 일부 특수문자(- + # () [] % &amp; , . (주) (사) ' / ~ : ; = ★ ! ?) 만 사용할 수 있습니다.</div>}
+              {titleInvalid && <div className={style.errorText}>공고제목에는 한글, 중국어, 영문, 숫자, 일부 특수문자(- + # () [] % &amp; , . (주) (사) ' / ~ : ; = ★ ! ?) 만 사용할 수 있습니다.</div>}
               {errors.title && !titleInvalid && <div className={style.errorText}>제목을 입력해주세요</div>}
             </div>
           </div>
@@ -531,15 +547,6 @@ const WritePage: React.FC = () => {
                           className={style.input}
                           placeholder="급여 상세 정보"
                         />
-                        <label className={style.dayPayCheckbox}>
-                          <input
-                            type="checkbox"
-                            name="is_day_pay"
-                            checked={formData.is_day_pay}
-                            onChange={(e) => setFormData(prev => ({ ...prev, is_day_pay: e.target.checked }))}
-                          />
-                          <span className={style.dayPayLabel}>당일지급</span>
-                        </label>
                       </div>
                     </div>
                     <div className={style.formRow}>

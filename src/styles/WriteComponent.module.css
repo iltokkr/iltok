@@ -1,336 +1,72 @@
+/* 모던 공고등록 페이지 스타일 */
+
+.layout *,
+.layout *::before,
+.layout *::after {
+  box-sizing: border-box;
+}
+
 .layout {
-    padding: 15px 0 30px;
-  }
-  
-.formGroup {
-    line-height: 22px;
-    padding: 0 0 15px 15px;
-    overflow: hidden;
-  }
-
-.form dl {
-  display: inline-block;
+  max-width: 100%;
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px 20px 100px;
+  background: #fff;
 }
 
-.formGroup dd {
-    margin-left: 65px;
-  }
-
-  
-.formGroup dt {
-    width: 65px;
-    float: left;
-    clear: left;
-  }
-  
-.formGroup.hd {
-    padding-bottom: 10px;
-    margin-bottom: 10px;
-    border-bottom: 1px solid #ccc;
-  }
-  
-.formGroup.ft {
-    border-top: 1px solid #ccc;
-    padding-top: 10px;
-  }
-  
-.chooseType {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  overflow: hidden;
-}
-
-.chooseType li {
-    padding: 0 24px 0 0;
-    float: left;
-  }
-  
-  .radio,
-  .checkbox {
-    vertical-align: middle;
-    margin: 0 3px 0 0;
-    padding: 0;
-    font-size: 16px;
-  }
-  
-  .chooseType li label,
-  .formGroup label {
-    vertical-align: middle;
-    cursor: pointer;
-  }
-  
-  .selectBox {
-    margin: 0 5px 0 0;
-    display: inline-block;  /* float 대신 inline-block 사용 */
-  }
-  
-  .uploadNotice {
-    font-size: 0.9em;
-    color: #666;
-    text-align: center;
-  }
-
-  .input{
-    height: 20px;
-    width: 115px;
-    padding: 0 5px;
-    border: 1px solid #ccc;
-    margin-bottom: 5px;
-    font-size: 0.9em;
-    border-radius: 4px;
-  }
-  .select {
-    height: 22px;
-    line-height: 22px;
-    width: 115px;
-    padding: 0 5px;
-    border: 1px solid #ccc;
-    margin-bottom: 5px;
-    font-size: 0.9em;
-  }
-  
-  .input.title {
-    width: 785px;
-  }
-  
-  .textarea {
-    display: block;
-    width: 785px;
-    padding: 5px;
-    resize: vertical;
-    border: 1px solid #ccc;
-  }
-  
-  .textTips {
-    display: inline;
-    color: #aaa;
-  }
-  
-  .submitButton {
-    padding: 0 25px;
-    background: #ff3900;
-    border: 0;
-    font-weight: bold;
-    cursor: pointer;
-    color: #fff;
-  }
-  
-  .submitButton:hover {
-    background: #DD3100;
-  }
-  
-  .fileButton {
-    border: 1px solid #ccc;
-    background: #eee;
-    text-align: center;
-    cursor: pointer;
-  }
-  
-  .fileList {
-    padding: 8px 0 0;
-  }
-  
-  .fileList li {
-    line-height: 1.5;
-  }
-  
-  .fileList .deleteIcon {
-    display: inline-block;
-    width: 15px;
-    background-position: 0 -76px;
-    margin: 0 3px 0 0;
-    vertical-align: middle;
-  }
-  
-  .fileList .fileName {
-    display: inline;
-    vertical-align: middle;
-    color: #aaa;
-  }
-
+/* 섹션 타이틀 */
 .sectionTitle {
-  font-size: 1.1em;
-  font-weight: bold;
-  margin: 10px 0 5px;
-  border-bottom: 2px solid #ff3900;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 32px 0 16px;
+  padding: 0;
+  border: none;
 }
 
+.sectionTitle:first-of-type {
+  margin-top: 0;
+}
+
+/* 서브섹션 */
 .subSection {
-  margin: 5px 0;
-  padding: 12px;
-  background: #f9f9f9;
-  border-radius: 4px;
+  margin: 0 0 16px;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
 }
 
+/* 폼 행 */
 .formRow {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
 }
 
 .formGrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 15px;
-}
-
-.formLabel {
-  width: 80px;
-  font-weight: bold;
-  font-size: 0.9em;
-}
-
-.formInput {
-  flex: 1;
   display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.select {
-  min-width: 90px;
-  padding: 0 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 0.9em;
-}
-
-.timeInput {
-  width: 130px;
-  padding: 0 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 0.9em;
-}
-
-.textarea {
-  width: 100%;
-  min-height: 150px;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  resize: vertical;
-  font-size: 0.9em;
-}
-
-@media screen and (max-width: 768px) {
-  .formGrid {
-    grid-template-columns: 1fr;
-    gap: 10px;
-  }
-  
-  .formInput {
-    gap: 3px;
-  }
-  
-  .formInput .locationSelects {
-    display: flex;
-    gap: 3px;
-    width: 100%;
-  }
-
-  .formInput .locationSelects select {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .formInput input[name="work_location_detail"] {
-    width: 100%;
-    margin-top: 3px;
-  }
-  
-  .select, .input {
-    width: 100%;
-  }
-}
-
-.radioGroup {
-  display: flex;
+  flex-direction: column;
   gap: 20px;
-  align-items: center;
 }
 
-.radioGroup input[type="radio"] {
-  margin: 0;
-  width: 16px;
-  height: 16px;
-  vertical-align: middle;
-}
-
-.radioGroup label {
-  margin-left: 6px;
-  font-size: 0.9em;
-  cursor: pointer;
-  vertical-align: middle;
-  display: inline-flex;
-  align-items: center;
-}
-
-.radioGroup input[type="radio"] + label {
-  color: #666;
-}
-
-.radioGroup input[type="radio"]:checked + label {
-  color: #ff3900;
-  font-weight: bold;
-}
-
-@media screen and (max-width: 768px) {
-  .radioGroup {
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-  
-  .radioGroup label {
-    font-size: 0.85em;
-  }
-}
-
-.titleInput {
-  flex: 1;
-  max-width: 100%;
-}
-
-.titleField {
-  width: 100%; /* 다른 input보다 약간 더 높게 */
-  font-size: 1em; /* 다른 input보다 약간 더 크게 */
-  padding: 0 15px;
-}
-
-.titleField::placeholder {
-  color: #999;
-}
-
-.titleField:focus {
-  border-color: #ff3900;
-  outline: none;
-  box-shadow: 0 0 0 1px rgba(255, 57, 0, 0.1);
-}
-
-
-.errorInput {
-  border: 1px solid #ff4444 !important;
-  background-color: #fff8f8;
-}
-
-.errorText {
-  color: #ff4444;
-  font-size: 0.8rem;
-  margin-top: 4px;
-  display: block;
-}
-
-.required {
-  color: #ff4444;
-}
-
+/* 폼 라벨 */
 .formLabel {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a1a;
   display: flex;
   align-items: center;
   gap: 4px;
+  margin-bottom: 8px;
 }
 
+.required {
+  color: #ff5722;
+  font-size: 14px;
+}
+
+/* 폼 인풋 컨테이너 */
 .formInput {
   display: flex;
   flex-wrap: wrap;
@@ -338,208 +74,305 @@
   align-items: center;
 }
 
-/* 모바일 대응을 위한 미디어 쿼리 */
-@media screen and (max-width: 768px) {
-  .errorText {
-    width: 100%;
-    margin-top: 2px;
-  }
+/* 셀렉트 박스 */
+.select {
+  height: 48px;
+  padding: 0 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  font-size: 15px;
+  color: #1a1a1a;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+  min-width: 120px;
+  box-sizing: border-box;
 }
 
+.select:focus {
+  outline: none;
+  border-color: #1a1a1a;
+}
+
+.select:hover {
+  border-color: #999;
+}
+
+/* 게시판 선택 */
 .boardSelect {
-  width: 120px;
-  flex: none; /* 고정 너비 유지 */
-  font-weight: 500;
+  width: 160px;
+  min-width: 160px;
+  flex-shrink: 0;
 }
 
-.titleField {
+/* 인풋 필드 */
+.input {
+  height: 48px !important;
+  min-height: 48px !important;
+  padding: 0 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  font-size: 15px;
+  color: #1a1a1a;
+  background: #fff;
+  transition: all 0.2s ease;
   flex: 1;
-  font-size: 1em;
-  padding: 0 15px;
+  min-width: 0;
+  box-sizing: border-box;
+  line-height: 48px;
 }
 
-.titleInputWrapper {
-  display: flex;
-  flex: 1;
-  align-items: center;
+.input:focus {
+  outline: none;
+  border-color: #1a1a1a;
 }
 
-.titleCharCount {
+.input::placeholder {
   color: #999;
-  font-size: 12px;
-  margin-left: 10px;
-  white-space: nowrap;
+}
+
+/* 제목 인풋 */
+.titleField {
+  width: 100%;
+  height: 48px !important;
+  min-height: 48px !important;
+  font-size: 15px;
+  font-weight: 500;
+  box-sizing: border-box;
+  line-height: normal;
+  padding: 0 16px !important;
 }
 
 .titleFormInput {
-  flex: 1;
   display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-@media screen and (max-width: 768px) {
-  .titleFormInput {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .titleFormInput .boardSelect {
-    width: 100%;
-  }
-  
-  .titleFormInput .titleField {
-    width: 100%;
-    flex: none;
-  }
-  
-  .titleFormInput .titleCharCount {
-    width: 100%;
-    margin-left: 0;
-  }
-}
-
-.dayPayCheckbox {
-  margin-left: 10px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  cursor: pointer;
-}
-
-.dayPayCheckbox input {
-  width: 14px;
-  height: 14px;
-  cursor: pointer;
-}
-
-.dayPayLabel {
-  font-size: 12px;
-  color: #333;
-  font-weight: normal;
-  white-space: nowrap;
-}
-
-.titleErrorText {
-  color: #ff4444;
-  font-size: 12px;
-  margin-top: 5px;
-  margin-left: 0;
+  flex-direction: column;
+  gap: 12px;
   width: 100%;
 }
 
-.formInput {
+.titleCharCount {
+  font-size: 13px;
+  color: #999;
+  text-align: right;
+}
+
+/* 시간 인풋 */
+.timeInput {
+  height: 48px;
+  padding: 0 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  font-size: 15px;
+  color: #1a1a1a;
+  background: #fff;
   flex: 1;
-  display: flex;
-  gap: 10px;
-  align-items: center;
+  min-width: 100px;
 }
 
-@media screen and (max-width: 768px) {
-  .formInput {
-    flex-wrap: nowrap; /* 모바일에서도 가로 배열 유지 */
-  }
-  
-  .boardSelect {
-    width: 100px; /* 모바일에서는 약간 더 좁게 */
-    font-size: 0.9em;
-  }
-  
-  .titleField {
-    font-size: 0.9em;
-  }
+.timeInput:focus {
+  outline: none;
+  border-color: #1a1a1a;
 }
 
-.warningText {
-  padding: 8px 12px;
-  background-color: #fff5f5;
-  border-radius: 4px;
-  font-size: 0.85em;
-  color: #e53e3e;
-  line-height: 1.5;
+/* 텍스트에어리어 */
+.textarea {
+  width: 100%;
+  min-height: 200px;
+  padding: 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  font-size: 15px;
+  color: #1a1a1a;
+  background: #fff;
+  resize: vertical;
+  line-height: 1.6;
+  transition: all 0.2s ease;
 }
 
-.warningText strong {
-  color: #c53030;
+.textarea:focus {
+  outline: none;
+  border-color: #1a1a1a;
 }
 
-@media screen and (max-width: 768px) {
-  .warningText {
-    font-size: 0.8em;
-    padding: 6px 10px;
-  }
+.textarea::placeholder {
+  color: #999;
 }
 
-@media screen and (max-width: 768px) {
-  .layout{
-    padding: 10px;
-  }
-
-  .formGrid{
-    gap: 3px;
-  }
-  .select {
-    width: 50%;
-  }
-  
-  .timeInput {
-    width: 50%;
-  }
-}
-
+/* 조건 선택 폼 */
 .conditionFormInput {
   display: flex;
-  gap: 3px;
-  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.conditionFormInput .select {
   flex: 1;
+  min-width: calc(50% - 4px);
 }
 
-@media screen and (max-width: 768px) {
-  .conditionFormInput {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    width: 100%;
-  }
-  
-  .conditionFormInput .select {
-    width: 100%;
-    min-width: 100%;
-  }
-
-  .conditionFormInput .locationSelects {
-    display: flex;
-    gap: 3px;
-    width: 100%;
-  }
-
-  .conditionFormInput .locationSelects .select {
-    width: 50%;
-    min-width: 0;
-  }
+/* 지역 선택 */
+.locationSelects {
+  display: flex;
+  gap: 8px;
+  width: 100%;
 }
 
-.legalWarning {
-  margin: 20px 0;
-  padding: 15px;
-  background-color: #fff5f5;
-  border: 1px solid #fed7d7;
-  border-radius: 4px;
-  font-size: 0.85em;
-  color: #e53e3e;
+.locationSelects .select {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 기숙사 체크박스 */
+.dormitoryCheckbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #fff5f5;
+  border: 1px solid #ffcdd2;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 8px;
+}
+
+.dormitoryCheckbox:hover {
+  background: #ffebee;
+}
+
+.dormitoryCheckbox input {
+  width: 18px;
+  height: 18px;
+  accent-color: #e91e63;
+  cursor: pointer;
+}
+
+.dormitoryIcon {
+  width: 20px;
+  height: 20px;
+}
+
+.dormitoryLabel {
+  font-size: 14px;
+  color: #c62828;
+  font-weight: 500;
+}
+
+/* 에러 스타일 */
+.errorInput {
+  border-color: #ff5722 !important;
+  background-color: #fff8f6;
+}
+
+.errorText {
+  color: #ff5722;
+  font-size: 13px;
+  margin-top: 4px;
+  display: block;
+  width: 100%;
+}
+
+/* 경고 문구 */
+.warningText {
+  padding: 12px 16px;
+  background: #fff8f6;
+  border-radius: 12px;
+  font-size: 13px;
+  color: #ff5722;
   line-height: 1.6;
+  margin-top: 12px;
+}
+
+/* 법적 경고 */
+.legalWarning {
+  margin: 24px 0;
+  padding: 16px;
+  background: #fff8f6;
+  border-radius: 12px;
+  font-size: 13px;
+  color: #ff5722;
+  line-height: 1.7;
 }
 
 .legalWarning p {
-  margin: 5px 0;
+  margin: 6px 0;
 }
 
-@media screen and (max-width: 768px) {
-  .legalWarning {
-    font-size: 0.8em;
-    padding: 12px;
-    margin: 15px 0;
-  }
+/* 제출 버튼 영역 */
+.formGroup.ft {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px;
+  background: #fff;
+  border-top: 1px solid #f0f0f0;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.submitButton {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  height: 56px;
+  background: #ff5722;
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.submitButton:hover {
+  background: #e64a19;
+}
+
+.submitButton:active {
+  transform: scale(0.98);
+}
+
+/* 라디오 그룹 */
+.radioGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.radioGroup label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: #f5f5f5;
+  border: 2px solid transparent;
+  border-radius: 25px;
+  font-size: 14px;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.radioGroup label:hover {
+  background: #eee;
+}
+
+.radioGroup input[type="radio"] {
+  display: none;
+}
+
+.radioGroup input[type="radio"]:checked + label,
+.radioGroup label:has(input:checked) {
+  background: #1a1a1a;
+  color: #fff;
+  border-color: #1a1a1a;
 }
 
 /* 급여 범위 초과 경고 모달 */
@@ -549,33 +382,36 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  padding: 20px;
 }
 
 .salaryWarningModal {
-  background: white;
-  border-radius: 12px;
-  padding: 30px;
-  max-width: 400px;
-  width: 90%;
+  background: #fff;
+  border-radius: 20px;
+  padding: 32px 24px;
+  max-width: 380px;
+  width: 100%;
   position: relative;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  text-align: center;
 }
 
 .salaryWarningClose {
   position: absolute;
-  top: 15px;
-  right: 15px;
+  top: 16px;
+  right: 16px;
   background: none;
   border: none;
   font-size: 24px;
   cursor: pointer;
-  color: #666;
+  color: #999;
   line-height: 1;
+  padding: 4px;
 }
 
 .salaryWarningClose:hover {
@@ -583,55 +419,198 @@
 }
 
 .salaryWarningTitle {
-  font-size: 1.3em;
-  font-weight: bold;
+  font-size: 20px;
+  font-weight: 700;
   margin-bottom: 20px;
-  color: #333;
-  text-align: center;
+  color: #1a1a1a;
 }
 
 .salaryWarningContent {
   background: #f8f9fa;
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 20px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .salaryWarningText {
-  text-align: center;
   color: #333;
   line-height: 1.8;
-  font-size: 0.95em;
+  font-size: 15px;
 }
 
 .salaryWarningButton {
   display: block;
   width: 100%;
-  padding: 12px;
-  background: #ff5205;
-  color: white;
+  padding: 16px;
+  background: #ff5722;
+  color: #fff;
   border: none;
-  border-radius: 8px;
-  font-size: 1em;
-  font-weight: bold;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 700;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s ease;
 }
 
 .salaryWarningButton:hover {
-  background: #e64a00;
+  background: #e64a19;
 }
 
-@media screen and (max-width: 768px) {
-  .salaryWarningModal {
+/* 기타 유틸리티 */
+.formGroup {
+  margin: 0;
+  padding: 0;
+}
+
+.chooseType,
+.selectBox,
+.uploadNotice,
+.fileButton,
+.fileList,
+.textTips {
+  display: none;
+}
+
+/* 반응형 - 태블릿 이상 */
+@media screen and (min-width: 769px) {
+  .layout {
+    max-width: 100%;
+    padding: 40px 40px 120px;
+  }
+
+  .sectionTitle {
+    font-size: 20px;
+    margin: 40px 0 20px;
+  }
+
+  .formRow {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .formLabel {
+    width: 100px;
+    flex-shrink: 0;
+    padding-top: 14px;
+  }
+
+  .formInput {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .titleFormInput {
+    flex-direction: column;
+    align-items: stretch;
+    flex: 1;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  .titleFormInput .boardSelect {
+    width: 160px;
+    max-width: 160px;
+  }
+
+  .titleFormInput .titleField {
+    width: 100%;
+  }
+
+  .titleCharCount {
+    text-align: right;
+  }
+
+  .conditionFormInput .select {
+    min-width: auto;
+    flex: none;
+    width: auto;
+  }
+
+  .formGroup.ft {
     padding: 20px;
   }
-  
-  .salaryWarningTitle {
-    font-size: 1.1em;
+
+  .submitButton {
+    height: 60px;
+    font-size: 18px;
   }
-  
+}
+
+/* 모바일 최적화 */
+@media screen and (max-width: 768px) {
+  .layout {
+    max-width: 100%;
+    padding: 16px 16px 90px;
+  }
+
+  .sectionTitle {
+    font-size: 17px;
+    margin: 24px 0 14px;
+  }
+
+  .select {
+    height: 46px;
+    font-size: 14px;
+  }
+
+  .input {
+    height: 46px !important;
+    min-height: 46px !important;
+    font-size: 14px;
+    line-height: 46px;
+  }
+
+  .titleField {
+    height: 46px !important;
+    min-height: 46px !important;
+    font-size: 14px;
+    line-height: normal;
+  }
+
+  .timeInput {
+    height: 46px;
+    font-size: 14px;
+  }
+
+  .textarea {
+    min-height: 180px;
+    font-size: 14px;
+  }
+
+  .conditionFormInput .select {
+    min-width: calc(50% - 4px);
+  }
+
+  .submitButton {
+    height: 52px;
+    font-size: 16px;
+    border-radius: 12px;
+  }
+
+  .formGroup.ft {
+    padding: 12px 16px;
+  }
+
+  .warningText {
+    font-size: 12px;
+    padding: 10px 12px;
+  }
+
+  .legalWarning {
+    font-size: 12px;
+    padding: 12px;
+  }
+
+  .salaryWarningModal {
+    padding: 24px 20px;
+  }
+
+  .salaryWarningTitle {
+    font-size: 18px;
+  }
+
   .salaryWarningText {
-    font-size: 0.9em;
+    font-size: 14px;
   }
 }

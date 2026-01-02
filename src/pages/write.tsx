@@ -48,7 +48,13 @@ const Write: React.FC = () => {
       setShowLoginPopup(false);
     }
 
-    // 로그인한 경우에만 사용자 인증 상태 확인
+    // 수정 모드일 때는 인증 상태 체크 건너뛰기
+    const isEditing = router.query.id;
+    if (isEditing) {
+      return;
+    }
+
+    // 신규 등록 시에만 사용자 인증 상태 확인
     const checkUserAcceptance = async () => {
       if (!authContext?.user?.id) return;
 
@@ -68,7 +74,7 @@ const Write: React.FC = () => {
     };
 
     checkUserAcceptance();
-  }, [authContext?.user, authContext?.isLoading]);
+  }, [authContext?.user, authContext?.isLoading, router.query.id]);
 
   const handleLoginPopupClose = async () => {
     // Supabase 세션을 직접 확인 (context가 아직 업데이트되지 않았을 수 있음)

@@ -34,13 +34,25 @@ interface MylistProps {
   isAccept: boolean;
   isUpload: boolean;
   reloadTimes: number;
+  bizFile: string | null;
+  companyName: string | null;
+  managerName: string | null;
+  phoneNumber: string | null;
+  businessNumber: string | null;
+  businessAddress: string | null;
 }
 
 const Mylist: React.FC<MylistProps> = ({ 
   posts, 
   isAccept, 
   isUpload, 
-  reloadTimes 
+  reloadTimes,
+  bizFile,
+  companyName,
+  managerName,
+  phoneNumber,
+  businessNumber,
+  businessAddress
 }) => {
   const [showModal, setShowModal] = useState(false);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
@@ -48,7 +60,15 @@ const Mylist: React.FC<MylistProps> = ({
   const [bookmarkedPosts, setBookmarkedPosts] = useState<BookmarkedPost[]>([]);
   const [bookmarkCounts, setBookmarkCounts] = useState<Record<number, number>>({});
 
-  const businessStatus = isAccept ? "인증" : "대기중";  
+  // 사업자 인증 상태: 미등록 / 심사중 / 인증완료
+  const getBusinessStatus = () => {
+    if (isAccept) return "인증완료";
+    if (bizFile) return "심사중";
+    return "미등록";
+  };
+  
+  const businessStatus = getBusinessStatus();
+  const isVerified = isAccept;  
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -109,7 +129,7 @@ const Mylist: React.FC<MylistProps> = ({
     try {
       // Check if reload_times is available
       if (reloadTimes <= 0) {
-        alert('재등록 가능 횟수가 소진되었습니다. 내일 다시 시도해주세요.');
+        alert('끌어올리기 횟수가 모두 소진되었습니다. 다음 충전 시간까지 기다려주세요.');
         event({
           action: 'reload_post_failed',
           category: 'my_list',
@@ -146,7 +166,7 @@ const Mylist: React.FC<MylistProps> = ({
         window.location.reload(); // 페이지를 새로고침하여 업데이트된 상태를 반영
       }, 2000);
     } catch (error) {
-      console.error('재등록 실패:', error);
+      console.error('끌어올리기 실패:', error);
       event({
         action: 'reload_post_error',
         category: 'my_list',
@@ -233,31 +253,80 @@ const Mylist: React.FC<MylistProps> = ({
 
   return (
     <div className={styles.layout}>
-      <div className={styles.listHead}>
-        업로드 게시글 (총 {regularPosts.length}개) <span className={styles.delAll}>(3개월이 지난글은 삭제될 수 있습니다.)</span>
-      </div>
-
-      <div className={styles.businessStatus}>
-        <p>
-          구인업체 사업자 인증상태 : 
-          <span className={styles.statusText}>
-            {businessStatus}
-          </span>
+      {/* 사업자 정보 카드 */}
+      <div className={styles.businessCard}>
+        <div className={styles.businessCardHeader}>
+          <div className={styles.companyInfo}>
+            <h2 className={styles.companyName}>{companyName || '업체명 미등록'}</h2>
+            <div className={styles.contactInfo}>
+              <span className={styles.contactItem}>
+                <span className={styles.contactLabel}>사업자번호</span>
+                <span className={styles.contactValue}>{businessNumber || '-'}</span>
+              </span>
+              <span className={styles.contactItem}>
+                <span className={styles.contactLabel}>소재지</span>
+                <span className={styles.contactValue}>{businessAddress || '-'}</span>
+              </span>
+              <span className={styles.contactItem}>
+                <span className={styles.contactLabel}>대표자</span>
+                <span className={styles.contactValue}>{managerName || '-'}</span>
+              </span>
+              <span className={styles.contactItem}>
+                <span className={styles.contactLabel}>연락처</span>
+                <span className={styles.contactValue}>{phoneNumber || '-'}</span>
+              </span>
+            </div>
+          </div>
           <button 
-            className={styles.editButton}
+            className={styles.editInfoButton}
             onClick={() => setShowVerificationModal(true)}
           >
-            수정하기
+            {bizFile ? '수정하기' : '등록하기'} &gt;
           </button>
-        </p>
-        <p>신규 등록 가능 여부 : <span className={styles.statusText}>{isUpload ? "불가능" : "가능"}</span></p>
-        <p>재등록 가능 횟수 : <span className={styles.statusText}>{reloadTimes}회</span></p>
-        <div className={styles.guideText}>
-          <ul>
-            <li>"재업로드"는 매일 00시, 06시, 12시, 18시에 1개씩 충전됩니다.</li>
-            <li>"수정"은 횟수와 상관없이 모두 가능하지만, 업로드 일시는 변경이 되어 상위노출이 되지는 않습니다.</li>
-          </ul>
+        </div>
       </div>
+
+      {/* 인증 및 이용 현황 */}
+      <div className={styles.statusCard}>
+        <div className={styles.statusRow}>
+          <span className={styles.statusLabel}>사업자 인증</span>
+          <span className={`${styles.statusBadge} ${isVerified ? styles.badgeVerified : businessStatus === '심사중' ? styles.badgePending : styles.badgeNotRegistered}`}>
+            {businessStatus}
+          </span>
+        </div>
+        <div className={styles.statusRow}>
+          <span className={styles.statusLabel}>오늘 공고 등록</span>
+          <span className={styles.statusValue}>
+            {isVerified ? (isUpload ? "완료 (1일 1회)" : "가능") : "인증 완료 후 이용"}
+          </span>
+        </div>
+        <div className={styles.statusRow}>
+          <span className={styles.statusLabel}>끌어올리기 횟수</span>
+          <span className={styles.statusValue}>
+            {isVerified ? `${reloadTimes}회 남음` : "인증 완료 후 이용"}
+          </span>
+        </div>
+      </div>
+
+      {/* 안내 문구 */}
+      <div className={styles.guideCard}>
+        <div className={styles.guideItem}>
+          <img src="/icons/megaphone-icon.svg" alt="끌어올리기" className={styles.guideIconImg} />
+          <span className={styles.guideText}><strong>끌어올리기</strong>를 하면 공고가 게시판 최상단으로 이동합니다.</span>
+        </div>
+        <div className={styles.guideItem}>
+          <img src="/icons/recharge-icon.svg" alt="충전" className={styles.guideIconImg} />
+          <span className={styles.guideText}>끌어올리기는 <strong>매일 00시, 06시, 12시, 18시</strong>에 1회씩 충전됩니다.</span>
+        </div>
+        <div className={styles.guideItem}>
+          <img src="/icons/edit-icon.svg" alt="수정" className={styles.guideIconImg} />
+          <span className={styles.guideText}>[수정]은 횟수 제한 없이 가능하지만, 게시판 순서는 변경되지 않습니다.</span>
+        </div>
+      </div>
+
+      {/* 공고 목록 헤더 */}
+      <div className={styles.listHead}>
+        내 공고 ({regularPosts.length}건)
       </div>
 
       <ul className={styles.listWrap}>
@@ -276,7 +345,7 @@ const Mylist: React.FC<MylistProps> = ({
                   <a href={`/write?id=${post.id}`}>[수정]</a>
                 </span>
                 <span className={styles.recall}>
-                  <a onClick={() => handleReload(post.id)}>[재업로드]</a>
+                  <a onClick={() => handleReload(post.id)}>[끌어올리기]</a>
                 </span>
                 <span className={styles.recall}>
                   <a onClick={() => handleDelete(post.id)}>[삭제]</a>

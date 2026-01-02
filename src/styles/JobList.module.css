@@ -576,14 +576,39 @@
   line-height: 1;
 }
 
-.dayPayBadge {
+.dormitoryBadge {
   display: inline-flex;
   align-items: center;
-  color: #e85a5a;
+  gap: 2px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #e91e63;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+.dormitoryIcon {
+  width: 12px;
+  height: 12px;
+}
+
+/* 긴급 배지 */
+.urgentBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 700;
+  color: #2196F3;
   margin-right: 6px;
+  vertical-align: middle;
   white-space: nowrap;
+}
+
+.urgentIcon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
 }
 
 .filledBookmark {
@@ -1106,6 +1131,27 @@
   background: #ff6b6b !important;
 }
 
+.jobSeekerTag {
+  background: transparent !important;
+  border: 1px solid #10b981 !important;
+  color: #10b981 !important;
+  font-weight: 600;
+}
+
+.freeTag {
+  background: transparent !important;
+  border: 1px solid #6b7280 !important;
+  color: #6b7280 !important;
+  font-weight: 600;
+}
+
+.popularTag {
+  background: transparent !important;
+  border: 1px solid #3b82f6 !important;
+  color: #3b82f6 !important;
+  font-weight: 600;
+}
+
 .communityContent {
   display: flex;
   flex-direction: column;
@@ -1132,6 +1178,21 @@
   flex: 1;
   min-width: 0;
   max-width: 100%;
+}
+
+.communityRegion {
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.locationIcon {
+  color: #6b7280;
+  font-size: 14px;
+  flex-shrink: 0;
 }
 
 .communityTag {
