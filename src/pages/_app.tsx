@@ -4,10 +4,37 @@ import { AuthProvider } from '@/providers/AuthProvider'
 import Head from 'next/head'
 import Script from 'next/script'
 import { TranslationProvider } from '@/contexts/TranslationContext'
+import { useRouter } from 'next/router'
+import { useEffect } from 'react'
 
 const GA_MEASUREMENT_ID = 'G-RT5E0QKYVV';
 
 function MyApp({ Component, pageProps }: AppProps) {
+  const router = useRouter();
+
+  // 브라우저 스크롤 복원 비활성화 (수동 관리)
+  useEffect(() => {
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+  }, []);
+
+  // 상세페이지(/jd/) 진입 시 스크롤 맨 위로
+  useEffect(() => {
+    const handleRouteChange = (url: string) => {
+      // 상세페이지 진입 완료 시 스크롤 맨 위로
+      if (url.startsWith('/jd/')) {
+        window.scrollTo(0, 0);
+      }
+    };
+
+    router.events.on('routeChangeComplete', handleRouteChange);
+
+    return () => {
+      router.events.off('routeChangeComplete', handleRouteChange);
+    };
+  }, [router.events]);
+
   return (
     <TranslationProvider>
       <AuthProvider>

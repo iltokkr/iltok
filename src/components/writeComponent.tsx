@@ -61,7 +61,7 @@ const WritePage: React.FC = () => {
     education: '무관',
     age_limit: '무관',
     salary_type: '시급',
-    salary_detail: '10320',
+    salary_detail: '10,320',
     is_day_pay: false,
     '1depth_category': '',
     '2depth_category': '',
@@ -87,6 +87,10 @@ const WritePage: React.FC = () => {
     contents: false
   });
   const [titleInvalid, setTitleInvalid] = useState(false);
+  const [contentsUrlError, setContentsUrlError] = useState(false);
+  const [salaryWarningConfirmed, setSalaryWarningConfirmed] = useState(false);
+  const [showSalaryWarningModal, setShowSalaryWarningModal] = useState(false);
+  const [salaryWarningMessage, setSalaryWarningMessage] = useState('');
   const auth = useContext(AuthContext);
 
   // 제목 유효성 검사 함수
@@ -94,6 +98,24 @@ const WritePage: React.FC = () => {
     // 허용되는 문자: 한글, 영문, 숫자, 공백, 특수문자(- + # ( ) [ ] % & , . ' / ~ : ; = ★ ! ?)
     const allowedPattern = /^[가-힣ㄱ-ㅎㅏ-ㅣa-zA-Z0-9\s\-\+#\(\)\[\]%&,\.'\/~:;=★!?\u0020]*$/;
     return allowedPattern.test(value);
+  };
+
+  // URL 포함 여부 검사 함수
+  const containsUrl = (value: string): boolean => {
+    // http://, https://, www., .com, .kr, .net, .org, .co.kr 등 URL 패턴 감지
+    const urlPatterns = [
+      /https?:\/\//i,                    // http:// 또는 https://
+      /www\./i,                          // www.
+      /\.[a-z]{2,}(\/|$|\s)/i,          // .com, .kr, .net 등 (최소 2자 도메인)
+      /\.com/i,                          // .com
+      /\.kr/i,                           // .kr
+      /\.co\.kr/i,                       // .co.kr
+      /\.net/i,                          // .net
+      /\.org/i,                          // .org
+      /\.io/i,                           // .io
+    ];
+    
+    return urlPatterns.some(pattern => pattern.test(value));
   };
 
   useEffect(() => {
@@ -143,6 +165,10 @@ const WritePage: React.FC = () => {
         return;
       }
 
+      // 급여 데이터에 콤마 추가
+      if (jobData.salary_detail) {
+        jobData.salary_detail = jobData.salary_detail.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      }
       setFormData(jobData);
       console.log('Form data set:', jobData);
     } catch (error) {
@@ -191,12 +217,51 @@ const WritePage: React.FC = () => {
       return;
     }
 
-    // 시급 유효성 검사 추가
+    // 상세내용 URL 포함 여부 검사
+    if (containsUrl(formData.contents)) {
+      setContentsUrlError(true);
+      setErrorMessage('상세내용에 URL(http, www, .com 등)을 포함할 수 없습니다.');
+      setIsModalOpen(true);
+      return;
+    }
+
+    // 시급 유효성 검사 추가 (콤마 제거 후 검사)
+    const salaryNumber = formData.salary_detail.replace(/,/g, '');
+    const salaryNum = parseInt(salaryNumber);
+    
     if (formData.board_type === '0' && formData.salary_type === '시급') {
-      const hourlyWage = parseInt(formData.salary_detail);
-      if (!isNaN(hourlyWage) && hourlyWage < 10320) {
+      if (!isNaN(salaryNum) && salaryNum < 10320) {
         setErrorMessage('최저임금(10,320원)보다 적은 금액을 입력할 수 없습니다.');
         setIsModalOpen(true);
+        return;
+      }
+    }
+
+    // 급여 범위 초과 검사 (확인되지 않은 경우에만)
+    if (formData.board_type === '0' && !salaryWarningConfirmed && !isNaN(salaryNum)) {
+      let warningMessage = '';
+      
+      // 시급: 10만원 초과
+      if (formData.salary_type === '시급' && salaryNum > 100000) {
+        warningMessage = '시급이 평균 범위를 초과합니다.\n\n의도하신 금액이 맞다면 다시 한 번 등록을 진행해 주세요.';
+      }
+      // 일급: 100만원 초과
+      else if (formData.salary_type === '일급' && salaryNum > 1000000) {
+        warningMessage = '일급이 평균 범위를 초과합니다.\n\n의도하신 금액이 맞다면 다시 한 번 등록을 진행해 주세요.';
+      }
+      // 월급: 1000만원 초과
+      else if (formData.salary_type === '월급' && salaryNum > 10000000) {
+        warningMessage = '월급이 평균 범위를 초과합니다.\n\n의도하신 금액이 맞다면 다시 한 번 등록을 진행해 주세요.';
+      }
+      // 주급: 1000만원 초과
+      else if (formData.salary_type === '주급' && salaryNum > 10000000) {
+        warningMessage = '주급이 평균 범위를 초과합니다.\n\n의도하신 금액이 맞다면 다시 한 번 등록을 진행해 주세요.';
+      }
+      
+      if (warningMessage) {
+        setSalaryWarningMessage(warningMessage);
+        setShowSalaryWarningModal(true);
+        setSalaryWarningConfirmed(true); // 다음 클릭 시 통과하도록
         return;
       }
     }
@@ -236,6 +301,7 @@ const WritePage: React.FC = () => {
 
       const submissionData = {
         ...formData,
+        salary_detail: formData.salary_detail.replace(/,/g, ''), // 콤마 제거하고 저장
         uploader_id: user.id,
         ad: false,
       };
@@ -278,12 +344,47 @@ const WritePage: React.FC = () => {
     }
   };
 
+  // 숫자에 콤마 추가하는 함수
+  const formatNumberWithCommas = (value: string): string => {
+    // 숫자만 추출
+    const numbersOnly = value.replace(/[^\d]/g, '');
+    // 콤마 추가
+    return numbersOnly.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     
     // 제목 입력 시 유효성 검사
     if (name === 'title') {
       setTitleInvalid(!validateTitle(value));
+    }
+    
+    // 상세내용 입력 시 URL 에러 초기화
+    if (name === 'contents') {
+      setContentsUrlError(false);
+    }
+    
+    // 급여 유형 변경 시 기본값 설정
+    if (name === 'salary_type') {
+      setSalaryWarningConfirmed(false); // 급여 유형 변경 시 경고 확인 초기화
+      setFormData(prevState => ({
+        ...prevState,
+        [name]: value,
+        salary_detail: value === '시급' ? '10,320' : ''
+      }));
+      return;
+    }
+    
+    // 급여 입력 시 숫자만 허용하고 콤마 자동 추가
+    if (name === 'salary_detail') {
+      setSalaryWarningConfirmed(false); // 급여 금액 변경 시 경고 확인 초기화
+      const formattedValue = formatNumberWithCommas(value);
+      setFormData(prevState => ({
+        ...prevState,
+        [name]: formattedValue
+      }));
+      return;
     }
     
     setFormData(prevState => ({
@@ -544,12 +645,13 @@ const WritePage: React.FC = () => {
         <div className={style.subSection}>
           <textarea
             name="contents"
-            className={getInputClassName('contents', style.textarea)}
+            className={`${getInputClassName('contents', style.textarea)} ${contentsUrlError ? style.errorInput : ''}`}
             placeholder="상세 내용을 입력해주세요"
             value={formData.contents}
             onChange={handleInputChange}
           ></textarea>
           {errors.contents && <div className={style.errorText}>상세 내용을 입력해주세요</div>}
+          {contentsUrlError && <div className={style.errorText}>상세내용에 URL(http, www, .com 등)을 포함할 수 없습니다.</div>}
         </div>
 
         {/* 법적 경고 문구 */}
@@ -577,6 +679,34 @@ const WritePage: React.FC = () => {
           setShowBusinessVerificationModal(false);
           router.push('/board');
         }} />
+      )}
+      
+      {/* 급여 범위 초과 경고 모달 */}
+      {showSalaryWarningModal && (
+        <div className={style.salaryWarningOverlay}>
+          <div className={style.salaryWarningModal}>
+            <button 
+              className={style.salaryWarningClose}
+              onClick={() => setShowSalaryWarningModal(false)}
+            >
+              ×
+            </button>
+            <h2 className={style.salaryWarningTitle}>⚠️ 급여 범위 확인</h2>
+            <div className={style.salaryWarningContent}>
+              <p className={style.salaryWarningText}>
+                {salaryWarningMessage.split('\n').map((line, i) => (
+                  <span key={i}>{line}<br/></span>
+                ))}
+              </p>
+            </div>
+            <button 
+              className={style.salaryWarningButton}
+              onClick={() => setShowSalaryWarningModal(false)}
+            >
+              확인
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

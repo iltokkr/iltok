@@ -1,4 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
+import Link from 'next/link';
 import styles from '@/styles/Mylist.module.css';
 import { createClient } from '@supabase/supabase-js';
 import { addHours, format, subHours } from 'date-fns';
@@ -265,9 +266,9 @@ const Mylist: React.FC<MylistProps> = ({
             <div className={styles.postInfo}>
               <div className={styles.postContent}>
                 <span className={styles.time}>{formatDate(post.updated_time)}</span>
-                <a href={`/jd/${post.id}`} className={styles.title}>
+                <Link href={`/jd/${post.id}`} scroll={false} className={styles.title}>
                   {post.title}
-                </a>
+                </Link>
                 <em>({post['1depth_region']} {post['2depth_region']}) - {post['1depth_category']} {post['2depth_category']}</em>
               </div>
               <div className={styles.buttonGroup}>
@@ -296,9 +297,9 @@ const Mylist: React.FC<MylistProps> = ({
             <div className={styles.postInfo}>
               <div className={styles.postContent}>
                 <span className={styles.time}>{formatDate(post.updated_time)}</span>
-                <a href={`/jd/${post.id}`} className={styles.title}>
+                <Link href={`/jd/${post.id}`} scroll={false} className={styles.title}>
                   {post.title}
-                </a>
+                </Link>
               </div>
               <div className={styles.buttonGroup}>
                 <span className={styles.recall}>
@@ -323,9 +324,9 @@ const Mylist: React.FC<MylistProps> = ({
             <div className={styles.postInfo}>
               <div className={styles.postContent}>
                 <span className={styles.time}>{formatDate(post.updated_time)}</span>
-                <a href={`/jd/${post.id}`} className={styles.title}>
+                <Link href={`/jd/${post.id}`} scroll={false} className={styles.title}>
                   {post.title}
-                </a>
+                </Link>
                 <em>
                   ({post['1depth_region']} {post['2depth_region']})
                 </em>

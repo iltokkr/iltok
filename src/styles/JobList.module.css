@@ -411,8 +411,32 @@
 }
 
 .salaryType {
-  color: #ff6b00;
   font-weight: 600;
+}
+
+/* 급여 유형별 색상 */
+.salaryType.hourly {
+  color: #16a34a; /* 시급 - 그린 */
+}
+
+.salaryType.daily {
+  color: #7c3aed; /* 일급 - 보라 */
+}
+
+.salaryType.weekly {
+  color: #2563eb; /* 주급 - 블루 */
+}
+
+.salaryType.monthly {
+  color: #ea580c; /* 월급 - 오렌지 */
+}
+
+.salaryType.yearly {
+  color: #0891b2; /* 연봉 - 청록색 */
+}
+
+.salaryType.negotiable {
+  color: #525252; /* 협의 - 그레이 */
 }
 
 .salaryDetail {
@@ -422,8 +446,31 @@
 
 /* 이미 읽은 게시물의 경우에도 급여 유형 색상 유지 */
 .readPost .salaryType {
-  color: #ff6b00;
   opacity: 0.8;
+}
+
+.readPost .salaryType.hourly {
+  color: #16a34a;
+}
+
+.readPost .salaryType.daily {
+  color: #7c3aed;
+}
+
+.readPost .salaryType.weekly {
+  color: #2563eb;
+}
+
+.readPost .salaryType.monthly {
+  color: #ea580c;
+}
+
+.readPost .salaryType.yearly {
+  color: #0891b2;
+}
+
+.readPost .salaryType.negotiable {
+  color: #525252;
 }
 
 .jobContent.no-salary .title {

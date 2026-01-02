@@ -1,5 +1,5 @@
 import Head from 'next/head';
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { createClient } from '@supabase/supabase-js';
 import Header from '@/components/Header';
@@ -117,44 +117,12 @@ const JobDetailPage: React.FC<PageProps> = ({ initialJobDetail, initialComments 
   const { id } = router.query;
   const { currentLanguage } = useLanguage();
   const [jobDetail, setJobDetail] = useState<JobDetailType | null>(initialJobDetail);
-  const scrollPositionRef = useRef<number>(0);
   const [boardType, setBoardType] = useState<string>(initialJobDetail?.board_type || '0');
 
+  // JD 페이지 진입 시 항상 맨 위로 스크롤
   useEffect(() => {
-    const handleBeforeUnload = () => {
-      sessionStorage.setItem('scrollPosition', window.pageYOffset.toString());
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, []);
-
-  useEffect(() => {
-    // JD 페이지에 진입할 때 항상 맨 위로 스크롤
     window.scrollTo(0, 0);
-  }, []);
-
-  useEffect(() => {
-    const handleRouteChangeComplete = () => {
-      if (router.asPath === '/board') {
-        const savedPosition = sessionStorage.getItem('boardScrollPosition');
-        if (savedPosition) {
-          setTimeout(() => {
-            window.scrollTo(0, parseInt(savedPosition));
-          }, 0);
-        }
-      }
-    };
-
-    router.events.on('routeChangeComplete', handleRouteChangeComplete);
-
-    return () => {
-      router.events.off('routeChangeComplete', handleRouteChangeComplete);
-    };
-  }, [router]);
+  }, [id]);
 
   const canonicalUrl = `https://114114KR.com/JobDetailPage/${id}`;
 

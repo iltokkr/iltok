@@ -541,3 +541,97 @@
     margin: 15px 0;
   }
 }
+
+/* 급여 범위 초과 경고 모달 */
+.salaryWarningOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.salaryWarningModal {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  max-width: 400px;
+  width: 90%;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.salaryWarningClose {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  line-height: 1;
+}
+
+.salaryWarningClose:hover {
+  color: #333;
+}
+
+.salaryWarningTitle {
+  font-size: 1.3em;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #333;
+  text-align: center;
+}
+
+.salaryWarningContent {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.salaryWarningText {
+  text-align: center;
+  color: #333;
+  line-height: 1.8;
+  font-size: 0.95em;
+}
+
+.salaryWarningButton {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  background: #ff5205;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.salaryWarningButton:hover {
+  background: #e64a00;
+}
+
+@media screen and (max-width: 768px) {
+  .salaryWarningModal {
+    padding: 20px;
+  }
+  
+  .salaryWarningTitle {
+    font-size: 1.1em;
+  }
+  
+  .salaryWarningText {
+    font-size: 0.9em;
+  }
+}

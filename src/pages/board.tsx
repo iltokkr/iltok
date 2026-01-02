@@ -525,14 +525,9 @@ const BoardPage: React.FC = () => {
   const restoreScrollPosition = useCallback(() => {
     const savedPosition = sessionStorage.getItem('boardScrollPosition');
     if (savedPosition !== null) {
-      // console.log('Restoring scroll position:', savedPosition);
-      setTimeout(() => {
-        window.scrollTo(0, parseInt(savedPosition));
-        // console.log('Scroll position restored');
-      }, 100);
-    } // else {
-      // console.log('No saved scroll position found.');
-    // }
+      const position = parseInt(savedPosition);
+      window.scrollTo(0, position);
+    }
   }, []);
 
   useEffect(() => {
@@ -595,14 +590,12 @@ const BoardPage: React.FC = () => {
   }, [router.isReady, router.query, fetchJobs]);
 
   useEffect(() => {
-    if (contentRef.current && regularJobs.length > 0 && adJobs.length >= 0) {
-      if (isInitialLoad) {
-        // console.log('Initial load complete. Attempting to restore scroll position.');
-        restoreScrollPosition();
-        setIsInitialLoad(false);
-      }
+    // 데이터 로드 완료 후 스크롤 위치 복원
+    if (isInitialLoad && regularJobs.length > 0) {
+      restoreScrollPosition();
+      setIsInitialLoad(false);
     }
-  }, [restoreScrollPosition, regularJobs, adJobs, isInitialLoad]);
+  }, [restoreScrollPosition, isInitialLoad, regularJobs.length]);
 
   const handlePageChange = (newPage: number) => {
     setIsPaginationChange(true);

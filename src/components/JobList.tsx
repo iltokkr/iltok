@@ -147,16 +147,77 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
     if (boardType === '4' || boardType !== '0' || !job.salary_type || !job.salary_detail) return null;
     
     let formattedSalary = job.salary_detail;
-    if (!isNaN(Number(job.salary_detail))) {
-      const salaryNum = Number(job.salary_detail);
-      if (salaryNum >= 100000) {
-        formattedSalary = `${Math.floor(salaryNum / 10000)}만`;
+    // DB에 콤마가 포함된 경우 제거 후 숫자로 변환
+    const salaryNum = Number(job.salary_detail.replace(/,/g, ''));
+    
+    if (!isNaN(salaryNum)) {
+      switch (job.salary_type) {
+        case '시급':
+          // 시급은 그대로 표시 (콤마 추가)
+          formattedSalary = salaryNum.toLocaleString();
+          break;
+        case '일급':
+          // 일급은 백원단위 절삭 (12만7천 형식)
+          if (salaryNum >= 10000) {
+            const man = Math.floor(salaryNum / 10000);
+            const cheon = Math.floor((salaryNum % 10000) / 1000);
+            if (cheon > 0) {
+              formattedSalary = `${man}만${cheon}천`;
+            } else {
+              formattedSalary = `${man}만`;
+            }
+          } else if (salaryNum >= 1000) {
+            formattedSalary = `${Math.floor(salaryNum / 1000)}천`;
+          } else {
+            formattedSalary = salaryNum.toLocaleString();
+          }
+          break;
+        case '주급':
+          // 주급도 일급과 동일하게 처리
+          if (salaryNum >= 10000) {
+            const man = Math.floor(salaryNum / 10000);
+            const cheon = Math.floor((salaryNum % 10000) / 1000);
+            if (cheon > 0) {
+              formattedSalary = `${man}만${cheon}천`;
+            } else {
+              formattedSalary = `${man}만`;
+            }
+          } else if (salaryNum >= 1000) {
+            formattedSalary = `${Math.floor(salaryNum / 1000)}천`;
+          } else {
+            formattedSalary = salaryNum.toLocaleString();
+          }
+          break;
+        case '월급':
+          // 월급은 천원단위 절삭 (313만 형식)
+          if (salaryNum >= 10000) {
+            formattedSalary = `${Math.floor(salaryNum / 10000)}만`;
+          } else if (salaryNum >= 1000) {
+            formattedSalary = `${Math.floor(salaryNum / 1000)}천`;
+          } else {
+            formattedSalary = salaryNum.toLocaleString();
+          }
+          break;
+        default:
+          formattedSalary = salaryNum.toLocaleString();
       }
     }
+
+    // 급여 유형별 CSS 클래스 결정
+    const getSalaryTypeClass = (salaryType: string) => {
+      switch (salaryType) {
+        case '시급': return styles.hourly;
+        case '일급': return styles.daily;
+        case '주급': return styles.weekly;
+        case '월급': return styles.monthly;
+        case '협의': return styles.negotiable;
+        default: return '';
+      }
+    };
     
     return (
       <span className={styles.salaryInfo}>
-        <span className={styles.salaryType}>{job.salary_type}</span>
+        <span className={`${styles.salaryType} ${getSalaryTypeClass(job.salary_type)}`}>{job.salary_type}</span>
         {' '}
         <span className={styles.salaryDetail}>{formattedSalary}</span>
       </span>
@@ -266,7 +327,7 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
       </div>
       <div className={styles.jobContent}>
         <p className={styles.title}>
-          <Link href={`/jd/${job.id}`} onClick={() => handlePostClick(job.id)}>
+          <Link href={`/jd/${job.id}`} scroll={false} onClick={() => handlePostClick(job.id)}>
             {job.is_day_pay && (
               <span className={styles.dayPayBadge}>💰 당일지급</span>
             )}
@@ -311,7 +372,7 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
   const renderHotItem = (job: Job) => (
     <div key={job.id} className={styles.hotItem}>
       <div className={styles.hotTag}>{job.community_tag || '공지'}</div>
-      <Link href={`/jd/${job.id}`} onClick={() => handlePostClick(job.id)}>
+      <Link href={`/jd/${job.id}`} scroll={false} onClick={() => handlePostClick(job.id)}>
         <div className={styles.hotContent}>
           <h3 className={styles.hotTitle}>
             {job.title}
