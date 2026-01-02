@@ -43,6 +43,8 @@ interface Job {
   ad: boolean;
   board_type: string;
   bookmarked?: boolean;
+  comment_count?: number;
+  community_tag?: string;
 }
 
 interface AdJob extends Job {
@@ -221,6 +223,7 @@ const BoardPage: React.FC = () => {
   const [adJobs, setAdJobs] = useState<AdJob[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
   const [filters, setFilters] = useState<FilterOptions>({
     city1: '',
     city2: '',
@@ -329,18 +332,65 @@ const BoardPage: React.FC = () => {
       // console.log('Total count:', totalCount);
       // console.log('Current page data:', jobs?.length);
 
-      // 전체 페이지 수 계산
+      // 전체 페이지 수 및 총 건수 계산
       const totalPages = Math.ceil((totalCount || 0) / pageSize);
       setTotalPages(totalPages);
+      setTotalCount(totalCount || 0);
 
-      // 북마크 상태를 포함하여 jobs 매핑
+      // 댓글 수 가져오기
+      const jobIds = (jobs || []).map((job: any) => job.id);
+      let commentCounts: Record<number, number> = {};
+      
+      if (jobIds.length > 0) {
+        const { data: comments } = await supabase
+          .from('comment')
+          .select('jd_id')
+          .in('jd_id', jobIds);
+        
+        if (comments) {
+          commentCounts = comments.reduce((acc: Record<number, number>, comment: any) => {
+            acc[comment.jd_id] = (acc[comment.jd_id] || 0) + 1;
+            return acc;
+          }, {});
+        }
+      }
+
+      // 북마크 수 가져오기
+      let bookmarkCountsData: Record<number, number> = {};
+      if (jobIds.length > 0) {
+        const { data: bookmarks } = await supabase
+          .from('bookmark')
+          .select('jd_id')
+          .in('jd_id', jobIds);
+        
+        if (bookmarks) {
+          bookmarkCountsData = bookmarks.reduce((acc: Record<number, number>, bookmark: any) => {
+            acc[bookmark.jd_id] = (acc[bookmark.jd_id] || 0) + 1;
+            return acc;
+          }, {});
+        }
+      }
+
+      // 북마크 상태와 댓글 수, 조회수를 포함하여 jobs 매핑
       const mappedJobs = (jobs || []).map((job: any) => ({
         ...job,
         board_type: currentBoardType,
-        bookmarked: bookmarkedJobs.includes(job.id)
+        bookmarked: bookmarkedJobs.includes(job.id),
+        comment_count: commentCounts[job.id] || 0,
+        bookmark_count: bookmarkCountsData[job.id] || 0,
+        view_count: job.view_count || 0,
+        // 인기 점수 계산: 조회수 × 1 + 댓글수 × 3 + 북마크수 × 2
+        popularity_score: (job.view_count || 0) + (commentCounts[job.id] || 0) * 3 + (bookmarkCountsData[job.id] || 0) * 2
       }));
 
-      setRegularJobs(mappedJobs);
+      // 자유게시판(board_type 4)인 경우: 공지 게시글 상단 고정 + 나머지는 시간순
+      if (currentBoardType === '4') {
+        const noticeJobs = mappedJobs.filter((job: any) => job.community_tag === '공지');
+        const regularJobsFiltered = mappedJobs.filter((job: any) => job.community_tag !== '공지');
+        setRegularJobs([...noticeJobs, ...regularJobsFiltered]);
+      } else {
+        setRegularJobs(mappedJobs);
+      }
       setError(null);
 
       // 광고 게시물 처리 (첫 페이지에만)
@@ -718,6 +768,7 @@ const BoardPage: React.FC = () => {
           adJobs={adJobs}
           currentPage={currentPage}
           totalPages={totalPages}
+          totalCount={totalCount}
           onPageChange={handlePageChange}
           boardType={boardType}
         />

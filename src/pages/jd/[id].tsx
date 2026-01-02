@@ -119,9 +119,17 @@ const JobDetailPage: React.FC<PageProps> = ({ initialJobDetail, initialComments 
   const [jobDetail, setJobDetail] = useState<JobDetailType | null>(initialJobDetail);
   const [boardType, setBoardType] = useState<string>(initialJobDetail?.board_type || '0');
 
-  // JD 페이지 진입 시 항상 맨 위로 스크롤
+  // JD 페이지 진입 시 항상 맨 위로 스크롤 및 조회수 증가
   useEffect(() => {
     window.scrollTo(0, 0);
+    
+    // 조회수 증가
+    const incrementViewCount = async () => {
+      if (id) {
+        await supabase.rpc('increment_view_count', { post_id: Number(id) });
+      }
+    };
+    incrementViewCount();
   }, [id]);
 
   const canonicalUrl = `https://114114KR.com/JobDetailPage/${id}`;

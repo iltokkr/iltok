@@ -28,6 +28,7 @@ interface Job {
   id: number;
   updated_time: string;
   title: string;
+  contents?: string;
   salary_type: string;
   salary_detail: string;
   '1depth_region': string;
@@ -39,6 +40,8 @@ interface Job {
   bookmarked?: boolean;
   bookmark_count?: number;
   comment_count?: number;
+  view_count?: number;
+  popularity_score?: number;
   community_tag?: string;
   is_day_pay?: boolean;
 }
@@ -52,11 +55,12 @@ interface JobListProps {
   adJobs: AdJob[];
   currentPage: number;
   totalPages: number;
+  totalCount?: number;
   onPageChange: (page: number) => void;
   boardType: string;
 }
 
-const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages, onPageChange, boardType }) => {
+const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages, totalCount = 0, onPageChange, boardType }) => {
   const { currentLanguage } = useTranslation();
   const { markAsRead, isRead } = useReadPosts();
   const previousJobsRef = useRef<string>('');
@@ -109,10 +113,37 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
     fetchBookmarkCounts();
   }, []);
 
+  // 기존 날짜 형식 (구인/구직정보용) - MM-dd
   const formatDate = (dateString: string) => {
     const date = parseISO(dateString);
     const koreaTime = subHours(date, 9);
     return format(koreaTime, 'MM-dd');
+  };
+
+  // 상대 시간 형식 (자유게시판용) - 몇분전, 몇시간전
+  const formatRelativeTime = (dateString: string) => {
+    const date = parseISO(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    if (diffInSeconds < 60) {
+      return '방금 전';
+    } else if (diffInSeconds < 3600) {
+      const minutes = Math.floor(diffInSeconds / 60);
+      return `${minutes}분 전`;
+    } else if (diffInSeconds < 86400) {
+      const hours = Math.floor(diffInSeconds / 3600);
+      return `${hours}시간 전`;
+    } else if (diffInSeconds < 2592000) {
+      const days = Math.floor(diffInSeconds / 86400);
+      return `${days}일 전`;
+    } else if (diffInSeconds < 31536000) {
+      const months = Math.floor(diffInSeconds / 2592000);
+      return `${months}달 전`;
+    } else {
+      const years = Math.floor(diffInSeconds / 31536000);
+      return `${years}년 전`;
+    }
   };  
 
   // 광고 작업은 첫 페이지에만 표시
@@ -306,6 +337,49 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
     }
   };
 
+  // 내용 미리보기 생성 (최대 50자)
+  const getContentPreview = (contents?: string) => {
+    if (!contents) return '';
+    const cleaned = contents.replace(/\n/g, ' ').trim();
+    return cleaned.length > 50 ? cleaned.substring(0, 50) + '...' : cleaned;
+  };
+
+  // 자유게시판용 아이템 렌더링
+  const renderCommunityItem = (job: Job) => (
+    <li key={job.id} className={`${styles.communityItem} ${isRead(job.id) ? styles.readPost : ''} ${job.community_tag === '공지' ? styles.noticeItem : ''}`}>
+      <Link href={`/jd/${job.id}`} scroll={false} onClick={() => handlePostClick(job.id)}>
+        <div className={styles.communityContent}>
+          <h3 className={styles.communityTitle}>
+            {job.community_tag && (
+              <span className={`${styles.communityTag} ${job.community_tag === '공지' ? styles.noticeTag : ''}`}>{job.community_tag}</span>
+            )}
+            <span className={styles.communityTitleText}>{job.title}</span>
+          </h3>
+          <p className={styles.communityPreview}>{getContentPreview(job.contents)}</p>
+          <div className={styles.communityMeta}>
+            <span className={styles.communityViews}>👁 {job.view_count || 0}</span>
+            <span className={styles.communityComments}>💬 {job.comment_count || 0}</span>
+            <span 
+              className={`${styles.communityBookmark} ${bookmarkedJobs.includes(job.id) ? styles.bookmarked : ''}`}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleBookmark(job.id);
+              }}
+            >
+              {bookmarkedJobs.includes(job.id) ? 
+                <BsHeartFill className={styles.communityHeartIcon} /> : 
+                <BsHeart className={styles.communityHeartIcon} />
+              } {bookmarkCounts[job.id] || 0}
+            </span>
+            <span className={styles.communityTime}>{formatRelativeTime(job.updated_time)}</span>
+          </div>
+        </div>
+      </Link>
+    </li>
+  );
+
+  // 일반 게시판용 아이템 렌더링
   const renderJobItem = (job: Job, isAd = false) => (
     <li key={`${isAd ? 'ad-' : ''}${job.id}`} className={`${styles.jobItem} ${isRead(job.id) ? styles.readPost : ''} ${!job.salary_type || !job.salary_detail ? 'no-salary' : ''}`}>
       <span className={styles.time}>{formatDate(job.updated_time)}</span>
@@ -341,46 +415,58 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
     </li>
   );
 
+  // 인기글: 인기점수 기준 상위 3개 (공지 제외)
+  const hotPosts = [...jobs]
+    .filter(job => job.community_tag !== '공지')
+    .sort((a, b) => (b.popularity_score || 0) - (a.popularity_score || 0))
+    .slice(0, 3);
+
   const sliderSettings = {
     dots: false,
-    infinite: true,
+    infinite: false,
     speed: 500,
-    slidesToShow: Math.min(4, jobs.filter(job => job.community_tag).length || 1),
+    slidesToShow: 3,
     slidesToScroll: 1,
+    arrows: false,
     responsive: [
       {
         breakpoint: 1024,
         settings: {
-          slidesToShow: Math.min(2, jobs.filter(job => job.community_tag).length || 1),
+          slidesToShow: 2,
         }
       },
       {
         breakpoint: 768,
         settings: {
-          slidesToShow: 1,
+          slidesToShow: 1.3,
         }
       },
       {
         breakpoint: 480,
         settings: {
-          slidesToShow: 1,
+          slidesToShow: 1.2,
         }
       }
     ]
   };
 
+  // 모바일용 카드 형태
   const renderHotItem = (job: Job) => (
     <div key={job.id} className={styles.hotItem}>
-      <div className={styles.hotTag}>{job.community_tag || '공지'}</div>
       <Link href={`/jd/${job.id}`} scroll={false} onClick={() => handlePostClick(job.id)}>
         <div className={styles.hotContent}>
+          <span className={styles.hotTag}>인기</span>
           <h3 className={styles.hotTitle}>
             {job.title}
           </h3>
+          <p className={styles.hotPreview}>
+            {job.contents ? job.contents.substring(0, 50) + (job.contents.length > 50 ? '...' : '') : '내용 없음'}
+          </p>
           <div className={styles.hotFooter}>
-            <span className={styles.time}>{formatDate(job.updated_time)}</span>
-            <div 
-              className={styles.bookmarkContainer}
+            <span className={styles.hotViewCount}>👁 {job.view_count || 0}</span>
+            <span className={styles.hotCommentCount}>💬 {job.comment_count || 0}</span>
+            <span 
+              className={`${styles.hotBookmarkCount} ${bookmarkedJobs.includes(job.id) ? styles.bookmarked : ''}`}
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -388,32 +474,71 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
               }}
             >
               {bookmarkedJobs.includes(job.id) ? 
-                <BsHeartFill className={styles.filledBookmark} /> : 
-                <BsHeart className={styles.emptyBookmark} />
-              }
-              <span className={styles.bookmarkCount}>
-                {bookmarkCounts[job.id] || 0}
-              </span>
-            </div>
+                <BsHeartFill className={styles.hotHeartIcon} /> : 
+                <BsHeart className={styles.hotHeartIcon} />
+              } {bookmarkCounts[job.id] || 0}
+            </span>
           </div>
         </div>
       </Link>
     </div>
   );
 
+  // PC용 리스트 형태
+  const renderHotListItem = (job: Job) => (
+    <li key={job.id} className={styles.hotListItem}>
+      <Link href={`/jd/${job.id}`} scroll={false} onClick={() => handlePostClick(job.id)}>
+        <div className={styles.hotListContent}>
+          <div className={styles.hotListHeader}>
+            <span className={styles.hotListTag}>인기</span>
+            <h3 className={styles.hotListTitle}>{job.title}</h3>
+          </div>
+          <p className={styles.hotListPreview}>
+            {job.contents ? job.contents.substring(0, 80) + (job.contents.length > 80 ? '...' : '') : '내용 없음'}
+          </p>
+          <div className={styles.hotListFooter}>
+            <div className={styles.hotListStats}>
+              <span>👁 {job.view_count || 0}</span>
+              <span>💬 {job.comment_count || 0}</span>
+              <span>
+                {bookmarkedJobs.includes(job.id) ? 
+                  <BsHeartFill style={{color: '#ff6b6b'}} /> : 
+                  <BsHeart />
+                } {bookmarkCounts[job.id] || 0}
+              </span>
+              <span>{formatRelativeTime(job.updated_time)}</span>
+            </div>
+          </div>
+        </div>
+      </Link>
+    </li>
+  );
+
   return (
     <div className={styles.layout} data-board-type={boardType}>
-      {boardType === '4' && (
+      {boardType === '4' && hotPosts.length > 0 && (
         <div className={styles.hotSection}>
-          <h2 className={styles.hotSectionTitle}>실시간 HOT 게시글</h2>
+          <h2 className={styles.hotSectionTitle}>
+            <img src="/fire-icon.png" alt="불" className={styles.fireIcon} />
+            실시간 인기글
+          </h2>
+          {/* PC용 리스트 */}
+          <ul className={styles.hotListContainer}>
+            {hotPosts.map(job => renderHotListItem(job))}
+          </ul>
+          {/* 모바일용 슬라이더 */}
           <div className={styles.hotContainer}>
             <Slider {...sliderSettings}>
-              {jobs
-                .filter(job => job.community_tag)
-                .slice(0, 8)
-                .map(job => renderHotItem(job))}
+              {hotPosts.map(job => renderHotItem(job))}
             </Slider>
           </div>
+        </div>
+      )}
+
+      {boardType === '4' && (
+        <div className={styles.totalCountSection}>
+          <span className={styles.totalCountLabel}>전체</span>
+          <span className={styles.totalCountNumber}>총 {totalCount.toLocaleString()} 건</span>
         </div>
       )}
 
@@ -428,8 +553,11 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
           </ul>
         )}
 
-        <ul className={`${styles.listWrap} ${styles.listText}`}>
-          {jobs.map(job => renderJobItem(job))}
+        <ul className={`${styles.listWrap} ${styles.listText} ${boardType === '4' ? styles.communityList : ''}`}>
+          {boardType === '4' 
+            ? jobs.map(job => renderCommunityItem(job))
+            : jobs.map(job => renderJobItem(job))
+          }
         </ul>
       </section>
       
