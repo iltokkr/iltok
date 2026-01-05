@@ -420,46 +420,44 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
             {/* 기본 정보 */}
             <div className={style.seekerInfoCard}>
               <h3 className={style.seekerInfoTitle}>기본 정보</h3>
-              <div className={style.seekerInfoGrid}>
+              <div className={style.seekerBasicInfoList}>
                 {(jobDetail.korean_name || jobDetail.english_name) && (
-                  <div className={style.seekerInfoRow}>
-                    <span className={style.seekerInfoLabel}>이름</span>
-                    <span className={style.seekerInfoValue}>
+                  <div className={style.seekerBasicInfoItem}>
+                    <span className={style.seekerBasicLabel}>이름</span>
+                    <span className={style.seekerBasicValue}>
                       {jobDetail.korean_name}
                       {jobDetail.english_name && ` (${jobDetail.english_name})`}
                     </span>
                   </div>
                 )}
                 {jobDetail.seeker_gender && (
-                  <div className={style.seekerInfoRow}>
-                    <span className={style.seekerInfoLabel}>성별</span>
-                    <span className={style.seekerInfoValue}>{jobDetail.seeker_gender}</span>
+                  <div className={style.seekerBasicInfoItem}>
+                    <span className={style.seekerBasicLabel}>성별</span>
+                    <span className={style.seekerBasicValue}>{jobDetail.seeker_gender}</span>
                   </div>
                 )}
                 {jobDetail.birth_date && (
-                  <div className={style.seekerInfoRow}>
-                    <span className={style.seekerInfoLabel}>나이</span>
-                    <span className={style.seekerInfoValue}>
-                      만 {calculateAge(jobDetail.birth_date)}세
-                    </span>
+                  <div className={style.seekerBasicInfoItem}>
+                    <span className={style.seekerBasicLabel}>나이</span>
+                    <span className={style.seekerBasicValue}>만 {calculateAge(jobDetail.birth_date)}세</span>
                   </div>
                 )}
                 {jobDetail.nationality && (
-                  <div className={style.seekerInfoRow}>
-                    <span className={style.seekerInfoLabel}>국적</span>
-                    <span className={style.seekerInfoValue}>{jobDetail.nationality}</span>
+                  <div className={style.seekerBasicInfoItem}>
+                    <span className={style.seekerBasicLabel}>국적</span>
+                    <span className={style.seekerBasicValue}>{jobDetail.nationality}</span>
                   </div>
                 )}
                 {jobDetail.visa_status && (
-                  <div className={style.seekerInfoRow}>
-                    <span className={style.seekerInfoLabel}>체류자격</span>
-                    <span className={style.seekerInfoValue}>{jobDetail.visa_status}</span>
+                  <div className={style.seekerBasicInfoItem}>
+                    <span className={style.seekerBasicLabel}>체류자격</span>
+                    <span className={style.seekerBasicValue}>{jobDetail.visa_status}</span>
                   </div>
                 )}
                 {jobDetail.korean_ability && (
-                  <div className={style.seekerInfoRow}>
-                    <span className={style.seekerInfoLabel}>한국어 능력</span>
-                    <span className={style.seekerInfoValue}>{jobDetail.korean_ability}</span>
+                  <div className={style.seekerBasicInfoItem}>
+                    <span className={style.seekerBasicLabel}>한국어</span>
+                    <span className={style.seekerBasicValue}>{jobDetail.korean_ability}</span>
                   </div>
                 )}
               </div>
@@ -530,27 +528,43 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
                 </div>
               </div>
             )}
+
+            {/* 상세 내용 */}
+            <div className={style.seekerInfoCard}>
+              <h3 className={style.seekerInfoTitle}>상세 내용</h3>
+              <div className={style.seekerContents}>
+                {translatedContents.split('\n').map((line: string, index: number) => (
+                  <React.Fragment key={index}>
+                    {line}
+                    <br />
+                  </React.Fragment>
+                ))}
+              </div>
+            </div>
           </div>
         )}
-        <div className={style.content}>
-          {jobDetail.id === 6599 ? ( 
-            <img 
-              src="/landing_ad.png" 
-              alt="Landing Ad" 
-              style={{ maxWidth: '980px', width: '100%', height: 'auto' }}
-            /> 
-          ) : ( 
-            <>
-              <h3 className={style.contentTitle}>상세 내용</h3>
-              {translatedContents.split('\n').map((line: string, index: number) => (
-                <React.Fragment key={index}>
-                  {line}
-                  <br />
-                </React.Fragment>
-              ))}
-            </>
-          )} 
-        </div>
+        {/* 상세 내용 - 구직정보가 아닌 경우에만 표시 (구직정보는 위에서 같은 템플릿으로 표시) */}
+        {jobDetail.board_type !== '1' && (
+          <div className={style.content}>
+            {jobDetail.id === 6599 ? ( 
+              <img 
+                src="/landing_ad.png" 
+                alt="Landing Ad" 
+                style={{ maxWidth: '980px', width: '100%', height: 'auto' }}
+              /> 
+            ) : ( 
+              <>
+                <h3 className={style.contentTitle}>상세 내용</h3>
+                {translatedContents.split('\n').map((line: string, index: number) => (
+                  <React.Fragment key={index}>
+                    {line}
+                    <br />
+                  </React.Fragment>
+                ))}
+              </>
+            )} 
+          </div>
+        )}
         {jobDetail.board_type !== '4' && (
           <div className={style.actionArea}>
             {jobDetail.uploader.number && (
