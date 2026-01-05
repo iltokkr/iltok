@@ -951,27 +951,21 @@ const WritePage: React.FC = () => {
                   <div className={style.formRow}>
                     <div className={style.formLabel}>성별 <span className={style.required}>*</span></div>
                     <div className={style.formInput}>
-                      <div className={style.radioGroup}>
-                        <label className={style.radioLabel}>
-                          <input
-                            type="radio"
-                            name="seeker_gender"
-                            value="남성"
-                            checked={formData.seeker_gender === '남성'}
-                            onChange={handleInputChange}
-                          />
-                          <span>남성</span>
-                        </label>
-                        <label className={style.radioLabel}>
-                          <input
-                            type="radio"
-                            name="seeker_gender"
-                            value="여성"
-                            checked={formData.seeker_gender === '여성'}
-                            onChange={handleInputChange}
-                          />
-                          <span>여성</span>
-                        </label>
+                      <div className={style.genderButtonGroup}>
+                        <button
+                          type="button"
+                          className={`${style.genderButton} ${formData.seeker_gender === '남성' ? style.genderButtonSelected : ''}`}
+                          onClick={() => setFormData(prev => ({ ...prev, seeker_gender: '남성' }))}
+                        >
+                          남성
+                        </button>
+                        <button
+                          type="button"
+                          className={`${style.genderButton} ${formData.seeker_gender === '여성' ? style.genderButtonSelected : ''}`}
+                          onClick={() => setFormData(prev => ({ ...prev, seeker_gender: '여성' }))}
+                        >
+                          여성
+                        </button>
                       </div>
                     </div>
                   </div>

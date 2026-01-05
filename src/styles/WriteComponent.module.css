@@ -699,6 +699,33 @@
   color: #ff5722;
 }
 
+/* 성별 버튼 그룹 */
+.genderButtonGroup {
+  display: flex;
+  gap: 12px;
+}
+
+.genderButton {
+  padding: 10px 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 15px;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.genderButton:hover {
+  border-color: #ff5722;
+}
+
+.genderButtonSelected {
+  border-color: #ff5722;
+  background: #fff5f2;
+  color: #ff5722;
+}
+
 /* 나이 표시 */
 .ageDisplay {
   font-weight: 500;
