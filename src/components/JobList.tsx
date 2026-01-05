@@ -452,6 +452,11 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
                 <span className={styles.jobSeekerTitleText}>{job.title}</span>
               </h3>
               
+              {/* 상세내용 미리보기 */}
+              {job.contents && (
+                <p className={styles.jobSeekerPreview}>{getContentPreview(job.contents)}</p>
+              )}
+              
               {/* 1줄: 이름(마스킹) (국적, 성별, 나이) (비자) */}
               <div className={styles.jobSeekerLine1}>
                 <span className={styles.jobSeekerName}>{maskName(job.korean_name)}</span>
@@ -463,25 +468,25 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
                 )}
               </div>
               
-              {/* 2줄: 희망지역 */}
-              {desiredRegions.length > 0 && (
-                <div className={styles.jobSeekerLine2}>
-                  <HiLocationMarker className={styles.jobSeekerIcon} />
-                  <span>{desiredRegions.slice(0, 3).join(', ')}{desiredRegions.length > 3 ? ` 외 ${desiredRegions.length - 3}곳` : ''}</span>
-                </div>
-              )}
+              {/* 2줄: 희망업무 + 희망지역 */}
+              <div className={styles.jobSeekerLine2}>
+                {job['1depth_category'] && (
+                  <span className={styles.jobSeekerCategory}>
+                    <img src="/icons/category-icon.svg" alt="" className={styles.jobSeekerIcon} />
+                    {job['1depth_category']}{job['2depth_category'] ? `, ${job['2depth_category']}` : ''}
+                  </span>
+                )}
+                {desiredRegions.length > 0 && (
+                  <span className={styles.jobSeekerRegion}>
+                    <HiLocationMarker className={styles.jobSeekerIcon} />
+                    {desiredRegions.slice(0, 2).join(', ')}{desiredRegions.length > 2 ? ` 외 ${desiredRegions.length - 2}곳` : ''}
+                  </span>
+                )}
+              </div>
               
-              {/* 3줄: 희망업무 */}
-              {job['1depth_category'] && (
-                <div className={styles.jobSeekerLine3}>
-                  <img src="/icons/category-icon.svg" alt="" className={styles.jobSeekerIcon} />
-                  <span>{job['1depth_category']}{job['2depth_category'] ? `, ${job['2depth_category']}` : ''}</span>
-                </div>
-              )}
-              
-              {/* 4줄: 희망근무조건 (박스형태) */}
+              {/* 3줄: 희망근무조건 (박스형태) */}
               {workConditions.length > 0 && (
-                <div className={styles.jobSeekerLine4}>
+                <div className={styles.jobSeekerLine3}>
                   {workConditions.slice(0, 4).map((condition: string, idx: number) => (
                     <span key={idx} className={styles.conditionTag}>{condition}</span>
                   ))}
