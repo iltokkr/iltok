@@ -48,33 +48,9 @@ const Write: React.FC = () => {
       setShowLoginPopup(false);
     }
 
-    // 수정 모드일 때는 인증 상태 체크 건너뛰기
-    const isEditing = router.query.id;
-    if (isEditing) {
-      return;
-    }
-
-    // 신규 등록 시에만 사용자 인증 상태 확인
-    const checkUserAcceptance = async () => {
-      if (!authContext?.user?.id) return;
-
-      const { data, error } = await supabase
-        .from('users')
-        .select('is_accept')
-        .eq('id', authContext.user.id)
-        .single();
-
-      if (error) {
-        console.error('Error fetching user data:', error);
-      }
-      // is_accept가 false인 경우에만 board로 리다이렉트
-      if (data && data.is_accept === false) {
-        router.push('/board');
-      }
-    };
-
-    checkUserAcceptance();
-  }, [authContext?.user, authContext?.isLoading, router.query.id]);
+    // 사업자 인증 상태와 관계없이 글쓰기 페이지 접근 허용
+    // (미등록, 심사중, 인증완료 모두 글쓰기 가능)
+  }, [authContext?.user, authContext?.isLoading]);
 
   const handleLoginPopupClose = async () => {
     // Supabase 세션을 직접 확인 (context가 아직 업데이트되지 않았을 수 있음)

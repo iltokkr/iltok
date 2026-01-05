@@ -174,3 +174,5 @@ const JobSeekerList: React.FC<JobSeekerListProps> = ({ filters }) => {
 
 export default JobSeekerList;
 
+
+

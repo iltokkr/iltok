@@ -72,9 +72,27 @@ const BusinessVerificationModal: React.FC<BusinessVerificationModalProps> = ({ o
     return `${numbers.slice(0, 3)}-${numbers.slice(3, 5)}-${numbers.slice(5, 10)}`;
   };
 
+  // 사업자등록번호 형식 검사 (000-00-00000)
+  const isValidBusinessNumber = (value: string) => {
+    const pattern = /^\d{3}-\d{2}-\d{5}$/;
+    return pattern.test(value);
+  };
+
   const handleBusinessNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const formatted = formatBusinessNumber(e.target.value);
     setBusinessNumber(formatted);
+    
+    // 입력 중 에러 메시지 제거 (완전히 입력되면 유효성 검사)
+    if (errors.businessNumber) {
+      setErrors({...errors, businessNumber: ''});
+    }
+  };
+
+  // 사업자등록번호 필드 blur 시 유효성 검사
+  const handleBusinessNumberBlur = () => {
+    if (businessNumber && !isValidBusinessNumber(businessNumber)) {
+      setErrors({...errors, businessNumber: '사업자 등록번호가 올바르지 않습니다.'});
+    }
   };
 
   // 유효성 검사
@@ -89,6 +107,8 @@ const BusinessVerificationModal: React.FC<BusinessVerificationModalProps> = ({ o
     }
     if (!businessNumber.trim()) {
       newErrors.businessNumber = '사업자등록번호를 입력해주세요.';
+    } else if (!isValidBusinessNumber(businessNumber)) {
+      newErrors.businessNumber = '사업자 등록번호가 올바르지 않습니다.';
     }
     if (!businessAddress.trim()) {
       newErrors.businessAddress = '사업장 소재지를 입력해주세요.';
@@ -248,7 +268,8 @@ const BusinessVerificationModal: React.FC<BusinessVerificationModalProps> = ({ o
                 type="text"
                 className={`${styles.formInput} ${errors.businessNumber ? styles.inputError : ''}`}
                 value={businessNumber}
-                onChange={(e) => { handleBusinessNumberChange(e); setErrors({...errors, businessNumber: ''}); }}
+                onChange={handleBusinessNumberChange}
+                onBlur={handleBusinessNumberBlur}
                 placeholder="000-00-00000"
                 maxLength={12}
               />

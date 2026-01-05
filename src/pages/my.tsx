@@ -1,6 +1,7 @@
 import Head from 'next/head';
 import React, { useEffect, useState, useContext } from 'react';
 import { createClient, User } from '@supabase/supabase-js'
+import { useRouter } from 'next/router';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Mylist from '@/components/Mylist';
@@ -39,7 +40,22 @@ interface UserData {
 const My: React.FC = () => {
   const [myPosts, setMyPosts] = useState<MyPost[]>([]);
   const [userData, setUserData] = useState<UserData | null>(null);
+  const [showVerificationAlert, setShowVerificationAlert] = useState(false);
+  const [showPendingAlert, setShowPendingAlert] = useState(false);
   const authContext = useContext(AuthContext);
+  const router = useRouter();
+
+  // URL 쿼리 파라미터로 팝업 표시 여부 확인
+  useEffect(() => {
+    if (router.query.showVerificationAlert === 'true') {
+      setShowVerificationAlert(true);
+      router.replace('/my', undefined, { shallow: true });
+    }
+    if (router.query.showPendingAlert === 'true') {
+      setShowPendingAlert(true);
+      router.replace('/my', undefined, { shallow: true });
+    }
+  }, [router.query.showVerificationAlert, router.query.showPendingAlert]);
 
   useEffect(() => {
     if (authContext?.user) {
@@ -110,6 +126,49 @@ const My: React.FC = () => {
         />
       </main>
       <Footer />
+
+      {/* 사업자 인증 요청 팝업 (미등록) */}
+      {showVerificationAlert && (
+        <div className={styles.modalOverlay} onClick={() => setShowVerificationAlert(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <h2 className={styles.modalTitle}>사업자 인증 요청</h2>
+            <p className={styles.modalText}>
+              마이페이지 상단 <strong>등록하기</strong> 버튼을 통해서,<br />
+              사업자 인증을 완료해주세요.
+            </p>
+            <p className={styles.modalSubText}>
+              현재 등록하신 게시글은 사업자 인증 후 게시판에 노출됩니다.
+            </p>
+            <button 
+              className={styles.modalButton}
+              onClick={() => setShowVerificationAlert(false)}
+            >
+              확인
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 사업자 심사중 팝업 */}
+      {showPendingAlert && (
+        <div className={styles.modalOverlay} onClick={() => setShowPendingAlert(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <h2 className={styles.modalTitle}>사업자 심사중</h2>
+            <p className={styles.modalText}>
+              현재 사업자 정보를 확인하고있습니다.
+            </p>
+            <p className={styles.modalSubText}>
+              사업자 인증 소요 기간 : 당일 ~ 1일 후
+            </p>
+            <button 
+              className={styles.modalButton}
+              onClick={() => setShowPendingAlert(false)}
+            >
+              확인
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

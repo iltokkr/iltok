@@ -337,20 +337,30 @@ const WritePage: React.FC = () => {
           .eq('id', user.id);
       }
 
-      // 자유게시판이거나 비즈니스 인증이 된 경우 board 페이지로 이동
+      // 게시글 등록 후 이동 처리
       if (formData.board_type === '4') {
+        // 자유게시판: 자유게시판으로 이동
         router.push('/board?board_type=4');
+      } else if (formData.board_type === '1') {
+        // 구직정보: 구직정보 게시판으로 이동
+        router.push('/board?board_type=1');
       } else {
+        // 구인정보: 사업자 등록 상태에 따라 분기
         const { data: userData } = await supabase
           .from('users')
-          .select('is_accept')
+          .select('is_accept, biz_file')
           .eq('id', user.id)
           .single();
 
         if (userData?.is_accept) {
-          router.push('/board');
+          // 인증완료: 마이페이지로 이동
+          router.push('/my');
+        } else if (userData?.biz_file) {
+          // 심사중: 마이페이지로 이동 + 심사중 팝업 표시
+          router.push('/my?showPendingAlert=true');
         } else {
-          setShowBusinessVerificationModal(true);
+          // 미등록: 마이페이지로 이동 + 등록 요청 팝업 표시
+          router.push('/my?showVerificationAlert=true');
         }
       }
 
@@ -448,21 +458,41 @@ const WritePage: React.FC = () => {
   return (
     <div className={style.layout}>
       <form onSubmit={handleSubmit}>
-        {/* 제목 및 게시판 선택 */}
+        {/* 게시판 선택 */}
         <div className={style.subSection}>
           <div className={style.formRow}>
             <div className={style.formLabel}>게시판 <span className={style.required}>*</span></div>
-            <div className={style.titleFormInput}>
-              <select
-                name="board_type"
-                value={formData.board_type}
-                onChange={handleInputChange}
-                className={getInputClassName('board_type', `${style.select} ${style.boardSelect}`)}
+            <div className={style.boardTypeContainer}>
+              <button
+                type="button"
+                className={`${style.boardTypeTag} ${formData.board_type === '0' ? style.boardTypeTagSelected : ''}`}
+                onClick={() => setFormData(prev => ({ ...prev, board_type: '0' }))}
               >
-                <option value="0">구인정보</option>
-                <option value="1">구직정보</option>
-                <option value="4">자유게시판</option>
-              </select>
+                구인정보
+              </button>
+              <button
+                type="button"
+                className={`${style.boardTypeTag} ${formData.board_type === '1' ? style.boardTypeTagSelected : ''}`}
+                onClick={() => setFormData(prev => ({ ...prev, board_type: '1' }))}
+              >
+                구직정보
+              </button>
+              <button
+                type="button"
+                className={`${style.boardTypeTag} ${formData.board_type === '4' ? style.boardTypeTagSelected : ''}`}
+                onClick={() => setFormData(prev => ({ ...prev, board_type: '4' }))}
+              >
+                자유게시판
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* 제목 입력 */}
+        <div className={style.subSection}>
+          <div className={style.formRow}>
+            <div className={style.formLabel}>제목 <span className={style.required}>*</span></div>
+            <div className={style.titleFormInput}>
               <input
                 name="title"
                 type="text"

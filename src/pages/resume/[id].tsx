@@ -275,3 +275,5 @@ const ResumeDetailPage: React.FC = () => {
 
 export default ResumeDetailPage;
 
+
+

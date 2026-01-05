@@ -113,3 +113,5 @@ $$ LANGUAGE plpgsql;
 -- Storage bucket for profile images (선택사항 - Supabase Storage 사용 시)
 -- INSERT INTO storage.buckets (id, name, public) VALUES ('profile-images', 'profile-images', true);
 
+
+

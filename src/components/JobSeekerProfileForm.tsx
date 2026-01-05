@@ -721,3 +721,5 @@ const JobSeekerProfileForm: React.FC = () => {
 
 export default JobSeekerProfileForm;
 
+
+

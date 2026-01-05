@@ -19,3 +19,106 @@
     width: 100%;
   }
 }
+
+/* 사업자 인증 요청 모달 */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modalContent {
+  background: #fff;
+  border-radius: 16px;
+  padding: 32px 28px;
+  max-width: 380px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modalTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 20px 0;
+}
+
+.modalText {
+  font-size: 15px;
+  color: #333;
+  line-height: 1.7;
+  margin: 0 0 12px 0;
+}
+
+.modalText strong {
+  color: #ff5722;
+  font-weight: 600;
+}
+
+.modalSubText {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+  margin: 0 0 24px 0;
+  padding: 12px 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.modalButton {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  background: #ff5722;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.modalButton:hover {
+  background: #e64a19;
+}
+
+@media (max-width: 768px) {
+  .modalContent {
+    padding: 24px 20px;
+    margin: 0 16px;
+  }
+
+  .modalTitle {
+    font-size: 18px;
+  }
+
+  .modalText {
+    font-size: 14px;
+  }
+
+  .modalSubText {
+    font-size: 13px;
+  }
+}
