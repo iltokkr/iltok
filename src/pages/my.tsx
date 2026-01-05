@@ -22,6 +22,8 @@ interface MyPost {
     '2depth_region': string;
     '1depth_category': string;
     '2depth_category': string;
+    board_type?: string;
+    status?: string;
 }
 
 interface UserData {

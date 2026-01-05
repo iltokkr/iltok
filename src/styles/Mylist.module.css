@@ -402,3 +402,157 @@
 .clickable:hover {
   color: #0066cc;
 }
+
+/* 마감/개시 버튼 */
+.closeBtn {
+  background: #ffebee !important;
+  color: #c62828 !important;
+}
+
+.closeBtn:hover {
+  background: #ffcdd2 !important;
+}
+
+.openBtn {
+  background: #e8f5e9 !important;
+  color: #2e7d32 !important;
+}
+
+.openBtn:hover {
+  background: #c8e6c9 !important;
+}
+
+/* 마감된 공고 스타일 */
+.closedPost {
+  background: #f9f9f9;
+}
+
+.closedPost .title {
+  color: #888;
+}
+
+.closedBadge {
+  background: #e0e0e0;
+  color: #666;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* 삭제 확인 팝업 */
+.deleteConfirmOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  padding: 20px;
+}
+
+.deleteConfirmModal {
+  background: #fff;
+  border-radius: 16px;
+  padding: 28px 24px;
+  max-width: 340px;
+  width: 100%;
+  text-align: center;
+}
+
+.deleteConfirmTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 12px 0;
+}
+
+.deleteConfirmText {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+  margin: 0 0 16px 0;
+}
+
+.deleteConfirmNote {
+  background: #fffde7;
+  border: 1px solid #fff9c4;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 13px;
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.deleteConfirmButtons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.closeInsteadBtn,
+.deleteConfirmBtn {
+  flex: 1;
+  padding: 14px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.closeInsteadBtn {
+  background: #2196f3;
+  border: none;
+  color: #fff;
+}
+
+.closeInsteadBtn:hover {
+  background: #1976d2;
+}
+
+.deleteConfirmBtn {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  color: #666;
+}
+
+.deleteConfirmBtn:hover {
+  background: #f5f5f5;
+  color: #c62828;
+}
+
+.cancelBtn {
+  width: 100%;
+  padding: 12px;
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: #888;
+  cursor: pointer;
+}
+
+.cancelBtn:hover {
+  color: #333;
+}
+
+@media (max-width: 768px) {
+  .deleteConfirmModal {
+    padding: 24px 20px;
+  }
+  
+  .deleteConfirmTitle {
+    font-size: 16px;
+  }
+  
+  .deleteConfirmNote {
+    font-size: 12px;
+  }
+}
