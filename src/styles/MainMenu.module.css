@@ -38,18 +38,14 @@
 
   @media screen and (max-width: 768px) {
     .mainMenu {
-      overflow-x: auto;
+      overflow-x: hidden;
       overflow-y: hidden;
-      -webkit-overflow-scrolling: touch;
-    }
-    
-    .mainMenu::-webkit-scrollbar {
-      display: none;
     }
     
     .layout {
-      padding: 0 16px 0 16px;
-      min-width: max-content;
+      padding: 0 12px;
+      width: 100%;
+      justify-content: center;
     }
     
     .mainMenu li {
@@ -68,13 +64,16 @@
     }
     
     .menuItems {
-      gap: 28px;
+      width: 100%;
+      justify-content: space-between;
+      gap: 0;
     }
   }
 
   .menuItems {
     display: flex;
     gap: 20px;
+    align-items: center;
   }
 
   .languageSelector {

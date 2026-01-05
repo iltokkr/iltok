@@ -1366,7 +1366,7 @@
 .jobSeekerItem {
   border: 1px solid #e0e0e0;
   border-radius: 10px;
-  padding: 18px 20px;
+  padding: 20px 24px;
   overflow: hidden;
   width: 100%;
   box-sizing: border-box;
@@ -1525,7 +1525,7 @@
   }
 
   .jobSeekerItem {
-    padding: 14px 16px;
+    padding: 16px 18px;
   }
 
   .jobSeekerContent {
