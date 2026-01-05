@@ -1107,15 +1107,6 @@
   overflow: hidden;
 }
 
-/* 자유게시판 Noto Sans KR 폰트 적용 */
-.layout[data-board-type="4"] {
-  font-family: 'Noto Sans KR', sans-serif;
-}
-
-/* 채용정보 Noto Sans KR 폰트 적용 */
-.layout[data-board-type="0"] {
-  font-family: 'Noto Sans KR', sans-serif;
-}
 
 .communityItem {
   border-bottom: 1px solid #eee;
