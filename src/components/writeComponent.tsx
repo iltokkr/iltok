@@ -75,14 +75,14 @@ interface FormErrors {
 
 // 국적 목록
 const nationalities = [
-  '중국', '베트남', '필리핀', '인도네시아', '태국', '미얀마', '캄보디아',
+  '대한민국', '중국', '베트남', '필리핀', '인도네시아', '태국', '미얀마', '캄보디아',
   '네팔', '스리랑카', '방글라데시', '파키스탄', '우즈베키스탄', '몽골',
   '러시아', '카자흐스탄', '키르기스스탄', '일본', '대만', '기타'
 ];
 
 // 체류자격 목록
 const visaStatuses = [
-  '취업비자(E1-E7)', '방문취업(H-2)', '재외동포(F-4)', '영주(F-5)',
+  '해당없음', '취업비자(E1-E7)', '방문취업(H-2)', '재외동포(F-4)', '영주(F-5)',
   '결혼이민(F-6)', '유학생(D2~D4)', '구직비자(D-10)', '기타'
 ];
 
@@ -304,13 +304,23 @@ const WritePage: React.FC = () => {
         setIsModalOpen(true);
         return false;
       }
-      if (!formData.korean_ability) {
-        setErrorMessage('한국어 능력을 선택해주세요.');
+      if (formData.desired_regions.length === 0) {
+        setErrorMessage('희망 지역을 선택해주세요.');
         setIsModalOpen(true);
         return false;
       }
-      if (formData.desired_regions.length === 0) {
-        setErrorMessage('희망 지역을 선택해주세요.');
+      if (!formData.korean_name.trim()) {
+        setErrorMessage('한글 이름을 입력해주세요.');
+        setIsModalOpen(true);
+        return false;
+      }
+      if (!formData.birth_year || !formData.birth_month || !formData.birth_day) {
+        setErrorMessage('생년월일을 입력해주세요.');
+        setIsModalOpen(true);
+        return false;
+      }
+      if (!formData.contents.trim()) {
+        setErrorMessage('상세내용을 입력해주세요.');
         setIsModalOpen(true);
         return false;
       }
@@ -922,7 +932,7 @@ const WritePage: React.FC = () => {
                 <div className={style.subSection}>
                   {/* 한글이름, 영문이름 */}
                   <div className={style.formRow}>
-                    <div className={style.formLabel}>한글 이름</div>
+                    <div className={style.formLabel}>한글 이름 <span className={style.required}>*</span></div>
                     <div className={style.formInput}>
                       <input
                         type="text"
@@ -973,7 +983,7 @@ const WritePage: React.FC = () => {
 
                   {/* 생년월일 */}
                   <div className={style.formRow}>
-                    <div className={style.formLabel}>생년월일</div>
+                    <div className={style.formLabel}>생년월일 <span className={style.required}>*</span></div>
                     <div className={style.formInput}>
                       <div className={style.birthDateInputs}>
                         <input
@@ -1086,7 +1096,7 @@ const WritePage: React.FC = () => {
 
                   {/* 한국어 능력 */}
                   <div className={style.formRow}>
-                    <div className={style.formLabel}>한국어 능력 <span className={style.required}>*</span></div>
+                    <div className={style.formLabel}>한국어 능력</div>
                     <div className={style.formInput}>
                       <select
                         name="korean_ability"
@@ -1238,12 +1248,15 @@ const WritePage: React.FC = () => {
         )}
 
         {/* 상세 내용 */}
-        <h2 className={style.sectionTitle}>상세 내용</h2>
+        <h2 className={style.sectionTitle}>
+          상세 내용
+          {formData.board_type === '1' && <span className={style.required}> *</span>}
+        </h2>
         <div className={style.subSection}>
           <textarea
             name="contents"
             className={`${getInputClassName('contents', style.textarea)} ${contentsUrlError ? style.errorInput : ''}`}
-            placeholder="상세 내용을 입력해주세요"
+            placeholder={formData.board_type === '1' ? "추가로 전할 내용이 있다면 작성해주세요.." : "상세 내용을 입력해주세요"}
             value={formData.contents}
             onChange={handleInputChange}
           ></textarea>
