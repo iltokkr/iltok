@@ -227,7 +227,7 @@ const BusinessVerificationModal: React.FC<BusinessVerificationModalProps> = ({ o
           {/* 경고 박스 */}
           <div className={styles.warningBox}>
             <p className={styles.warningText}>
-              구인업체는 <strong>사업자 인증</strong>이 필요합니다.<br />
+              채용업체는 <strong>사업자 인증</strong>이 필요합니다.<br />
               인증 전 게시글은 비공개 상태입니다.
             </p>
           </div>

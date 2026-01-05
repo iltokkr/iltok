@@ -22,11 +22,18 @@
   .mainMenu a {
     font-size: 13px;
     color: #fff;
-
   }
   .mainMenu .focus {
     font-weight: bold;
     color: #fff;
+  }
+  .externalLink {
+    color: #fff;
+    text-decoration: none;
+    transition: opacity 0.2s ease;
+  }
+  .externalLink:hover {
+    opacity: 0.8;
   }
 
   @media screen and (max-width: 768px) {

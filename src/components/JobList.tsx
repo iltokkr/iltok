@@ -171,6 +171,11 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
         <span className={styles.locationText}>
           {` (${job['1depth_region']} ${job['2depth_region']})`}
         </span>
+        {job['1depth_category'] && (
+          <span className={styles.categoryText}>
+            {` - ${job['1depth_category']}`}
+          </span>
+        )}
       </span>
     );
   };
@@ -368,6 +373,12 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
               <span className={styles.communityRegion}>
                 <HiLocationMarker className={styles.locationIcon} />
                 {job['1depth_region']}{job['2depth_region'] ? ` ${job['2depth_region']}` : ''}
+              </span>
+            )}
+            {boardType === '1' && job['1depth_category'] && (
+              <span className={styles.communityCategory}>
+                <img src="/icons/category-icon.svg" alt="" className={styles.categoryIcon} />
+                {job['1depth_category']}
               </span>
             )}
             <span className={styles.communityViews}>👁 {job.view_count || 0}</span>

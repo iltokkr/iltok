@@ -18,15 +18,15 @@ const supabase = createClient(
 /**
  * Write 컴포넌트
  * 
- * 이 컴포넌트는 사용자가 새로운 구인 공고를 작성할 수 있는 페이지를 렌더링합니다.
+ * 이 컴포넌트는 사용자가 새로운 채용 공고를 작성할 수 있는 페이지를 렌더링합니다.
  * 
  * 주요 기능:
  * - 로그인한 사용자만 접근 가능
  * - 사용자의 비즈니스 인증 상태 확인
  * - 비즈니스 인증이 필요한 경우 모달 표시
- * - 구인 공고 작성 폼 제공
+ * - 채용 공고 작성 폼 제공
  * 
- * @returns {JSX.Element} 구인 공고 작성 페이지의 렌더링된 컴포넌트
+ * @returns {JSX.Element} 채용 공고 작성 페이지의 렌더링된 컴포넌트
  */
 const Write: React.FC = () => {
   const router = useRouter();
@@ -67,18 +67,18 @@ const Write: React.FC = () => {
   return (
     <div className={styles.container}>
       <Head>
-        <title>구인 공고 작성 | 114114KR</title>
-        <meta name="description" content="114114KR에서 새로운 구인 공고를 작성하세요. 효과적인 채용 공고로 최적의 인재를 찾을 수 있습니다." />
-        <meta name="keywords" content="구인 공고 작성, 채용 공고, 인재 채용, 114114KR" />
-        <meta property="og:title" content="구인 공고 작성 | 114114KR" />
-        <meta property="og:description" content="114114KR에서 새로운 구인 공고를 작성하세요. 효과적인 채용 공고로 최적의 인재를 찾을 수 있습니다." />
+        <title>채용 공고 작성 | 114114KR</title>
+        <meta name="description" content="114114KR에서 새로운 채용 공고를 작성하세요. 효과적인 채용 공고로 최적의 인재를 찾을 수 있습니다." />
+        <meta name="keywords" content="채용 공고 작성, 채용 공고, 인재 채용, 114114KR" />
+        <meta property="og:title" content="채용 공고 작성 | 114114KR" />
+        <meta property="og:description" content="114114KR에서 새로운 채용 공고를 작성하세요. 효과적인 채용 공고로 최적의 인재를 찾을 수 있습니다." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://114114KR.com/write" />
         <meta property="og:image" content="https://114114KR.com/og-image.jpg" />
         <meta property="og:site_name" content="114114KR" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="구인 공고 작성 | 114114KR" />
-        <meta name="twitter:description" content="114114KR에서 새로운 구인 공고를 작성하세요. 효과적인 채용 공고로 최적의 인재를 찾을 수 있습니다." />
+        <meta name="twitter:title" content="채용 공고 작성 | 114114KR" />
+        <meta name="twitter:description" content="114114KR에서 새로운 채용 공고를 작성하세요. 효과적인 채용 공고로 최적의 인재를 찾을 수 있습니다." />
         <meta name="twitter:image" content="https://114114KR.com/og-image.jpg" />
       </Head>
       <Header />

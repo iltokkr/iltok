@@ -345,7 +345,7 @@ const WritePage: React.FC = () => {
         // 구직정보: 구직정보 게시판으로 이동
         router.push('/board?board_type=1');
       } else {
-        // 구인정보: 사업자 등록 상태에 따라 분기
+        // 채용정보: 사업자 등록 상태에 따라 분기
         const { data: userData } = await supabase
           .from('users')
           .select('is_accept, biz_file')
@@ -468,7 +468,7 @@ const WritePage: React.FC = () => {
                 className={`${style.boardTypeTag} ${formData.board_type === '0' ? style.boardTypeTagSelected : ''}`}
                 onClick={() => setFormData(prev => ({ ...prev, board_type: '0' }))}
               >
-                구인정보
+                채용정보
               </button>
               <button
                 type="button"
@@ -512,7 +512,7 @@ const WritePage: React.FC = () => {
         {/* 자유게시판이 아닐 때만 추가 필드들 표시 */}
         {formData.board_type !== '4' && (
           <>
-            {/* 구인정보일 때 보이는 섹션들 */}
+            {/* 채용정보일 때 보이는 섹션들 */}
             {formData.board_type === '0' && (
               <>
                 {/* 채용 조건 */}
@@ -694,7 +694,7 @@ const WritePage: React.FC = () => {
         {/* 법적 경고 문구 */}
         {formData.board_type !== '4' && (
           <div className={style.legalWarning}>
-            <p>⚠️ 성매매 알선 등 행위의 처벌에 관한 법률 제4조에 해당되는 내용이 포함된 구인 광고 관련 법령에 따라 성매매를 알선한 경우, 3년 이하의 징역형 또는 3천만 원 이하의 벌금에 처해질 수 있습니다.</p>
+            <p>⚠️ 성매매 알선 등 행위의 처벌에 관한 법률 제4조에 해당되는 내용이 포함된 채용 광고 관련 법령에 따라 성매매를 알선한 경우, 3년 이하의 징역형 또는 3천만 원 이하의 벌금에 처해질 수 있습니다.</p>
             <p>⚠️ 노래방 종업원 및 BAR 종업원등 유흥업소에 대한 공고는 게시가 제한됩니다.</p>
             <p>⚠️ 1개의 공고에 여러 회사의 공고를 업로드할 경우 게시가 제한됩니다.</p>
           </div>

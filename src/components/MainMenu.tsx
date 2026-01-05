@@ -16,7 +16,7 @@ const MainMenu: React.FC<MainMenuProps> = ({ currentBoardType }) => {
               href={{ pathname: '/board', query: { board_type: '0' } }}
               className={currentBoardType === '0' ? styles.focus : ''}
             >
-              구인정보
+              채용정보
             </Link>
           </li>
           <li>
@@ -34,6 +34,16 @@ const MainMenu: React.FC<MainMenuProps> = ({ currentBoardType }) => {
             >
               자유게시판
             </Link>
+          </li>
+          <li>
+            <a 
+              href="https://pf.kakao.com/_ywaMn"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.externalLink}
+            >
+              고객센터
+            </a>
           </li>
         </div>
       </div>
