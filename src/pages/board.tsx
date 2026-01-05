@@ -283,8 +283,7 @@ const BoardPage: React.FC = () => {
         `, { count: 'exact' })
         .eq('ad', false)
         .eq('board_type', currentBoardType)
-        .not('uploader_id', 'is', null)
-        .or('status.is.null,status.eq.active'); // 마감되지 않은 글만 표시
+        .not('uploader_id', 'is', null);
 
       // board_type이 0일 때만 is_accept 조건 추가
       if (currentBoardType === '0') {

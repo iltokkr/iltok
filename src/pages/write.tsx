@@ -5,7 +5,6 @@ import { AuthContext } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import WritePage from '@/components/writeComponent';
-import JobSeekerWriteComponent from '@/components/JobSeekerWriteComponent';
 import styles from '@/styles/Write.module.css';
 import { useRouter } from 'next/router';
 import LoginPopup from '@/components/LoginPopup';
@@ -31,12 +30,8 @@ const supabase = createClient(
  */
 const Write: React.FC = () => {
   const router = useRouter();
-  const { board_type } = router.query;
   const authContext = useContext(AuthContext);
   const [showLoginPopup, setShowLoginPopup] = useState(false);
-
-  // board_type이 '1'이면 구직정보 (이력서) 작성 페이지
-  const isJobSeekerWrite = board_type === '1';
 
   useEffect(() => {
     // 로딩 중에는 팝업 표시하지 않음
@@ -72,31 +67,23 @@ const Write: React.FC = () => {
   return (
     <div className={styles.container}>
       <Head>
-        <title>{isJobSeekerWrite ? '이력서 작성' : '채용 공고 작성'} | 114114KR</title>
-        <meta name="description" content={isJobSeekerWrite 
-          ? "114114KR에서 이력서를 작성하고 기업들의 채용 제안을 받아보세요." 
-          : "114114KR에서 새로운 채용 공고를 작성하세요. 효과적인 채용 공고로 최적의 인재를 찾을 수 있습니다."} />
-        <meta name="keywords" content={isJobSeekerWrite 
-          ? "이력서 작성, 구직, 일자리, 114114KR"
-          : "채용 공고 작성, 채용 공고, 인재 채용, 114114KR"} />
-        <meta property="og:title" content={`${isJobSeekerWrite ? '이력서 작성' : '채용 공고 작성'} | 114114KR`} />
-        <meta property="og:description" content={isJobSeekerWrite 
-          ? "114114KR에서 이력서를 작성하고 기업들의 채용 제안을 받아보세요." 
-          : "114114KR에서 새로운 채용 공고를 작성하세요. 효과적인 채용 공고로 최적의 인재를 찾을 수 있습니다."} />
+        <title>채용 공고 작성 | 114114KR</title>
+        <meta name="description" content="114114KR에서 새로운 채용 공고를 작성하세요. 효과적인 채용 공고로 최적의 인재를 찾을 수 있습니다." />
+        <meta name="keywords" content="채용 공고 작성, 채용 공고, 인재 채용, 114114KR" />
+        <meta property="og:title" content="채용 공고 작성 | 114114KR" />
+        <meta property="og:description" content="114114KR에서 새로운 채용 공고를 작성하세요. 효과적인 채용 공고로 최적의 인재를 찾을 수 있습니다." />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://114114KR.com/write" />
         <meta property="og:image" content="https://114114KR.com/og-image.jpg" />
         <meta property="og:site_name" content="114114KR" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={`${isJobSeekerWrite ? '이력서 작성' : '채용 공고 작성'} | 114114KR`} />
-        <meta name="twitter:description" content={isJobSeekerWrite 
-          ? "114114KR에서 이력서를 작성하고 기업들의 채용 제안을 받아보세요." 
-          : "114114KR에서 새로운 채용 공고를 작성하세요. 효과적인 채용 공고로 최적의 인재를 찾을 수 있습니다."} />
+        <meta name="twitter:title" content="채용 공고 작성 | 114114KR" />
+        <meta name="twitter:description" content="114114KR에서 새로운 채용 공고를 작성하세요. 효과적인 채용 공고로 최적의 인재를 찾을 수 있습니다." />
         <meta name="twitter:image" content="https://114114KR.com/og-image.jpg" />
       </Head>
       <Header />
       <main className={styles.layout}>
-        {isJobSeekerWrite ? <JobSeekerWriteComponent /> : <WritePage />}
+        <WritePage />
         {showLoginPopup && <LoginPopup onClose={handleLoginPopupClose} />}
       </main>
       <Footer />
