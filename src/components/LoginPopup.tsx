@@ -137,15 +137,11 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose }) => {
             <img src="/images/resume-prompt-icon.png" alt="인증 완료" />
           </div>
           <h2 className={styles.resumePromptTitle}>
-            인증이 완료 되었어요.
+            지금 바로 이력서를 작성해보세요!
           </h2>
           <div className={styles.resumePromptContent}>
-            <p className={styles.resumePromptSubtitle}>
-              지금 바로 이력서를 작성해보세요!
-            </p>
             <p className={styles.resumePromptDesc}>
-              이력서를 작성 한 구직자는,<br/>
-              <strong className={styles.highlight}>2배</strong> 많은 연락을 받아요.
+              이력서가 있으면 <strong className={styles.highlight}>2배</strong> 많은 연락을 받아요!
             </p>
           </div>
           <div className={styles.resumePromptButtons}>

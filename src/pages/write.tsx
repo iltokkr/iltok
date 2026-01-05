@@ -43,11 +43,8 @@ const Write: React.FC = () => {
     if (!authContext?.user) {
       setShowLoginPopup(true);
       return;
-    } else {
-      // 로그인된 경우 팝업 닫기
-      setShowLoginPopup(false);
     }
-
+    // 로그인된 경우에는 팝업을 수동으로 닫도록 함 (이력서 안내 팝업 표시를 위해)
     // 사업자 인증 상태와 관계없이 글쓰기 페이지 접근 허용
     // (미등록, 심사중, 인증완료 모두 글쓰기 가능)
   }, [authContext?.user, authContext?.isLoading]);

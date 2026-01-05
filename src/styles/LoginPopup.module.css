@@ -130,22 +130,15 @@
   margin-bottom: 20px;
 }
 
-.resumePromptSubtitle {
-  font-size: 15px;
-  color: #666;
-  margin: 0 0 8px 0;
-  font-weight: 500;
-}
-
 .resumePromptDesc {
-  font-size: 13px;
-  color: #888;
+  font-size: 14px;
+  color: #666;
   line-height: 1.6;
   margin: 0;
 }
 
 .highlight {
-  color: #ff5205;
+  color: #2196F3;
   font-weight: 700;
 }
 
@@ -176,7 +169,7 @@
   padding: 14px;
   border: none;
   border-radius: 8px;
-  background: #ff5205;
+  background: #2196F3;
   color: white;
   font-size: 15px;
   font-weight: 600;
@@ -185,7 +178,7 @@
 }
 
 .resumePromptWriteBtn:hover {
-  background: #e64a00;
+  background: #1976D2;
 }
 
 .resumePromptCheckbox {
