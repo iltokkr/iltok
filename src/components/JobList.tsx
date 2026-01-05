@@ -709,7 +709,7 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
       </section>
       
       {/* Replace the existing pagination with the new Pagination component */}
-      {!isLoading && jobs.length > 0 && (
+      {!isLoading && jobs.length > 0 && totalPages > 0 && (
         <Pagination
           currentPage={currentPage}
           pageCount={totalPages}

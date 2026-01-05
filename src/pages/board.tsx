@@ -633,8 +633,11 @@ const BoardPage: React.FC = () => {
     const isBoardTypeChanged = newBoardType !== boardType;
     
     if (isBoardTypeChanged) {
+      setIsLoading(true);
       setRegularJobs([]);
       setAdJobs([]);
+      setTotalPages(0);
+      setTotalCount(0);
     }
     
     // board_type 변경 시 필터 초기화, 아니면 URL에서 필터 가져오기
