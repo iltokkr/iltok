@@ -64,3 +64,137 @@
   cursor: pointer;
   white-space: nowrap;
 }
+
+/* 회원 유형 선택 */
+.userTypeSelector {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.userTypeBtn {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+  color: #666;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.userTypeBtn:hover {
+  border-color: #ff5205;
+}
+
+.userTypeActive {
+  border-color: #ff5205;
+  background: #fff5f2;
+  color: #ff5205;
+  font-weight: 600;
+}
+
+/* 이력서 작성 유도 팝업 */
+.resumePromptBox {
+  background: white;
+  border-radius: 16px;
+  padding: 30px 25px;
+  width: 340px;
+  text-align: center;
+}
+
+.resumePromptImage {
+  margin-bottom: 20px;
+}
+
+.resumePromptTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: #333;
+  margin: 0 0 8px 0;
+}
+
+.resumePromptSubtitle {
+  font-size: 18px;
+  color: #333;
+  margin: 0 0 15px 0;
+}
+
+.resumePromptSubtitle span {
+  color: #2196F3;
+  text-decoration: underline;
+}
+
+.resumePromptDesc {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+  margin: 0 0 25px 0;
+}
+
+.resumePromptDesc strong {
+  color: #2196F3;
+}
+
+.resumePromptButtons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.resumePromptCloseBtn {
+  flex: 1;
+  padding: 14px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background: #fff;
+  color: #666;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.resumePromptCloseBtn:hover {
+  background: #f5f5f5;
+}
+
+.resumePromptWriteBtn {
+  flex: 1.5;
+  padding: 14px;
+  border: none;
+  border-radius: 8px;
+  background: #2196F3;
+  color: white;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.resumePromptWriteBtn:hover {
+  background: #1976D2;
+}
+
+.resumePromptCheckbox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #888;
+  cursor: pointer;
+}
+
+.resumePromptCheckbox input {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+}
+
+.error {
+  color: #ff3b30;
+  font-size: 13px;
+  margin-top: 10px;
+  text-align: center;
+}
