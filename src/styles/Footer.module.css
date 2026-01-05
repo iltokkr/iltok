@@ -149,31 +149,33 @@
 
 @media (max-width: 768px) {
   .footerTop {
-    flex-wrap: wrap;
-    gap: 8px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0;
+    width: 100%;
+  }
+
+  .toggleButton {
+    flex-shrink: 0;
+  }
+
+  .toggleText {
+    font-size: 12px;
   }
 
   .links {
+    display: flex;
     flex-wrap: nowrap;
-    gap: 0;
-    width: 100%;
-    justify-content: flex-start;
+    gap: 12px;
+    justify-content: flex-end;
+    flex: 1;
   }
 
   .privacyLink {
     margin-left: 0;
     font-size: 11px;
     white-space: nowrap;
-  }
-
-  .privacyLink::before {
-    content: '|';
-    margin: 0 8px;
-    color: #ccc;
-  }
-
-  .privacyLink:first-child::before {
-    display: none;
   }
 
   .content {
