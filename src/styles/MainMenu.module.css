@@ -37,10 +37,25 @@
   }
 
   @media screen and (max-width: 768px) {
-    .mainMenu li {
-      margin-right: auto;
+    .layout {
+      padding: 0 12px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
     }
     
+    .mainMenu li {
+      width: auto;
+      flex-shrink: 0;
+    }
+    
+    .mainMenu a {
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    
+    .menuItems {
+      gap: 20px;
+    }
   }
 
   .menuItems {

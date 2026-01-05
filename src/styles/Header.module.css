@@ -119,16 +119,17 @@
     font-family: "Times New Roman", Times, serif;
     font-size: 24px;
     font-weight: normal;
-    padding-left: 10px;
+    padding-left: 12px;
   }
   .layout {
     position: relative;
-    
+    padding: 0 12px;
   }
 
   .mobileMenuButton {
     display: block;
     color: black;
+    margin-right: 4px;
   }
 
   .topr {
