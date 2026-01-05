@@ -150,20 +150,30 @@
 @media (max-width: 768px) {
   .footerTop {
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 8px;
   }
 
   .links {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 0;
+    width: 100%;
+    justify-content: flex-start;
   }
 
   .privacyLink {
-    margin-left: 15px;
+    margin-left: 0;
+    font-size: 11px;
+    white-space: nowrap;
   }
 
-  .privacyLink:first-child {
-    margin-left: 0;
+  .privacyLink::before {
+    content: '|';
+    margin: 0 8px;
+    color: #ccc;
+  }
+
+  .privacyLink:first-child::before {
+    display: none;
   }
 
   .content {

@@ -551,22 +551,6 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
   const renderJobItem = (job: Job, isAd = false) => (
     <li key={`${isAd ? 'ad-' : ''}${job.id}`} className={`${styles.jobItem} ${isRead(job.id) ? styles.readPost : ''} ${!job.salary_type || !job.salary_detail ? 'no-salary' : ''}`}>
       <span className={styles.time}>{formatDate(job.updated_time)}</span>
-      <div 
-        className={styles.bookmarkContainer}
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          handleBookmark(job.id);
-        }}
-      >
-        {bookmarkedJobs.includes(job.id) ? 
-          <BsHeartFill className={styles.filledBookmark} /> : 
-          <BsHeart className={styles.emptyBookmark} />
-        }
-        <span className={styles.bookmarkCount}>
-          {bookmarkCounts[job.id] || 0}
-        </span>
-      </div>
       <div className={styles.jobContent}>
         <p className={styles.title}>
           <Link href={`/jd/${job.id}`} scroll={false} onClick={() => handlePostClick(job.id)}>
