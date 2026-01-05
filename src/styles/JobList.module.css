@@ -232,8 +232,8 @@
   overflow: hidden;
   text-overflow: ellipsis;
   word-break: break-word;
-  max-height: 3em;
-  line-height: 1.5em;
+  max-height: 3.2em;
+  line-height: 1.6em;
 }
 
 .detailsContainer {
@@ -1072,7 +1072,7 @@
 /* 모바일에서만 적용되도록 미디어 쿼리 추가 */
 @media (max-width: 768px) {
   [data-board-type]:not([data-board-type="4"]) .titleText {
-    max-height: 2.8em; /* 두 줄 높이 제한 */
+    max-height: 3.2em; /* 두 줄 높이 제한 */
   }
 }
 
@@ -1084,6 +1084,7 @@
   text-overflow: ellipsis;
   word-break: break-all;
   flex: 1;
+  line-height: 1.6;
 }
 
 .commentCount {
