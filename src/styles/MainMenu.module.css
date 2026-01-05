@@ -37,10 +37,19 @@
   }
 
   @media screen and (max-width: 768px) {
-    .layout {
-      padding: 0 12px;
+    .mainMenu {
       overflow-x: auto;
+      overflow-y: hidden;
       -webkit-overflow-scrolling: touch;
+    }
+    
+    .mainMenu::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .layout {
+      padding: 0 16px 0 16px;
+      min-width: max-content;
     }
     
     .mainMenu li {
@@ -53,8 +62,13 @@
       white-space: nowrap;
     }
     
+    .externalLink {
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    
     .menuItems {
-      gap: 20px;
+      gap: 28px;
     }
   }
 
