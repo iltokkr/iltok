@@ -98,6 +98,14 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose }) => {
       console.log('userType:', userType);
       console.log('data.user:', data.user);
 
+      // user_type을 DB에 저장 (구직자로 선택한 경우)
+      if (data.user && userType === 'jobseeker') {
+        await supabase
+          .from('users')
+          .update({ user_type: 'jobseeker' })
+          .eq('id', data.user.id);
+      }
+
       // 구직자 선택 시 팝업 표시 여부 결정
       if (userType === 'jobseeker' && data.user) {
         // 이미 구직정보를 작성한 적이 있는지 확인
