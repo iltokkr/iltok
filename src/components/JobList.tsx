@@ -68,9 +68,10 @@ interface JobListProps {
   totalCount?: number;
   onPageChange: (page: number) => void;
   boardType: string;
+  isLoading?: boolean;
 }
 
-const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages, totalCount = 0, onPageChange, boardType }) => {
+const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages, totalCount = 0, onPageChange, boardType, isLoading = false }) => {
   const { currentLanguage } = useTranslation();
   const { markAsRead, isRead } = useReadPosts();
   const previousJobsRef = useRef<string>('');
@@ -708,11 +709,13 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
       </section>
       
       {/* Replace the existing pagination with the new Pagination component */}
-      <Pagination
-        currentPage={currentPage}
-        pageCount={totalPages}
-        onPageChange={onPageChange}
-      />
+      {!isLoading && jobs.length > 0 && (
+        <Pagination
+          currentPage={currentPage}
+          pageCount={totalPages}
+          onPageChange={onPageChange}
+        />
+      )}
 
       {showAdPopup && <AdPopup onClose={() => setShowAdPopup(false)} />}
       {showLoginPopup && <LoginPopup onClose={() => setShowLoginPopup(false)} />}

@@ -726,24 +726,21 @@ const BoardPage: React.FC = () => {
     fetchBookmarks();
   }, [fetchBookmarks]);
 
-  // fetchJobs를 다시 호출하여 북마크 상태 업데이트
+  // 북마크 상태 변경 시 현재 jobs의 북마크 상태만 업데이트 (재호출 없이)
   useEffect(() => {
-    if (router.isReady) {
-      const { city1, city2, cate1, cate2, keyword, page, board_type, searchType } = router.query;
-      const currentFilters = {
-        city1: city1 as string || '',
-        city2: city2 as string || '',
-        cate1: cate1 as string || '',
-        cate2: cate2 as string || '',
-        keyword: keyword as string || '',
-        searchType: (searchType as 'title' | 'contents' | 'both') || 'both'
-      };
-      const currentPage = page ? parseInt(page as string) : 1;
-      const currentBoardType = board_type as string || '0';
-      
-      fetchJobs(currentFilters, currentPage, currentBoardType);
+    if (regularJobs.length > 0) {
+      setRegularJobs(prev => prev.map(job => ({
+        ...job,
+        bookmarked: bookmarkedJobs.includes(job.id)
+      })));
     }
-  }, [router.isReady, bookmarkedJobs]);
+    if (adJobs.length > 0) {
+      setAdJobs(prev => prev.map(job => ({
+        ...job,
+        bookmarked: bookmarkedJobs.includes(job.id)
+      })));
+    }
+  }, [bookmarkedJobs]);
 
   // 모달 닫기 핸들러 추가
   const handleCloseModal = () => {
@@ -797,6 +794,7 @@ const BoardPage: React.FC = () => {
           totalCount={totalCount}
           onPageChange={handlePageChange}
           boardType={boardType}
+          isLoading={isLoading}
         />
       </div>
       <Footer />
