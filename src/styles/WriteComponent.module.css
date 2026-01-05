@@ -697,6 +697,58 @@
   margin-left: 8px;
 }
 
+/* 생년월일 입력 */
+.birthDateInputs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.birthInput {
+  width: 80px;
+  height: 48px;
+  padding: 0 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 15px;
+  text-align: center;
+}
+
+.birthInputSmall {
+  width: 60px;
+  height: 48px;
+  padding: 0 8px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 15px;
+  text-align: center;
+}
+
+.birthInput:focus,
+.birthInputSmall:focus {
+  outline: none;
+  border-color: #2196f3;
+}
+
+.birthLabel {
+  font-size: 14px;
+  color: #666;
+}
+
+/* 숫자 입력 스피너 숨기기 */
+.birthInput::-webkit-outer-spin-button,
+.birthInput::-webkit-inner-spin-button,
+.birthInputSmall::-webkit-outer-spin-button,
+.birthInputSmall::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.birthInput[type=number],
+.birthInputSmall[type=number] {
+  -moz-appearance: textfield;
+}
+
 /* 서브 라벨 */
 .subLabel {
   font-weight: 400;
@@ -959,6 +1011,80 @@
 .dateInput:focus {
   outline: none;
   border-color: #2196f3;
+}
+
+/* 근무상태 라디오 그룹 (모달용) */
+.workStatusGroup {
+  display: flex;
+  gap: 12px;
+}
+
+.workStatusLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.workStatusLabel input {
+  display: none;
+}
+
+.workStatusLabel span {
+  font-size: 14px;
+  color: #666;
+}
+
+.workStatusSelected {
+  border-color: #2196f3;
+  background: #e3f2fd;
+}
+
+.workStatusSelected span {
+  color: #2196f3;
+  font-weight: 600;
+}
+
+/* 근무기간 입력 */
+.workDurationInputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.durationInput {
+  width: 70px;
+  height: 48px;
+  padding: 0 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 15px;
+  text-align: center;
+}
+
+.durationInput:focus {
+  outline: none;
+  border-color: #2196f3;
+}
+
+.durationLabel {
+  font-size: 14px;
+  color: #666;
+}
+
+/* 숫자 입력 스피너 숨기기 */
+.durationInput::-webkit-outer-spin-button,
+.durationInput::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.durationInput[type=number] {
+  -moz-appearance: textfield;
 }
 
 .careerModalSubmit {

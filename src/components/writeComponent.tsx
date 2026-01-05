@@ -43,7 +43,9 @@ interface JobForm {
   korean_name: string;
   english_name: string;
   seeker_gender: string;
-  birth_date: string;
+  birth_year: string;
+  birth_month: string;
+  birth_day: string;
   nationality: string;
   visa_status: string;
   korean_ability: string;
@@ -56,8 +58,8 @@ interface CareerItem {
   id: string;
   company_name: string;
   work_status: string;
-  start_date: string;
-  end_date: string;
+  work_years: string;
+  work_months: string;
   job_duties: string[];
 }
 
@@ -119,7 +121,9 @@ const WritePage: React.FC = () => {
     korean_name: '',
     english_name: '',
     seeker_gender: '',
-    birth_date: '',
+    birth_year: '',
+    birth_month: '',
+    birth_day: '',
     nationality: '',
     visa_status: '',
     korean_ability: '',
@@ -132,10 +136,16 @@ const WritePage: React.FC = () => {
     id: '',
     company_name: '',
     work_status: '계약종료',
-    start_date: '',
-    end_date: '',
+    work_years: '',
+    work_months: '',
     job_duties: []
   });
+  
+  // 담당업무 옵션 목록
+  const jobDutyOptions = [
+    '제조/가공/조립', '기기부품제조', '식품생산직', '지게차 운전', '재단/재봉',
+    '공사/건설현장', '조선소', '운반/설치/철거', '금형/사출/프레스/사상', '인테리어/보수공사', '기타'
+  ];
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -277,14 +287,9 @@ const WritePage: React.FC = () => {
       };
       setErrors(newErrors);
 
-      // 구직정보 전용 필수값 검증
+      // 구직정보 전용 필수값 검증 (필수 항목만 검증)
       if (!formData.seeker_gender) {
         setErrorMessage('성별을 선택해주세요.');
-        setIsModalOpen(true);
-        return false;
-      }
-      if (!formData.birth_date) {
-        setErrorMessage('생년월일을 입력해주세요.');
         setIsModalOpen(true);
         return false;
       }
@@ -419,6 +424,11 @@ const WritePage: React.FC = () => {
         }
       }
 
+      // 생년월일 합치기
+      const birthDateStr = formData.birth_year 
+        ? `${formData.birth_year}-${formData.birth_month?.padStart(2, '0') || '01'}-${formData.birth_day?.padStart(2, '0') || '01'}`
+        : null;
+
       const submissionData = {
         ...formData,
         salary_detail: formData.salary_detail.replace(/,/g, ''), // 콤마 제거하고 저장
@@ -428,6 +438,7 @@ const WritePage: React.FC = () => {
         work_conditions: formData.board_type === '1' ? JSON.stringify(formData.work_conditions) : null,
         desired_regions: formData.board_type === '1' ? JSON.stringify(formData.desired_regions) : null,
         career_history: formData.board_type === '1' ? JSON.stringify(formData.career_history) : null,
+        birth_date: formData.board_type === '1' ? birthDateStr : null,
         // 구직정보의 경우 첫 번째 희망 지역을 1depth/2depth에 저장
         '1depth_region': formData.board_type === '1' && formData.desired_regions.length > 0 
           ? formData.desired_regions[0].split(' ')[0] 
@@ -436,6 +447,11 @@ const WritePage: React.FC = () => {
           ? formData.desired_regions[0].split(' ')[1] || ''
           : formData['2depth_region'],
       };
+      
+      // 임시 필드 제거 (DB에 저장하지 않음)
+      delete (submissionData as any).birth_year;
+      delete (submissionData as any).birth_month;
+      delete (submissionData as any).birth_day;
 
       let response;
       if (isEditing) {
@@ -578,13 +594,18 @@ const WritePage: React.FC = () => {
   };
 
   // 나이 계산 함수
-  const calculateAge = (birthDate: string): number => {
-    if (!birthDate) return 0;
+  const calculateAge = (): number | null => {
+    const { birth_year, birth_month, birth_day } = formData;
+    if (!birth_year) return null;
+    
     const today = new Date();
-    const birth = new Date(birthDate);
-    let age = today.getFullYear() - birth.getFullYear();
-    const monthDiff = today.getMonth() - birth.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    const birthYear = parseInt(birth_year);
+    const birthMonth = birth_month ? parseInt(birth_month) - 1 : 0;
+    const birthDay = birth_day ? parseInt(birth_day) : 1;
+    
+    let age = today.getFullYear() - birthYear;
+    const monthDiff = today.getMonth() - birthMonth;
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDay)) {
       age--;
     }
     return age;
@@ -629,8 +650,8 @@ const WritePage: React.FC = () => {
 
   // 경력 추가
   const handleAddCareer = () => {
-    if (!newCareer.company_name || !newCareer.start_date) {
-      setErrorMessage('업체명과 시작일을 입력해주세요.');
+    if (!newCareer.company_name) {
+      setErrorMessage('업체명을 입력해주세요.');
       setIsModalOpen(true);
       return;
     }
@@ -649,8 +670,8 @@ const WritePage: React.FC = () => {
       id: '',
       company_name: '',
       work_status: '계약종료',
-      start_date: '',
-      end_date: '',
+      work_years: '',
+      work_months: '',
       job_duties: []
     });
     setShowCareerModal(false);
@@ -957,19 +978,46 @@ const WritePage: React.FC = () => {
                   {/* 생년월일 */}
                   <div className={style.formRow}>
                     <div className={style.formLabel}>
-                      생년월일 <span className={style.required}>*</span>
-                      {formData.birth_date && (
-                        <span className={style.ageDisplay}>(만 {calculateAge(formData.birth_date)}세)</span>
+                      생년월일
+                      {calculateAge() !== null && (
+                        <span className={style.ageDisplay}>(만 {calculateAge()}세)</span>
                       )}
                     </div>
                     <div className={style.formInput}>
-                      <input
-                        type="date"
-                        name="birth_date"
-                        value={formData.birth_date}
-                        onChange={handleInputChange}
-                        className={style.input}
-                      />
+                      <div className={style.birthDateInputs}>
+                        <input
+                          type="number"
+                          name="birth_year"
+                          value={formData.birth_year}
+                          onChange={handleInputChange}
+                          className={style.birthInput}
+                          placeholder="년"
+                          maxLength={4}
+                        />
+                        <span className={style.birthLabel}>년</span>
+                        <input
+                          type="number"
+                          name="birth_month"
+                          value={formData.birth_month}
+                          onChange={handleInputChange}
+                          className={style.birthInputSmall}
+                          placeholder="월"
+                          min={1}
+                          max={12}
+                        />
+                        <span className={style.birthLabel}>월</span>
+                        <input
+                          type="number"
+                          name="birth_day"
+                          value={formData.birth_day}
+                          onChange={handleInputChange}
+                          className={style.birthInputSmall}
+                          placeholder="일"
+                          min={1}
+                          max={31}
+                        />
+                        <span className={style.birthLabel}>일</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1164,7 +1212,10 @@ const WritePage: React.FC = () => {
                             {career.job_duties.join(', ')}
                           </div>
                           <div className={style.careerDate}>
-                            {career.start_date} ~ {career.end_date || '현재'}
+                            {career.work_years && `${career.work_years}년`}
+                            {career.work_years && career.work_months && ' '}
+                            {career.work_months && `${career.work_months}개월`}
+                            {!career.work_years && !career.work_months && '-'}
                             <span className={`${style.careerStatus} ${career.work_status === '재직중' ? style.working : ''}`}>
                               {career.work_status}
                             </span>
@@ -1278,8 +1329,8 @@ const WritePage: React.FC = () => {
               
               <div className={style.careerFormGroup}>
                 <label>근무상태</label>
-                <div className={style.radioGroup}>
-                  <label className={style.radioLabel}>
+                <div className={style.workStatusGroup}>
+                  <label className={`${style.workStatusLabel} ${newCareer.work_status === '재직중' ? style.workStatusSelected : ''}`}>
                     <input
                       type="radio"
                       checked={newCareer.work_status === '재직중'}
@@ -1287,7 +1338,7 @@ const WritePage: React.FC = () => {
                     />
                     <span>재직중</span>
                   </label>
-                  <label className={style.radioLabel}>
+                  <label className={`${style.workStatusLabel} ${newCareer.work_status === '계약종료' ? style.workStatusSelected : ''}`}>
                     <input
                       type="radio"
                       checked={newCareer.work_status === '계약종료'}
@@ -1300,37 +1351,40 @@ const WritePage: React.FC = () => {
 
               <div className={style.careerFormGroup}>
                 <label>근무기간</label>
-                <div className={style.dateRange}>
+                <div className={style.workDurationInputs}>
                   <input
-                    type="month"
-                    value={newCareer.start_date}
-                    onChange={e => setNewCareer({...newCareer, start_date: e.target.value})}
-                    className={style.dateInput}
-                    placeholder="시작일"
+                    type="number"
+                    value={newCareer.work_years}
+                    onChange={e => setNewCareer({...newCareer, work_years: e.target.value})}
+                    className={style.durationInput}
+                    placeholder=""
+                    min={0}
                   />
-                  <span>~</span>
+                  <span className={style.durationLabel}>년</span>
                   <input
-                    type="month"
-                    value={newCareer.end_date}
-                    onChange={e => setNewCareer({...newCareer, end_date: e.target.value})}
-                    className={style.dateInput}
-                    placeholder="종료일"
-                    disabled={newCareer.work_status === '재직중'}
+                    type="number"
+                    value={newCareer.work_months}
+                    onChange={e => setNewCareer({...newCareer, work_months: e.target.value})}
+                    className={style.durationInput}
+                    placeholder=""
+                    min={0}
+                    max={11}
                   />
+                  <span className={style.durationLabel}>개월</span>
                 </div>
               </div>
 
               <div className={style.careerFormGroup}>
                 <label>담당업무</label>
                 <div className={style.tagContainer}>
-                  {Object.keys(categories).map(cat => (
+                  {jobDutyOptions.map(duty => (
                     <button
-                      key={cat}
+                      key={duty}
                       type="button"
-                      className={`${style.conditionTag} ${newCareer.job_duties.includes(cat) ? style.conditionTagSelected : ''}`}
-                      onClick={() => handleCareerDutyToggle(cat)}
+                      className={`${style.conditionTag} ${newCareer.job_duties.includes(duty) ? style.conditionTagSelected : ''}`}
+                      onClick={() => handleCareerDutyToggle(duty)}
                     >
-                      {cat}
+                      {duty}
                     </button>
                   ))}
                 </div>
