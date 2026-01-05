@@ -45,22 +45,14 @@
 }
 
 .links {
-  display: none;
+  display: flex;
   align-items: center;
 }
 
-.links.show {
-  display: flex;
-}
-
 .content {
-  display: none;
+  display: flex;
   justify-content: left;
   margin-top: 20px;
-}
-
-.content.show {
-  display: flex;
 }
 
 .companyInfo {
@@ -157,22 +149,20 @@
 
 @media (max-width: 768px) {
   .footerTop {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-wrap: wrap;
     gap: 10px;
   }
 
   .links {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .links.show {
-    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
   }
 
   .privacyLink {
+    margin-left: 15px;
+  }
+
+  .privacyLink:first-child {
     margin-left: 0;
   }
 
