@@ -4,10 +4,10 @@ export default function Document() {
   return (
     <Html lang="ko">
       <Head>
-        {/* Google Fonts - 부드러운 한글 폰트 */}
+        {/* Google Fonts - Noto Sans KR */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
         
         <script
           async
