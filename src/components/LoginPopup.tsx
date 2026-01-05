@@ -96,19 +96,29 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose }) => {
       }
 
       console.log(isNewUser ? '회원가입 성공:' : '로그인 성공:', data);
+      console.log('userType:', userType);
+      console.log('data.user:', data.user);
 
       // 구직자 선택 시 팝업 표시 여부 결정
-      if (userType === 'jobseeker' && data.user) {
-        // localStorage에서 "다시 보지 않기" 설정 확인
-        const hideResumePrompt = localStorage.getItem('hideResumePrompt');
+      if (userType === 'jobseeker') {
+        console.log('구직자 선택됨');
         
-        if (hideResumePrompt !== 'true') {
-          // 이미 구직정보를 작성한 적이 있는지 확인
-          const hasJobSeekerPost = await checkHasJobSeekerPost(data.user.id);
+        if (data.user) {
+          // localStorage에서 "다시 보지 않기" 설정 확인
+          const hideResumePrompt = localStorage.getItem('hideResumePrompt');
+          console.log('hideResumePrompt:', hideResumePrompt);
           
-          if (!hasJobSeekerPost) {
-            setShowResumePrompt(true);
-            return; // 팝업 표시 후 onClose 호출하지 않음
+          if (hideResumePrompt !== 'true') {
+            // 이미 구직정보를 작성한 적이 있는지 확인
+            const hasJobSeekerPost = await checkHasJobSeekerPost(data.user.id);
+            console.log('hasJobSeekerPost:', hasJobSeekerPost);
+            
+            if (!hasJobSeekerPost) {
+              console.log('이력서 작성 팝업 표시');
+              setShowResumePrompt(true);
+              setLoading(false);
+              return; // 팝업 표시 후 onClose 호출하지 않음
+            }
           }
         }
       }
@@ -116,7 +126,6 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose }) => {
       onClose();
     } catch (error) {
       setError(error instanceof Error ? error.message : 'An unknown error occurred');
-    } finally {
       setLoading(false);
     }
   };
