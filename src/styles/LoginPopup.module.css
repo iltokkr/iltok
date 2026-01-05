@@ -106,11 +106,13 @@
 
 .resumePromptImage {
   margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
 }
 
 .resumePromptImage img {
-  width: 120px;
-  height: 120px;
+  width: 100px;
+  height: 100px;
   object-fit: contain;
 }
 
@@ -138,8 +140,13 @@
 .resumePromptDesc {
   font-size: 13px;
   color: #888;
-  line-height: 1.5;
+  line-height: 1.6;
   margin: 0;
+}
+
+.highlight {
+  color: #ff5205;
+  font-weight: 700;
 }
 
 .resumePromptButtons {

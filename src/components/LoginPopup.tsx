@@ -19,7 +19,6 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose }) => {
   const [isNewUser, setIsNewUser] = useState<boolean | null>(null);
   const [userType, setUserType] = useState<'business' | 'jobseeker'>('business');
   const [showResumePrompt, setShowResumePrompt] = useState(false);
-  const [dontShowAgain, setDontShowAgain] = useState(false);
 
   const formatPhoneNumber = (phoneNumber: string) => {
     // 한국 번호 형식으로 변환 (예: 01012345678 -> +821012345678)
@@ -100,26 +99,14 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose }) => {
       console.log('data.user:', data.user);
 
       // 구직자 선택 시 팝업 표시 여부 결정
-      if (userType === 'jobseeker') {
-        console.log('구직자 선택됨');
+      if (userType === 'jobseeker' && data.user) {
+        // 이미 구직정보를 작성한 적이 있는지 확인
+        const hasJobSeekerPost = await checkHasJobSeekerPost(data.user.id);
         
-        if (data.user) {
-          // localStorage에서 "다시 보지 않기" 설정 확인
-          const hideResumePrompt = localStorage.getItem('hideResumePrompt');
-          console.log('hideResumePrompt:', hideResumePrompt);
-          
-          if (hideResumePrompt !== 'true') {
-            // 이미 구직정보를 작성한 적이 있는지 확인
-            const hasJobSeekerPost = await checkHasJobSeekerPost(data.user.id);
-            console.log('hasJobSeekerPost:', hasJobSeekerPost);
-            
-            if (!hasJobSeekerPost) {
-              console.log('이력서 작성 팝업 표시');
-              setShowResumePrompt(true);
-              setLoading(false);
-              return; // 팝업 표시 후 onClose 호출하지 않음
-            }
-          }
+        if (!hasJobSeekerPost) {
+          setShowResumePrompt(true);
+          setLoading(false);
+          return; // 팝업 표시 후 onClose 호출하지 않음
         }
       }
 
@@ -131,17 +118,11 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose }) => {
   };
 
   const handleResumePromptClose = () => {
-    if (dontShowAgain) {
-      localStorage.setItem('hideResumePrompt', 'true');
-    }
     setShowResumePrompt(false);
     onClose();
   };
 
   const handleWriteResume = () => {
-    if (dontShowAgain) {
-      localStorage.setItem('hideResumePrompt', 'true');
-    }
     setShowResumePrompt(false);
     onClose();
     router.push('/write?board_type=1');
@@ -153,7 +134,7 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose }) => {
       <div className={styles.popWrap}>
         <div className={styles.resumePromptBox}>
           <div className={styles.resumePromptImage}>
-            <img src="/images/resume-prompt-icon.svg" alt="인증 완료" />
+            <img src="/images/resume-prompt-icon.png" alt="인증 완료" />
           </div>
           <h2 className={styles.resumePromptTitle}>
             인증이 완료 되었어요.
@@ -163,7 +144,8 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose }) => {
               지금 바로 이력서를 작성해보세요!
             </p>
             <p className={styles.resumePromptDesc}>
-              이력서를 작성 한 구직자는 2배 많은 연락을 받아요.
+              이력서를 작성 한 구직자는,<br/>
+              <strong className={styles.highlight}>2배</strong> 많은 연락을 받아요.
             </p>
           </div>
           <div className={styles.resumePromptButtons}>
@@ -180,14 +162,6 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose }) => {
               이력서 작성
             </button>
           </div>
-          <label className={styles.resumePromptCheckbox}>
-            <input
-              type="checkbox"
-              checked={dontShowAgain}
-              onChange={(e) => setDontShowAgain(e.target.checked)}
-            />
-            다시 보지 않기
-          </label>
         </div>
       </div>
     );
