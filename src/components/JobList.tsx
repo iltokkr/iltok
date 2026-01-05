@@ -180,11 +180,6 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
         <span className={styles.locationText}>
           {` (${job['1depth_region']} ${job['2depth_region']})`}
         </span>
-        {job['1depth_category'] && (
-          <span className={styles.categoryText}>
-            {` - ${job['1depth_category']}`}
-          </span>
-        )}
       </span>
     );
   };
