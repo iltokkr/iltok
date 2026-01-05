@@ -507,3 +507,150 @@
   height: 16px;
 }
 
+/* 구직정보 상세 스타일 */
+.seekerInfoSection {
+  margin: 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.seekerInfoCard {
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.seekerInfoTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #ff5722;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #ff5722;
+}
+
+.seekerInfoGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.seekerInfoRow {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background: #fafafa;
+  border-radius: 8px;
+}
+
+.seekerInfoLabel {
+  min-width: 80px;
+  font-size: 13px;
+  color: #888;
+  font-weight: 500;
+}
+
+.seekerInfoValue {
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+
+.seekerTagsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.seekerTag {
+  display: inline-block;
+  padding: 8px 16px;
+  background: #fff5f2;
+  color: #ff5722;
+  border: 1px solid #ffccbc;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* 경력 사항 스타일 */
+.careerList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.careerItem {
+  padding: 16px;
+  background: #fafafa;
+  border-radius: 10px;
+  border-left: 4px solid #ff5722;
+}
+
+.careerCompany {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.careerCompanyName {
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+}
+
+.careerStatus {
+  font-size: 12px;
+  padding: 3px 10px;
+  background: #e8f5e9;
+  color: #4caf50;
+  border-radius: 12px;
+}
+
+.careerPeriod {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.careerDuties {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.careerDutyTag {
+  display: inline-block;
+  padding: 4px 10px;
+  background: #f5f5f5;
+  color: #666;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+@media (max-width: 768px) {
+  .seekerInfoGrid {
+    grid-template-columns: 1fr;
+  }
+  
+  .seekerInfoCard {
+    padding: 16px;
+  }
+  
+  .seekerTag {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+  
+  .careerItem {
+    padding: 12px;
+  }
+  
+  .careerCompanyName {
+    font-size: 14px;
+  }
+}
+

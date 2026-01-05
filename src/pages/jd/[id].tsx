@@ -43,6 +43,17 @@ interface JobDetailType {
   work_location_detail: string;
   work_start_time: string;
   work_end_time: string;
+  // 구직정보 전용 필드
+  korean_name?: string;
+  english_name?: string;
+  seeker_gender?: string;
+  birth_date?: string;
+  nationality?: string;
+  visa_status?: string;
+  korean_ability?: string;
+  work_conditions?: string;
+  desired_regions?: string;
+  career_history?: string;
   uploader: {
     company_name: string;
     name: string;

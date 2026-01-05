@@ -49,6 +49,17 @@ interface JobDetailProps {
     work_location_detail: string;
     work_start_time: string;
     work_end_time: string;
+    // 구직정보 전용 필드
+    korean_name?: string;
+    english_name?: string;
+    seeker_gender?: string;
+    birth_date?: string;
+    nationality?: string;
+    visa_status?: string;
+    korean_ability?: string;
+    work_conditions?: string;
+    desired_regions?: string;
+    career_history?: string;
     uploader: {
       company_name: string;
       name: string;
@@ -152,6 +163,29 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
     const message = `114114KR에서 "${jobDetail.title}" 공고 보고 연락드립니다.\n\n채용공고 링크: ${currentUrl}`;
     const url = `sms:${number}?body=${encodeURIComponent(message)}`;
     window.open(url);
+  };
+
+  // 만 나이 계산 함수
+  const calculateAge = (birthDateStr: string): number | null => {
+    if (!birthDateStr) return null;
+    const birthDate = new Date(birthDateStr);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
+  // JSON 파싱 헬퍼 함수
+  const parseJsonField = (field: string | undefined): any[] => {
+    if (!field) return [];
+    try {
+      return JSON.parse(field);
+    } catch {
+      return [];
+    }
   };
 
   // 번역 함수 수정
@@ -375,6 +409,125 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
                 {jobDetail.work_location_detail && (
                   <span>{jobDetail.work_location_detail}</span>
                 )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* 구직정보 표시 (board_type === '1') */}
+        {jobDetail.board_type === '1' && (
+          <div className={style.seekerInfoSection}>
+            {/* 기본 정보 */}
+            <div className={style.seekerInfoCard}>
+              <h3 className={style.seekerInfoTitle}>기본 정보</h3>
+              <div className={style.seekerInfoGrid}>
+                {(jobDetail.korean_name || jobDetail.english_name) && (
+                  <div className={style.seekerInfoRow}>
+                    <span className={style.seekerInfoLabel}>이름</span>
+                    <span className={style.seekerInfoValue}>
+                      {jobDetail.korean_name}
+                      {jobDetail.english_name && ` (${jobDetail.english_name})`}
+                    </span>
+                  </div>
+                )}
+                {jobDetail.seeker_gender && (
+                  <div className={style.seekerInfoRow}>
+                    <span className={style.seekerInfoLabel}>성별</span>
+                    <span className={style.seekerInfoValue}>{jobDetail.seeker_gender}</span>
+                  </div>
+                )}
+                {jobDetail.birth_date && (
+                  <div className={style.seekerInfoRow}>
+                    <span className={style.seekerInfoLabel}>나이</span>
+                    <span className={style.seekerInfoValue}>
+                      만 {calculateAge(jobDetail.birth_date)}세
+                    </span>
+                  </div>
+                )}
+                {jobDetail.nationality && (
+                  <div className={style.seekerInfoRow}>
+                    <span className={style.seekerInfoLabel}>국적</span>
+                    <span className={style.seekerInfoValue}>{jobDetail.nationality}</span>
+                  </div>
+                )}
+                {jobDetail.visa_status && (
+                  <div className={style.seekerInfoRow}>
+                    <span className={style.seekerInfoLabel}>체류자격</span>
+                    <span className={style.seekerInfoValue}>{jobDetail.visa_status}</span>
+                  </div>
+                )}
+                {jobDetail.korean_ability && (
+                  <div className={style.seekerInfoRow}>
+                    <span className={style.seekerInfoLabel}>한국어 능력</span>
+                    <span className={style.seekerInfoValue}>{jobDetail.korean_ability}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* 희망 업무 */}
+            {jobDetail['1depth_category'] && (
+              <div className={style.seekerInfoCard}>
+                <h3 className={style.seekerInfoTitle}>희망 업무</h3>
+                <div className={style.seekerTagsContainer}>
+                  <span className={style.seekerTag}>{jobDetail['1depth_category']}</span>
+                  {jobDetail['2depth_category'] && (
+                    <span className={style.seekerTag}>{jobDetail['2depth_category']}</span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* 희망 근무조건 */}
+            {jobDetail.work_conditions && parseJsonField(jobDetail.work_conditions).length > 0 && (
+              <div className={style.seekerInfoCard}>
+                <h3 className={style.seekerInfoTitle}>희망 근무조건</h3>
+                <div className={style.seekerTagsContainer}>
+                  {parseJsonField(jobDetail.work_conditions).map((condition: string, index: number) => (
+                    <span key={index} className={style.seekerTag}>{condition}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 희망 지역 */}
+            {jobDetail.desired_regions && parseJsonField(jobDetail.desired_regions).length > 0 && (
+              <div className={style.seekerInfoCard}>
+                <h3 className={style.seekerInfoTitle}>희망 지역</h3>
+                <div className={style.seekerTagsContainer}>
+                  {parseJsonField(jobDetail.desired_regions).map((region: string, index: number) => (
+                    <span key={index} className={style.seekerTag}>{region}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 경력 사항 */}
+            {jobDetail.career_history && parseJsonField(jobDetail.career_history).length > 0 && (
+              <div className={style.seekerInfoCard}>
+                <h3 className={style.seekerInfoTitle}>경력 사항</h3>
+                <div className={style.careerList}>
+                  {parseJsonField(jobDetail.career_history).map((career: any, index: number) => (
+                    <div key={index} className={style.careerItem}>
+                      <div className={style.careerCompany}>
+                        <span className={style.careerCompanyName}>{career.company_name}</span>
+                        <span className={style.careerStatus}>{career.work_status}</span>
+                      </div>
+                      <div className={style.careerPeriod}>
+                        {career.work_years && `${career.work_years}년`}
+                        {career.work_years && career.work_months && ' '}
+                        {career.work_months && `${career.work_months}개월`}
+                      </div>
+                      {career.job_duties && career.job_duties.length > 0 && (
+                        <div className={style.careerDuties}>
+                          {career.job_duties.map((duty: string, dutyIndex: number) => (
+                            <span key={dutyIndex} className={style.careerDutyTag}>{duty}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
