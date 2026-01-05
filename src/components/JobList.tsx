@@ -444,22 +444,13 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
       <li key={job.id} className={`${styles.jobSeekerItem} ${isRead(job.id) ? styles.readPost : ''}`}>
         <Link href={`/jd/${job.id}`} scroll={false} onClick={() => handlePostClick(job.id)}>
           <div className={styles.jobSeekerContent}>
-            {/* 경력 배지 */}
-            <div className={styles.jobSeekerBadge}>
-              {totalCareer ? (
-                <>
-                  <span className={styles.badgeLabel}>경력</span>
-                  <span className={styles.badgeValue}>{totalCareer}</span>
-                </>
-              ) : (
-                <span className={styles.badgeLabel}>신입</span>
-              )}
-            </div>
-            
             {/* 메인 정보 */}
             <div className={styles.jobSeekerMain}>
-              {/* 타이틀 (제목) */}
-              <h3 className={styles.jobSeekerTitle}>{job.title}</h3>
+              {/* 타이틀 (제목) + 구직 태그 */}
+              <h3 className={styles.jobSeekerTitle}>
+                <span className={`${styles.communityTag} ${styles.jobSeekerTag}`}>구직</span>
+                <span className={styles.jobSeekerTitleText}>{job.title}</span>
+              </h3>
               
               {/* 1줄: 이름(마스킹) (국적, 성별, 나이) (비자) */}
               <div className={styles.jobSeekerLine1}>

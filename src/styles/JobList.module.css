@@ -1354,8 +1354,8 @@
 .jobSeekerList {
   display: flex;
   flex-direction: column;
-  gap: 0;
-  padding: 0 20px !important;
+  gap: 12px;
+  padding: 15px 20px !important;
   margin: 0 !important;
   box-sizing: border-box;
   width: 100%;
@@ -1364,15 +1364,18 @@
 }
 
 .jobSeekerItem {
-  border-bottom: 1px solid #eee;
-  padding: 16px 0;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
   overflow: hidden;
   width: 100%;
   box-sizing: border-box;
+  background: #fff;
+  transition: box-shadow 0.2s ease;
 }
 
-.jobSeekerItem:last-child {
-  border-bottom: none;
+.jobSeekerItem:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .jobSeekerItem a {
@@ -1385,31 +1388,6 @@
   display: flex;
   gap: 16px;
   overflow: hidden;
-}
-
-.jobSeekerBadge {
-  flex-shrink: 0;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background: #f5f5f5;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-}
-
-.jobSeekerBadge .badgeLabel {
-  font-size: 11px;
-  color: #666;
-  font-weight: 500;
-}
-
-.jobSeekerBadge .badgeValue {
-  font-size: 11px;
-  color: #3b82f6;
-  font-weight: 600;
 }
 
 .jobSeekerMain {
@@ -1426,9 +1404,18 @@
   color: #000;
   margin: 0;
   line-height: 1.4;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+}
+
+.jobSeekerTitleText {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1;
+  min-width: 0;
 }
 
 .jobSeekerLine1 {
@@ -1516,28 +1503,16 @@
 
 @media (max-width: 768px) {
   .jobSeekerList {
-    padding: 0 15px !important;
+    padding: 10px 15px !important;
+    gap: 10px;
   }
 
   .jobSeekerItem {
-    padding: 14px 0;
+    padding: 14px;
   }
 
   .jobSeekerContent {
     gap: 12px;
-  }
-
-  .jobSeekerBadge {
-    width: 50px;
-    height: 50px;
-  }
-
-  .jobSeekerBadge .badgeLabel {
-    font-size: 10px;
-  }
-
-  .jobSeekerBadge .badgeValue {
-    font-size: 10px;
   }
 
   .jobSeekerTitle {
