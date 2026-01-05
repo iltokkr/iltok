@@ -153,25 +153,19 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose }) => {
       <div className={styles.popWrap}>
         <div className={styles.resumePromptBox}>
           <div className={styles.resumePromptImage}>
-            <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="60" cy="60" r="55" fill="#E8F4FD"/>
-              <rect x="35" y="30" width="50" height="70" rx="8" fill="#fff" stroke="#4A9FE8" strokeWidth="2"/>
-              <circle cx="60" cy="50" r="12" fill="#E8F4FD" stroke="#4A9FE8" strokeWidth="2"/>
-              <path d="M45 75h30M45 85h20" stroke="#4A9FE8" strokeWidth="2" strokeLinecap="round"/>
-              <circle cx="85" cy="35" r="15" fill="#4A9FE8"/>
-              <path d="M80 35l4 4 8-8" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+            <img src="/images/resume-prompt-icon.svg" alt="인증 완료" />
           </div>
           <h2 className={styles.resumePromptTitle}>
-            인증이 완료 되었어요!
+            인증이 완료 되었어요.
           </h2>
-          <p className={styles.resumePromptSubtitle}>
-            지금 바로 이력서를 작성해보세요
-          </p>
-          <p className={styles.resumePromptDesc}>
-            이력서를 작성한 구직자가<br/>
-            취업할 확률이 <strong>2배</strong> 더 높아요!
-          </p>
+          <div className={styles.resumePromptContent}>
+            <p className={styles.resumePromptSubtitle}>
+              지금 바로 이력서를 작성해보세요!
+            </p>
+            <p className={styles.resumePromptDesc}>
+              이력서를 작성 한 구직자는 2배 많은 연락을 받아요.
+            </p>
+          </div>
           <div className={styles.resumePromptButtons}>
             <button 
               className={styles.resumePromptCloseBtn}

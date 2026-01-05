@@ -99,7 +99,7 @@
 .resumePromptBox {
   background: white;
   border-radius: 16px;
-  padding: 30px 25px;
+  padding: 30px 25px 25px;
   width: 340px;
   text-align: center;
 }
@@ -108,33 +108,38 @@
   margin-bottom: 20px;
 }
 
+.resumePromptImage img {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+}
+
 .resumePromptTitle {
   font-size: 20px;
   font-weight: 700;
   color: #333;
-  margin: 0 0 8px 0;
+  margin: 0 0 20px 0;
+}
+
+.resumePromptContent {
+  background: #f5f5f5;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
 }
 
 .resumePromptSubtitle {
-  font-size: 18px;
-  color: #333;
-  margin: 0 0 15px 0;
-}
-
-.resumePromptSubtitle span {
-  color: #2196F3;
-  text-decoration: underline;
+  font-size: 15px;
+  color: #666;
+  margin: 0 0 8px 0;
+  font-weight: 500;
 }
 
 .resumePromptDesc {
-  font-size: 14px;
-  color: #666;
-  line-height: 1.6;
-  margin: 0 0 25px 0;
-}
-
-.resumePromptDesc strong {
-  color: #2196F3;
+  font-size: 13px;
+  color: #888;
+  line-height: 1.5;
+  margin: 0;
 }
 
 .resumePromptButtons {
@@ -164,7 +169,7 @@
   padding: 14px;
   border: none;
   border-radius: 8px;
-  background: #2196F3;
+  background: #ff5205;
   color: white;
   font-size: 15px;
   font-weight: 600;
@@ -173,7 +178,7 @@
 }
 
 .resumePromptWriteBtn:hover {
-  background: #1976D2;
+  background: #e64a00;
 }
 
 .resumePromptCheckbox {
@@ -190,6 +195,7 @@
   cursor: pointer;
   width: 16px;
   height: 16px;
+  accent-color: #ff5205;
 }
 
 .error {
