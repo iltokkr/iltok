@@ -1,16 +1,22 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import styles from '@/styles/Footer.module.css';
 
 const Footer: React.FC = () => {
+  const [isOpen, setIsOpen] = useState(false);
+
   return (
     <footer className={styles.footer}>
       <div className={styles.container}>
         <div className={styles.footerTop}>
-          <strong className={styles.toggleText}>
-            114114KR
-          </strong>
-          <div className={styles.links}>
+          <button 
+            className={styles.toggleButton}
+            onClick={() => setIsOpen(!isOpen)}
+          >
+            <strong className={styles.toggleText}>114114KR</strong>
+            <span className={`${styles.toggleArrow} ${isOpen ? styles.open : ''}`}>▼</span>
+          </button>
+          <div className={`${styles.links} ${isOpen ? styles.show : ''}`}>
             <Link href="/privacy-policy">
               <span className={styles.privacyLink}>이용약관</span>
             </Link>
@@ -22,7 +28,7 @@ const Footer: React.FC = () => {
             </Link>
           </div>
         </div>
-        <div className={styles.content}>
+        <div className={`${styles.content} ${isOpen ? styles.show : ''}`}>
           <div className={styles.companyInfo}>
             <div className={styles.infoRow}>
               <p>(주)일톡</p>
