@@ -1352,9 +1352,9 @@
 
 /* 구직정보 리스트 스타일 */
 .jobSeekerList {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
   padding: 15px 20px !important;
   margin: 0 !important;
   box-sizing: border-box;
@@ -1520,6 +1520,7 @@
 
 @media (max-width: 768px) {
   .jobSeekerList {
+    grid-template-columns: 1fr;
     padding: 10px 15px !important;
     gap: 10px;
   }
