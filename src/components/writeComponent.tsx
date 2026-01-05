@@ -403,7 +403,8 @@ const WritePage: React.FC = () => {
       }
 
       // 자유게시판이 아닐 때만 비즈니스 인증 체크
-      if (formData.board_type !== '4') {
+      // 채용정보만 하루 1건 제한 적용 (구직정보, 자유게시판은 제한 없음)
+      if (formData.board_type === '0') {
         const { data: userData, error: userError } = await supabase
           .from('users')
           .select('is_accept, is_upload')
@@ -419,7 +420,7 @@ const WritePage: React.FC = () => {
         }
 
         if (!isEditing && userData.is_upload) {
-          setErrorMessage('공고는 하루에 하나만 올릴 수 있습니다.');
+          setErrorMessage('채용정보는 하루에 하나만 올릴 수 있습니다.');
           setIsModalOpen(true);
           return;
         }
@@ -468,8 +469,8 @@ const WritePage: React.FC = () => {
 
       if (response.error) throw response.error;
 
-      // 신규 등록이고 자유게시판이 아닌 경우 is_upload를 true로 업데이트
-      if (!isEditing && formData.board_type !== '4') {
+      // 신규 등록이고 채용정보인 경우에만 is_upload를 true로 업데이트
+      if (!isEditing && formData.board_type === '0') {
         await supabase
           .from('users')
           .update({ is_upload: true })
