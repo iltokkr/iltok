@@ -702,7 +702,7 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
 
       {(boardType === '4' || boardType === '1') && (
         <div className={styles.totalCountSection}>
-          <span className={styles.totalCountLabel}>전체</span>
+          <span className={styles.totalCountLabel}>{boardType === '1' ? '최신 인재정보' : '전체'}</span>
           <span className={styles.totalCountNumber}>총 {totalCount.toLocaleString()} 건</span>
         </div>
       )}
