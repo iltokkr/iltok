@@ -132,6 +132,7 @@ const WritePage: React.FC = () => {
     career_history: []
   });
   const [showCareerModal, setShowCareerModal] = useState(false);
+  const [regionLimitError, setRegionLimitError] = useState(false);
   const [newCareer, setNewCareer] = useState<CareerItem>({
     id: '',
     company_name: '',
@@ -626,10 +627,10 @@ const WritePage: React.FC = () => {
     const region = `${formData['1depth_region']} ${formData['2depth_region']}`.trim();
     if (!region || region === ' ') return;
     if (formData.desired_regions.length >= 5) {
-      setErrorMessage('희망 지역은 최대 5개까지 선택 가능합니다.');
-      setIsModalOpen(true);
+      setRegionLimitError(true);
       return;
     }
+    setRegionLimitError(false);
     if (!formData.desired_regions.includes(region)) {
       setFormData(prev => ({
         ...prev,
@@ -977,12 +978,7 @@ const WritePage: React.FC = () => {
 
                   {/* 생년월일 */}
                   <div className={style.formRow}>
-                    <div className={style.formLabel}>
-                      생년월일
-                      {calculateAge() !== null && (
-                        <span className={style.ageDisplay}>(만 {calculateAge()}세)</span>
-                      )}
-                    </div>
+                    <div className={style.formLabel}>생년월일</div>
                     <div className={style.formInput}>
                       <div className={style.birthDateInputs}>
                         <input
@@ -1017,6 +1013,9 @@ const WritePage: React.FC = () => {
                           max={31}
                         />
                         <span className={style.birthLabel}>일</span>
+                        {calculateAge() !== null && (
+                          <span className={style.ageDisplay}>(만 {calculateAge()}세)</span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -1112,7 +1111,10 @@ const WritePage: React.FC = () => {
                 {/* 희망 근무조건 */}
                 <div className={style.subSection}>
                   <div className={style.formRow}>
-                    <div className={style.formLabel}>희망 근무조건 <span className={style.subLabel}>(중복선택이 가능해요)</span></div>
+                    <div className={style.formLabelRow}>
+                      <span className={style.formLabel}>희망 근무조건</span>
+                      <span className={style.subLabelRight}>(중복선택이 가능해요)</span>
+                    </div>
                     <div className={style.formInput}>
                       <div className={style.tagContainer}>
                         {workConditionOptions.map(condition => (
@@ -1133,9 +1135,9 @@ const WritePage: React.FC = () => {
                 {/* 희망 지역 */}
                 <div className={style.subSection}>
                   <div className={style.formRow}>
-                    <div className={style.formLabel}>
-                      희망 지역 <span className={style.required}>*</span>
-                      <span className={style.subLabel}>(5곳 까지 입력할 수 있어요)</span>
+                    <div className={style.formLabelRow}>
+                      <span className={style.formLabel}>희망 지역 <span className={style.required}>*</span></span>
+                      <span className={style.subLabelRight}>(5곳 까지 입력할 수 있어요)</span>
                     </div>
                     <div className={style.formInput}>
                       <div className={style.locationSelects}>
@@ -1169,6 +1171,9 @@ const WritePage: React.FC = () => {
                           추가
                         </button>
                       </div>
+                      {regionLimitError && (
+                        <div className={style.regionLimitError}>희망 지역은 최대 5개까지 선택 가능합니다.</div>
+                      )}
                       {formData.desired_regions.length > 0 && (
                         <div className={style.selectedRegions}>
                           {formData.desired_regions.map(region => (
@@ -1251,8 +1256,8 @@ const WritePage: React.FC = () => {
           {contentsUrlError && <div className={style.errorText}>상세내용에 URL(http, www, .com 등)을 포함할 수 없습니다.</div>}
         </div>
 
-        {/* 법적 경고 문구 */}
-        {formData.board_type !== '4' && (
+        {/* 법적 경고 문구 - 채용정보(board_type='0')에만 표시 */}
+        {formData.board_type === '0' && (
           <div className={style.legalWarning}>
             <p>⚠️ 성매매 알선 등 행위의 처벌에 관한 법률 제4조에 해당되는 내용이 포함된 채용 광고 관련 법령에 따라 성매매를 알선한 경우, 3년 이하의 징역형 또는 3천만 원 이하의 벌금에 처해질 수 있습니다.</p>
             <p>⚠️ 노래방 종업원 및 BAR 종업원등 유흥업소에 대한 공고는 게시가 제한됩니다.</p>
