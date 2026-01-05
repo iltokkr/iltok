@@ -44,7 +44,16 @@ interface Job {
   view_count?: number;
   popularity_score?: number;
   community_tag?: string;
-  is_day_pay?: boolean;  // 기숙사 여부 (컬럼명은 is_day_pay)
+  is_day_pay?: boolean;
+  // 구직정보 필드
+  korean_name?: string;
+  seeker_gender?: string;
+  birth_date?: string;
+  nationality?: string;
+  visa_status?: string;
+  desired_regions?: string;
+  work_conditions?: string;
+  career_history?: string;
 }
 
 interface AdJob extends Job {
@@ -350,15 +359,164 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
     return cleaned.length > 50 ? cleaned.substring(0, 50) + '...' : cleaned;
   };
 
-  // 자유게시판/구직정보용 아이템 렌더링
+  // 이름 마스킹 (김민혁 -> 김**)
+  const maskName = (name?: string) => {
+    if (!name || name.length === 0) return '이름없음';
+    if (name.length === 1) return name;
+    return name[0] + '**';
+  };
+
+  // 만 나이 계산
+  const calculateAge = (birthDate?: string) => {
+    if (!birthDate) return null;
+    const [year, month, day] = birthDate.split('-').map(Number);
+    if (!year) return null;
+    
+    const today = new Date();
+    const birth = new Date(year, (month || 1) - 1, day || 1);
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
+  // 경력 총 기간 계산
+  const calculateTotalCareer = (careerHistory?: string) => {
+    if (!careerHistory) return null;
+    try {
+      const careers = JSON.parse(careerHistory);
+      if (!Array.isArray(careers) || careers.length === 0) return null;
+      
+      let totalMonths = 0;
+      careers.forEach((career: any) => {
+        const years = parseInt(career.duration_years) || 0;
+        const months = parseInt(career.duration_months) || 0;
+        totalMonths += (years * 12) + months;
+      });
+      
+      if (totalMonths === 0) return null;
+      
+      const years = Math.floor(totalMonths / 12);
+      const months = totalMonths % 12;
+      
+      if (years > 0 && months > 0) {
+        return `${years}년 ${months}개월`;
+      } else if (years > 0) {
+        return `${years}년`;
+      } else {
+        return `${months}개월`;
+      }
+    } catch (e) {
+      return null;
+    }
+  };
+
+  // 희망지역 파싱
+  const parseDesiredRegions = (regions?: string) => {
+    if (!regions) return [];
+    try {
+      return JSON.parse(regions);
+    } catch (e) {
+      return [];
+    }
+  };
+
+  // 희망근무조건 파싱
+  const parseWorkConditions = (conditions?: string) => {
+    if (!conditions) return [];
+    try {
+      return JSON.parse(conditions);
+    } catch (e) {
+      return [];
+    }
+  };
+
+  // 구직정보 아이템 렌더링
+  const renderJobSeekerItem = (job: Job) => {
+    const age = calculateAge(job.birth_date);
+    const totalCareer = calculateTotalCareer(job.career_history);
+    const desiredRegions = parseDesiredRegions(job.desired_regions);
+    const workConditions = parseWorkConditions(job.work_conditions);
+    
+    return (
+      <li key={job.id} className={`${styles.jobSeekerItem} ${isRead(job.id) ? styles.readPost : ''}`}>
+        <Link href={`/jd/${job.id}`} scroll={false} onClick={() => handlePostClick(job.id)}>
+          <div className={styles.jobSeekerContent}>
+            {/* 경력 배지 */}
+            <div className={styles.jobSeekerBadge}>
+              {totalCareer ? (
+                <>
+                  <span className={styles.badgeLabel}>경력</span>
+                  <span className={styles.badgeValue}>{totalCareer}</span>
+                </>
+              ) : (
+                <span className={styles.badgeLabel}>신입</span>
+              )}
+            </div>
+            
+            {/* 메인 정보 */}
+            <div className={styles.jobSeekerMain}>
+              {/* 타이틀 (제목) */}
+              <h3 className={styles.jobSeekerTitle}>{job.title}</h3>
+              
+              {/* 1줄: 이름(마스킹) (국적, 성별, 나이) (비자) */}
+              <div className={styles.jobSeekerLine1}>
+                <span className={styles.jobSeekerName}>{maskName(job.korean_name)}</span>
+                <span className={styles.jobSeekerBasicInfo}>
+                  ({job.nationality || '한국'}, {job.seeker_gender === 'male' ? '남' : job.seeker_gender === 'female' ? '여' : '-'}{age ? `, 만 ${age}세` : ''})
+                </span>
+                {job.visa_status && job.visa_status !== '해당없음' && (
+                  <span className={styles.jobSeekerVisa}>({job.visa_status})</span>
+                )}
+              </div>
+              
+              {/* 2줄: 희망지역 */}
+              {desiredRegions.length > 0 && (
+                <div className={styles.jobSeekerLine2}>
+                  <HiLocationMarker className={styles.jobSeekerIcon} />
+                  <span>{desiredRegions.slice(0, 3).join(', ')}{desiredRegions.length > 3 ? ` 외 ${desiredRegions.length - 3}곳` : ''}</span>
+                </div>
+              )}
+              
+              {/* 3줄: 희망업무 */}
+              {job['1depth_category'] && (
+                <div className={styles.jobSeekerLine3}>
+                  <img src="/icons/category-icon.svg" alt="" className={styles.jobSeekerIcon} />
+                  <span>{job['1depth_category']}{job['2depth_category'] ? `, ${job['2depth_category']}` : ''}</span>
+                </div>
+              )}
+              
+              {/* 4줄: 희망근무조건 (박스형태) */}
+              {workConditions.length > 0 && (
+                <div className={styles.jobSeekerLine4}>
+                  {workConditions.slice(0, 4).map((condition: string, idx: number) => (
+                    <span key={idx} className={styles.conditionTag}>{condition}</span>
+                  ))}
+                  {workConditions.length > 4 && (
+                    <span className={styles.conditionMore}>+{workConditions.length - 4}</span>
+                  )}
+                </div>
+              )}
+              
+              {/* 하단: 게시시간 */}
+              <div className={styles.jobSeekerFooter}>
+                <span className={styles.jobSeekerTime}>{formatRelativeTime(job.updated_time)}</span>
+              </div>
+            </div>
+          </div>
+        </Link>
+      </li>
+    );
+  };
+
+  // 자유게시판용 아이템 렌더링
   const renderCommunityItem = (job: Job) => (
     <li key={job.id} className={`${styles.communityItem} ${isRead(job.id) ? styles.readPost : ''} ${job.community_tag === '공지' ? styles.noticeItem : ''}`}>
       <Link href={`/jd/${job.id}`} scroll={false} onClick={() => handlePostClick(job.id)}>
         <div className={styles.communityContent}>
           <h3 className={styles.communityTitle}>
-            {boardType === '1' && (
-              <span className={`${styles.communityTag} ${styles.jobSeekerTag}`}>구직</span>
-            )}
             {boardType === '4' && (job.community_tag === '공지' || job.community_tag === '인기') && (
               <span className={`${styles.communityTag} ${job.community_tag === '공지' ? styles.noticeTag : styles.popularTag}`}>{job.community_tag}</span>
             )}
@@ -369,18 +527,6 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
           </h3>
           <p className={styles.communityPreview}>{getContentPreview(job.contents)}</p>
           <div className={styles.communityMeta}>
-            {boardType === '1' && job['1depth_region'] && (
-              <span className={styles.communityRegion}>
-                <HiLocationMarker className={styles.locationIcon} />
-                {job['1depth_region']}{job['2depth_region'] ? ` ${job['2depth_region']}` : ''}
-              </span>
-            )}
-            {boardType === '1' && job['1depth_category'] && (
-              <span className={styles.communityCategory}>
-                <img src="/icons/category-icon.svg" alt="" className={styles.categoryIcon} />
-                {job['1depth_category']}
-              </span>
-            )}
             <span className={styles.communityViews}>👁 {job.view_count || 0}</span>
             <span className={styles.communityComments}>💬 {job.comment_count || 0}</span>
             <span 
@@ -397,7 +543,7 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
               } {bookmarkCounts[job.id] || 0}
             </span>
             <span className={styles.communityTime}>
-              {(boardType === '4' || boardType === '1') ? formatRelativeTime(job.updated_time) : formatDate(job.updated_time)}
+              {formatRelativeTime(job.updated_time)}
             </span>
           </div>
         </div>
@@ -576,9 +722,11 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
           </ul>
         )}
 
-        <ul className={`${styles.listWrap} ${styles.listText} ${(boardType === '4' || boardType === '1') ? styles.communityList : ''}`}>
-          {(boardType === '4' || boardType === '1')
+        <ul className={`${styles.listWrap} ${styles.listText} ${boardType === '4' ? styles.communityList : ''} ${boardType === '1' ? styles.jobSeekerList : ''}`}>
+          {boardType === '4'
             ? jobs.map(job => renderCommunityItem(job))
+            : boardType === '1'
+            ? jobs.map(job => renderJobSeekerItem(job))
             : jobs.map(job => renderJobItem(job))
           }
         </ul>
