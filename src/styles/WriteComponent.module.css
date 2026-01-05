@@ -707,23 +707,23 @@
 
 .genderButton {
   padding: 10px 20px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #e0e0e0 !important;
   border-radius: 8px;
-  background: #fff;
+  background: #fff !important;
   font-size: 15px;
-  color: #666;
+  color: #666 !important;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .genderButton:hover {
-  border-color: #ff5722;
+  border-color: #ff5722 !important;
 }
 
 .genderButtonSelected {
-  border-color: #ff5722;
-  background: #fff5f2;
-  color: #ff5722;
+  border-color: #ff5722 !important;
+  background: #fff5f2 !important;
+  color: #ff5722 !important;
 }
 
 /* 나이 표시 */
