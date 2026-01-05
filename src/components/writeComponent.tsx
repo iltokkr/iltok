@@ -252,6 +252,67 @@ const WritePage: React.FC = () => {
       if (jobData.salary_detail) {
         jobData.salary_detail = jobData.salary_detail.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
       }
+
+      // 구직정보 필드 파싱 (JSON 문자열 -> 배열)
+      if (jobData.board_type === '1') {
+        // work_conditions, desired_regions, career_history 파싱
+        if (jobData.work_conditions) {
+          try {
+            jobData.work_conditions = typeof jobData.work_conditions === 'string' 
+              ? JSON.parse(jobData.work_conditions) 
+              : jobData.work_conditions;
+          } catch {
+            jobData.work_conditions = [];
+          }
+        } else {
+          jobData.work_conditions = [];
+        }
+
+        if (jobData.desired_regions) {
+          try {
+            jobData.desired_regions = typeof jobData.desired_regions === 'string'
+              ? JSON.parse(jobData.desired_regions)
+              : jobData.desired_regions;
+          } catch {
+            jobData.desired_regions = [];
+          }
+        } else {
+          jobData.desired_regions = [];
+        }
+
+        if (jobData.career_history) {
+          try {
+            jobData.career_history = typeof jobData.career_history === 'string'
+              ? JSON.parse(jobData.career_history)
+              : jobData.career_history;
+          } catch {
+            jobData.career_history = [];
+          }
+        } else {
+          jobData.career_history = [];
+        }
+
+        // 생년월일 파싱 (YYYY-MM-DD -> 년, 월, 일 분리)
+        if (jobData.birth_date) {
+          const birthDate = new Date(jobData.birth_date);
+          jobData.birth_year = birthDate.getFullYear().toString();
+          jobData.birth_month = (birthDate.getMonth() + 1).toString();
+          jobData.birth_day = birthDate.getDate().toString();
+        } else {
+          jobData.birth_year = '';
+          jobData.birth_month = '';
+          jobData.birth_day = '';
+        }
+      } else {
+        // 구직정보가 아닌 경우 기본값 설정
+        jobData.work_conditions = jobData.work_conditions || [];
+        jobData.desired_regions = jobData.desired_regions || [];
+        jobData.career_history = jobData.career_history || [];
+        jobData.birth_year = '';
+        jobData.birth_month = '';
+        jobData.birth_day = '';
+      }
+
       setFormData(jobData);
       console.log('Form data set:', jobData);
     } catch (error) {
