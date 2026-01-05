@@ -137,7 +137,7 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose }) => {
             <img src="/images/resume-prompt-icon.png" alt="인증 완료" />
           </div>
           <h2 className={styles.resumePromptTitle}>
-            지금 바로 이력서를 작성해보세요!
+            이력서 작성을 시작해보세요!
           </h2>
           <div className={styles.resumePromptContent}>
             <p className={styles.resumePromptDesc}>
@@ -155,7 +155,7 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose }) => {
               className={styles.resumePromptWriteBtn}
               onClick={handleWriteResume}
             >
-              이력서 작성
+              이력서 작성하기
             </button>
           </div>
         </div>

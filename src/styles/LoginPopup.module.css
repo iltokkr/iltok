@@ -98,43 +98,44 @@
 /* 이력서 작성 유도 팝업 */
 .resumePromptBox {
   background: white;
-  border-radius: 16px;
-  padding: 30px 25px 25px;
-  width: 340px;
+  border-radius: 12px;
+  padding: 20px;
+  width: 300px;
   text-align: center;
 }
 
 .resumePromptImage {
-  margin-bottom: 20px;
+  margin-bottom: 12px;
   display: flex;
   justify-content: center;
 }
 
 .resumePromptImage img {
-  width: 100px;
-  height: 100px;
+  width: 80px;
+  height: 80px;
   object-fit: contain;
 }
 
 .resumePromptTitle {
-  font-size: 20px;
+  font-size: 17px;
   font-weight: 700;
   color: #333;
-  margin: 0 0 20px 0;
+  margin: 0 0 12px 0;
 }
 
 .resumePromptContent {
   background: #f5f5f5;
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 20px;
+  border-radius: 8px;
+  padding: 12px 15px;
+  margin-bottom: 15px;
 }
 
 .resumePromptDesc {
-  font-size: 14px;
+  font-size: 13px;
   color: #666;
-  line-height: 1.6;
+  line-height: 1.4;
   margin: 0;
+  white-space: nowrap;
 }
 
 .highlight {
@@ -144,18 +145,17 @@
 
 .resumePromptButtons {
   display: flex;
-  gap: 10px;
-  margin-bottom: 15px;
+  gap: 8px;
 }
 
 .resumePromptCloseBtn {
   flex: 1;
-  padding: 14px;
+  padding: 12px;
   border: 1px solid #ddd;
   border-radius: 8px;
   background: #fff;
   color: #666;
-  font-size: 15px;
+  font-size: 14px;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -166,12 +166,12 @@
 
 .resumePromptWriteBtn {
   flex: 1.5;
-  padding: 14px;
+  padding: 12px;
   border: none;
   border-radius: 8px;
   background: #2196F3;
   color: white;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
@@ -181,22 +181,6 @@
   background: #1976D2;
 }
 
-.resumePromptCheckbox {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-size: 13px;
-  color: #888;
-  cursor: pointer;
-}
-
-.resumePromptCheckbox input {
-  cursor: pointer;
-  width: 16px;
-  height: 16px;
-  accent-color: #ff5205;
-}
 
 .error {
   color: #ff3b30;
