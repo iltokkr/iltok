@@ -661,3 +661,358 @@
     font-size: 14px;
   }
 }
+
+/* ===== 구직정보 전용 스타일 ===== */
+
+/* 라디오 버튼 그룹 */
+.radioGroup {
+  display: flex;
+  gap: 24px;
+}
+
+.radioLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.radioLabel input {
+  width: 20px;
+  height: 20px;
+  accent-color: #2196f3;
+  cursor: pointer;
+}
+
+.radioLabel span {
+  font-size: 15px;
+  color: #1a1a1a;
+}
+
+/* 나이 표시 */
+.ageDisplay {
+  font-weight: 400;
+  font-size: 13px;
+  color: #2196f3;
+  margin-left: 8px;
+}
+
+/* 서브 라벨 */
+.subLabel {
+  font-weight: 400;
+  font-size: 12px;
+  color: #888;
+  margin-left: 4px;
+}
+
+/* 구분선 */
+.divider {
+  height: 8px;
+  background: #f5f5f5;
+  margin: 24px -20px;
+}
+
+/* 태그 컨테이너 (희망 근무조건) */
+.tagContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+}
+
+.conditionTag {
+  padding: 10px 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  background: #fff;
+  font-size: 14px;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.conditionTag:hover {
+  border-color: #2196f3;
+}
+
+.conditionTagSelected {
+  background: #1a1a1a;
+  border-color: #1a1a1a;
+  color: #fff;
+}
+
+/* 선택된 지역 태그 */
+.selectedRegions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  width: 100%;
+}
+
+.regionTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  font-size: 13px;
+  color: #1a1a1a;
+}
+
+.removeTag {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: none;
+  background: #ccc;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.removeTag:hover {
+  background: #999;
+}
+
+.addRegionBtn {
+  height: 48px;
+  padding: 0 20px;
+  background: #2196f3;
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.addRegionBtn:hover {
+  background: #1976d2;
+}
+
+/* 경력 카드 */
+.careerCard {
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  background: #fafafa;
+  width: 100%;
+}
+
+.careerHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.careerHeader strong {
+  font-size: 15px;
+  color: #1a1a1a;
+}
+
+.careerDeleteBtn {
+  border: none;
+  background: none;
+  font-size: 12px;
+  color: #e53935;
+  cursor: pointer;
+}
+
+.careerInfo {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.careerDate {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #888;
+}
+
+.careerStatus {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  background: #f5f5f5;
+  color: #666;
+}
+
+.careerStatus.working {
+  background: #e3f2fd;
+  color: #2196f3;
+}
+
+.addCareerBtn {
+  width: 100%;
+  padding: 14px;
+  border: 1px dashed #ccc;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 14px;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.addCareerBtn:hover {
+  border-color: #2196f3;
+  color: #2196f3;
+}
+
+/* 경력 추가 모달 */
+.careerModalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.careerModal {
+  width: 100%;
+  max-width: 480px;
+  max-height: 80vh;
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.careerModalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.careerModalHeader h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.careerModalClose {
+  border: none;
+  background: none;
+  font-size: 24px;
+  color: #666;
+  cursor: pointer;
+  padding: 0;
+}
+
+.careerModalBody {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.careerFormGroup {
+  margin-bottom: 20px;
+}
+
+.careerFormGroup label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+}
+
+.dateRange {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dateInput {
+  flex: 1;
+  height: 48px;
+  padding: 0 14px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 15px;
+}
+
+.dateInput:focus {
+  outline: none;
+  border-color: #2196f3;
+}
+
+.careerModalSubmit {
+  width: calc(100% - 40px);
+  margin: 0 20px 20px;
+  padding: 16px;
+  background: #2196f3;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+}
+
+.careerModalSubmit:hover {
+  background: #1976d2;
+}
+
+/* 모바일 대응 */
+@media (max-width: 768px) {
+  .divider {
+    margin: 20px -16px;
+  }
+
+  .radioGroup {
+    gap: 16px;
+  }
+
+  .conditionTag {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+
+  .addRegionBtn {
+    height: 46px;
+    padding: 0 16px;
+  }
+
+  .careerModal {
+    max-height: 90vh;
+    border-radius: 16px 16px 0 0;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-width: 100%;
+  }
+
+  .dateRange {
+    flex-wrap: wrap;
+  }
+
+  .dateInput {
+    min-width: calc(50% - 20px);
+  }
+}

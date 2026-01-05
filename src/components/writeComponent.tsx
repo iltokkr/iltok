@@ -39,6 +39,26 @@ interface JobForm {
   work_end_time: string;
   // 상세내용
   contents: string;
+  // 구직정보 전용 필드
+  korean_name: string;
+  english_name: string;
+  seeker_gender: string;
+  birth_date: string;
+  nationality: string;
+  visa_status: string;
+  korean_ability: string;
+  work_conditions: string[];
+  desired_regions: string[];
+  career_history: CareerItem[];
+}
+
+interface CareerItem {
+  id: string;
+  company_name: string;
+  work_status: string;
+  start_date: string;
+  end_date: string;
+  job_duties: string[];
 }
 
 interface FormErrors {
@@ -50,6 +70,29 @@ interface FormErrors {
   work_location_detail: boolean;
   contents: boolean;
 }
+
+// 국적 목록
+const nationalities = [
+  '중국', '베트남', '필리핀', '인도네시아', '태국', '미얀마', '캄보디아',
+  '네팔', '스리랑카', '방글라데시', '파키스탄', '우즈베키스탄', '몽골',
+  '러시아', '카자흐스탄', '키르기스스탄', '일본', '대만', '기타'
+];
+
+// 체류자격 목록
+const visaStatuses = [
+  '취업비자(E1-E7)', '방문취업(H-2)', '재외동포(F-4)', '영주(F-5)',
+  '결혼이민(F-6)', '유학생(D2~D4)', '구직비자(D-10)', '기타'
+];
+
+// 한국어 능력
+const koreanAbilities = [
+  '대화가 가능해요', '기초 회화 가능', '의사소통 어려움', '몰라요'
+];
+
+// 희망 근무조건
+const workConditionOptions = [
+  '주간', '야간', '주야교대', '일당', '주급', '장기', '단기', '평일', '주말', '기숙사'
+];
 
 const WritePage: React.FC = () => {
   const router = useRouter();
@@ -71,7 +114,27 @@ const WritePage: React.FC = () => {
     work_location_detail: '',
     work_start_time: '08:00',
     work_end_time: '17:00',
-    contents: ''
+    contents: '',
+    // 구직정보 전용 필드 초기값
+    korean_name: '',
+    english_name: '',
+    seeker_gender: '',
+    birth_date: '',
+    nationality: '',
+    visa_status: '',
+    korean_ability: '',
+    work_conditions: [],
+    desired_regions: [],
+    career_history: []
+  });
+  const [showCareerModal, setShowCareerModal] = useState(false);
+  const [newCareer, setNewCareer] = useState<CareerItem>({
+    id: '',
+    company_name: '',
+    work_status: '계약종료',
+    start_date: '',
+    end_date: '',
+    job_duties: []
   });
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -189,6 +252,7 @@ const WritePage: React.FC = () => {
 
   const validateForm = (): boolean => {
     if (formData.board_type === '4') {
+      // 자유게시판: 제목과 내용만 필수
       const newErrors = {
         title: formData.title.trim() === '',
         '1depth_category': false,
@@ -200,7 +264,54 @@ const WritePage: React.FC = () => {
       };
       setErrors(newErrors);
       return !newErrors.title && !newErrors.contents;
+    } else if (formData.board_type === '1') {
+      // 구직정보: 구직자 전용 필드 검증
+      const newErrors = {
+        title: formData.title.trim() === '',
+        '1depth_category': formData['1depth_category'] === '',
+        '2depth_category': false, // 2차 분류는 필수 아님
+        '1depth_region': formData.desired_regions.length === 0,
+        '2depth_region': false,
+        work_location_detail: false,
+        contents: formData.contents.trim() === ''
+      };
+      setErrors(newErrors);
+
+      // 구직정보 전용 필수값 검증
+      if (!formData.seeker_gender) {
+        setErrorMessage('성별을 선택해주세요.');
+        setIsModalOpen(true);
+        return false;
+      }
+      if (!formData.birth_date) {
+        setErrorMessage('생년월일을 입력해주세요.');
+        setIsModalOpen(true);
+        return false;
+      }
+      if (!formData.nationality) {
+        setErrorMessage('국적을 선택해주세요.');
+        setIsModalOpen(true);
+        return false;
+      }
+      if (!formData.visa_status) {
+        setErrorMessage('체류자격을 선택해주세요.');
+        setIsModalOpen(true);
+        return false;
+      }
+      if (!formData.korean_ability) {
+        setErrorMessage('한국어 능력을 선택해주세요.');
+        setIsModalOpen(true);
+        return false;
+      }
+      if (formData.desired_regions.length === 0) {
+        setErrorMessage('희망 지역을 선택해주세요.');
+        setIsModalOpen(true);
+        return false;
+      }
+
+      return !newErrors.title && !newErrors['1depth_category'] && !newErrors.contents;
     } else {
+      // 채용정보: 기존 검증
       const newErrors = {
         title: formData.title.trim() === '',
         '1depth_category': formData['1depth_category'] === '',
@@ -313,6 +424,17 @@ const WritePage: React.FC = () => {
         salary_detail: formData.salary_detail.replace(/,/g, ''), // 콤마 제거하고 저장
         uploader_id: user.id,
         ad: false,
+        // 구직정보인 경우 배열 데이터를 JSON 문자열로 변환
+        work_conditions: formData.board_type === '1' ? JSON.stringify(formData.work_conditions) : null,
+        desired_regions: formData.board_type === '1' ? JSON.stringify(formData.desired_regions) : null,
+        career_history: formData.board_type === '1' ? JSON.stringify(formData.career_history) : null,
+        // 구직정보의 경우 첫 번째 희망 지역을 1depth/2depth에 저장
+        '1depth_region': formData.board_type === '1' && formData.desired_regions.length > 0 
+          ? formData.desired_regions[0].split(' ')[0] 
+          : formData['1depth_region'],
+        '2depth_region': formData.board_type === '1' && formData.desired_regions.length > 0 
+          ? formData.desired_regions[0].split(' ')[1] || ''
+          : formData['2depth_region'],
       };
 
       let response;
@@ -453,6 +575,103 @@ const WritePage: React.FC = () => {
 
   const getInputClassName = (fieldName: string, baseClass: string) => {
     return `${baseClass} ${errors[fieldName as keyof FormErrors] ? style.errorInput : ''}`;
+  };
+
+  // 나이 계산 함수
+  const calculateAge = (birthDate: string): number => {
+    if (!birthDate) return 0;
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
+  // 희망 근무조건 토글
+  const handleWorkConditionToggle = (condition: string) => {
+    setFormData(prev => ({
+      ...prev,
+      work_conditions: prev.work_conditions.includes(condition)
+        ? prev.work_conditions.filter(c => c !== condition)
+        : [...prev.work_conditions, condition]
+    }));
+  };
+
+  // 희망 지역 추가
+  const handleAddDesiredRegion = () => {
+    const region = `${formData['1depth_region']} ${formData['2depth_region']}`.trim();
+    if (!region || region === ' ') return;
+    if (formData.desired_regions.length >= 5) {
+      setErrorMessage('희망 지역은 최대 5개까지 선택 가능합니다.');
+      setIsModalOpen(true);
+      return;
+    }
+    if (!formData.desired_regions.includes(region)) {
+      setFormData(prev => ({
+        ...prev,
+        desired_regions: [...prev.desired_regions, region],
+        '1depth_region': '',
+        '2depth_region': ''
+      }));
+    }
+  };
+
+  // 희망 지역 삭제
+  const handleRemoveDesiredRegion = (region: string) => {
+    setFormData(prev => ({
+      ...prev,
+      desired_regions: prev.desired_regions.filter(r => r !== region)
+    }));
+  };
+
+  // 경력 추가
+  const handleAddCareer = () => {
+    if (!newCareer.company_name || !newCareer.start_date) {
+      setErrorMessage('업체명과 시작일을 입력해주세요.');
+      setIsModalOpen(true);
+      return;
+    }
+    
+    const careerWithId = {
+      ...newCareer,
+      id: Date.now().toString()
+    };
+    
+    setFormData(prev => ({
+      ...prev,
+      career_history: [...prev.career_history, careerWithId]
+    }));
+    
+    setNewCareer({
+      id: '',
+      company_name: '',
+      work_status: '계약종료',
+      start_date: '',
+      end_date: '',
+      job_duties: []
+    });
+    setShowCareerModal(false);
+  };
+
+  // 경력 삭제
+  const handleRemoveCareer = (careerId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      career_history: prev.career_history.filter(c => c.id !== careerId)
+    }));
+  };
+
+  // 경력 담당업무 토글
+  const handleCareerDutyToggle = (duty: string) => {
+    setNewCareer(prev => ({
+      ...prev,
+      job_duties: prev.job_duties.includes(duty)
+        ? prev.job_duties.filter(d => d !== duty)
+        : [...prev.job_duties, duty]
+    }));
   };
 
   return (
@@ -596,84 +815,374 @@ const WritePage: React.FC = () => {
               </>
             )}
 
-            {/* 기본 정보 (게시판 타입에 따라 제목 변경) */}
-            <h2 className={style.sectionTitle}>
-              {formData.board_type === '0' ? '근무 정보' : '기본 정보'}
-            </h2>
-            <div className={style.subSection}>
-              <div className={style.formRow}>
-                <div className={style.formLabel}>
-                  {formData.board_type === '0' ? '직무' : '카테고리'} <span className={style.required}>*</span>
-                </div>
-                <div className={style.formInput}>
-                  <select 
-                    name="1depth_category" 
-                    value={formData['1depth_category']} 
-                    onChange={handleInputChange} 
-                    className={getInputClassName('1depth_category', style.select)}
-                  >
-                    <option value="">1차 분류</option>
-                    {Object.keys(categories).map(category => (
-                      <option key={category} value={category}>{category}</option>
-                    ))}
-                  </select>
-                  <select 
-                    name="2depth_category" 
-                    value={formData['2depth_category']} 
-                    onChange={handleInputChange} 
-                    className={getInputClassName('2depth_category', style.select)}
-                  >
-                    <option value="">2차 분류</option>
-                    {formData['1depth_category'] && categories[formData['1depth_category']].map(subCategory => (
-                      <option key={subCategory} value={subCategory}>{subCategory}</option>
-                    ))}
-                  </select>
-                  {(errors['1depth_category'] || errors['2depth_category']) && 
-                    <div className={style.errorText}>카테고리를 선택해주세요</div>}
-                </div>
-              </div>
-              <div className={style.formRow}>
-                <div className={style.formLabel}>
-                  {formData.board_type === '0' ? '근무지' : '지역'} <span className={style.required}>*</span>
-                </div>
-                <div className={style.formInput}>
-                  <div className={style.locationSelects}>
-                    <select 
-                      name="1depth_region" 
-                      value={formData['1depth_region']} 
-                      onChange={handleInputChange} 
-                      className={getInputClassName('1depth_region', style.select)}
-                    >
-                      <option value="">시/도</option>
-                      {Object.keys(locations).map(city => (
-                        <option key={city} value={city}>{city}</option>
-                      ))}
-                    </select>
-                    <select 
-                      name="2depth_region" 
-                      value={formData['2depth_region']} 
-                      onChange={handleInputChange} 
-                      className={getInputClassName('2depth_region', style.select)}
-                    >
-                      <option value="">시/구/군</option>
-                      {formData['1depth_region'] && locations[formData['1depth_region']].map(district => (
-                        <option key={district} value={district}>{district}</option>
-                      ))}
-                    </select>
+            {/* 채용정보용 기본 정보 */}
+            {formData.board_type === '0' && (
+              <>
+                <h2 className={style.sectionTitle}>근무 정보</h2>
+                <div className={style.subSection}>
+                  <div className={style.formRow}>
+                    <div className={style.formLabel}>직무 <span className={style.required}>*</span></div>
+                    <div className={style.formInput}>
+                      <select 
+                        name="1depth_category" 
+                        value={formData['1depth_category']} 
+                        onChange={handleInputChange} 
+                        className={getInputClassName('1depth_category', style.select)}
+                      >
+                        <option value="">1차 분류</option>
+                        {Object.keys(categories).map(category => (
+                          <option key={category} value={category}>{category}</option>
+                        ))}
+                      </select>
+                      <select 
+                        name="2depth_category" 
+                        value={formData['2depth_category']} 
+                        onChange={handleInputChange} 
+                        className={getInputClassName('2depth_category', style.select)}
+                      >
+                        <option value="">2차 분류</option>
+                        {formData['1depth_category'] && categories[formData['1depth_category']].map(subCategory => (
+                          <option key={subCategory} value={subCategory}>{subCategory}</option>
+                        ))}
+                      </select>
+                      {(errors['1depth_category'] || errors['2depth_category']) && 
+                        <div className={style.errorText}>카테고리를 선택해주세요</div>}
+                    </div>
                   </div>
-                  <input
-                    type="text"
-                    name="work_location_detail"
-                    value={formData.work_location_detail}
-                    onChange={handleInputChange}
-                    className={getInputClassName('work_location_detail', style.input)}
-                    placeholder="상세 주소"
-                  />
-                  {(errors['1depth_region'] || errors['2depth_region'] || errors.work_location_detail) && 
-                    <div className={style.errorText}>지역 정보를 모두 입력해주세요</div>}
+                  <div className={style.formRow}>
+                    <div className={style.formLabel}>근무지 <span className={style.required}>*</span></div>
+                    <div className={style.formInput}>
+                      <div className={style.locationSelects}>
+                        <select 
+                          name="1depth_region" 
+                          value={formData['1depth_region']} 
+                          onChange={handleInputChange} 
+                          className={getInputClassName('1depth_region', style.select)}
+                        >
+                          <option value="">시/도</option>
+                          {Object.keys(locations).map(city => (
+                            <option key={city} value={city}>{city}</option>
+                          ))}
+                        </select>
+                        <select 
+                          name="2depth_region" 
+                          value={formData['2depth_region']} 
+                          onChange={handleInputChange} 
+                          className={getInputClassName('2depth_region', style.select)}
+                        >
+                          <option value="">시/구/군</option>
+                          {formData['1depth_region'] && locations[formData['1depth_region']].map(district => (
+                            <option key={district} value={district}>{district}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <input
+                        type="text"
+                        name="work_location_detail"
+                        value={formData.work_location_detail}
+                        onChange={handleInputChange}
+                        className={getInputClassName('work_location_detail', style.input)}
+                        placeholder="상세 주소"
+                      />
+                      {(errors['1depth_region'] || errors['2depth_region'] || errors.work_location_detail) && 
+                        <div className={style.errorText}>지역 정보를 모두 입력해주세요</div>}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </>
+            )}
+
+            {/* 구직정보용 폼 필드들 */}
+            {formData.board_type === '1' && (
+              <>
+                <h2 className={style.sectionTitle}>기본 정보</h2>
+                <div className={style.subSection}>
+                  {/* 한글이름, 영문이름 */}
+                  <div className={style.formRow}>
+                    <div className={style.formLabel}>한글 이름</div>
+                    <div className={style.formInput}>
+                      <input
+                        type="text"
+                        name="korean_name"
+                        value={formData.korean_name}
+                        onChange={handleInputChange}
+                        className={style.input}
+                        placeholder="홍길동"
+                      />
+                    </div>
+                  </div>
+                  <div className={style.formRow}>
+                    <div className={style.formLabel}>영문 이름</div>
+                    <div className={style.formInput}>
+                      <input
+                        type="text"
+                        name="english_name"
+                        value={formData.english_name}
+                        onChange={handleInputChange}
+                        className={style.input}
+                        placeholder="Hong Gil Dong"
+                      />
+                    </div>
+                  </div>
+
+                  {/* 성별 */}
+                  <div className={style.formRow}>
+                    <div className={style.formLabel}>성별 <span className={style.required}>*</span></div>
+                    <div className={style.formInput}>
+                      <div className={style.radioGroup}>
+                        <label className={style.radioLabel}>
+                          <input
+                            type="radio"
+                            name="seeker_gender"
+                            value="남성"
+                            checked={formData.seeker_gender === '남성'}
+                            onChange={handleInputChange}
+                          />
+                          <span>남성</span>
+                        </label>
+                        <label className={style.radioLabel}>
+                          <input
+                            type="radio"
+                            name="seeker_gender"
+                            value="여성"
+                            checked={formData.seeker_gender === '여성'}
+                            onChange={handleInputChange}
+                          />
+                          <span>여성</span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 생년월일 */}
+                  <div className={style.formRow}>
+                    <div className={style.formLabel}>
+                      생년월일 <span className={style.required}>*</span>
+                      {formData.birth_date && (
+                        <span className={style.ageDisplay}>(만 {calculateAge(formData.birth_date)}세)</span>
+                      )}
+                    </div>
+                    <div className={style.formInput}>
+                      <input
+                        type="date"
+                        name="birth_date"
+                        value={formData.birth_date}
+                        onChange={handleInputChange}
+                        className={style.input}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className={style.divider} />
+
+                {/* 희망업무 (카테고리) */}
+                <div className={style.subSection}>
+                  <div className={style.formRow}>
+                    <div className={style.formLabel}>희망업무 <span className={style.required}>*</span></div>
+                    <div className={style.formInput}>
+                      <select 
+                        name="1depth_category" 
+                        value={formData['1depth_category']} 
+                        onChange={handleInputChange} 
+                        className={getInputClassName('1depth_category', style.select)}
+                      >
+                        <option value="">1차 분류</option>
+                        {Object.keys(categories).map(category => (
+                          <option key={category} value={category}>{category}</option>
+                        ))}
+                      </select>
+                      <select 
+                        name="2depth_category" 
+                        value={formData['2depth_category']} 
+                        onChange={handleInputChange} 
+                        className={getInputClassName('2depth_category', style.select)}
+                      >
+                        <option value="">2차 분류</option>
+                        {formData['1depth_category'] && categories[formData['1depth_category']].map(subCategory => (
+                          <option key={subCategory} value={subCategory}>{subCategory}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* 국적 */}
+                  <div className={style.formRow}>
+                    <div className={style.formLabel}>국적 <span className={style.required}>*</span></div>
+                    <div className={style.formInput}>
+                      <select
+                        name="nationality"
+                        value={formData.nationality}
+                        onChange={handleInputChange}
+                        className={style.select}
+                      >
+                        <option value="">선택</option>
+                        {nationalities.map(n => (
+                          <option key={n} value={n}>{n}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* 체류자격 */}
+                  <div className={style.formRow}>
+                    <div className={style.formLabel}>체류자격 <span className={style.required}>*</span></div>
+                    <div className={style.formInput}>
+                      <select
+                        name="visa_status"
+                        value={formData.visa_status}
+                        onChange={handleInputChange}
+                        className={style.select}
+                      >
+                        <option value="">선택</option>
+                        {visaStatuses.map(v => (
+                          <option key={v} value={v}>{v}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* 한국어 능력 */}
+                  <div className={style.formRow}>
+                    <div className={style.formLabel}>한국어 능력 <span className={style.required}>*</span></div>
+                    <div className={style.formInput}>
+                      <select
+                        name="korean_ability"
+                        value={formData.korean_ability}
+                        onChange={handleInputChange}
+                        className={style.select}
+                      >
+                        <option value="">선택</option>
+                        {koreanAbilities.map(k => (
+                          <option key={k} value={k}>{k}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 희망 근무조건 */}
+                <div className={style.subSection}>
+                  <div className={style.formRow}>
+                    <div className={style.formLabel}>희망 근무조건 <span className={style.subLabel}>(중복선택이 가능해요)</span></div>
+                    <div className={style.formInput}>
+                      <div className={style.tagContainer}>
+                        {workConditionOptions.map(condition => (
+                          <button
+                            key={condition}
+                            type="button"
+                            className={`${style.conditionTag} ${formData.work_conditions.includes(condition) ? style.conditionTagSelected : ''}`}
+                            onClick={() => handleWorkConditionToggle(condition)}
+                          >
+                            {condition}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 희망 지역 */}
+                <div className={style.subSection}>
+                  <div className={style.formRow}>
+                    <div className={style.formLabel}>
+                      희망 지역 <span className={style.required}>*</span>
+                      <span className={style.subLabel}>(5곳 까지 입력할 수 있어요)</span>
+                    </div>
+                    <div className={style.formInput}>
+                      <div className={style.locationSelects}>
+                        <select 
+                          name="1depth_region" 
+                          value={formData['1depth_region']} 
+                          onChange={handleInputChange} 
+                          className={style.select}
+                        >
+                          <option value="">시/도</option>
+                          {Object.keys(locations).map(city => (
+                            <option key={city} value={city}>{city}</option>
+                          ))}
+                        </select>
+                        <select 
+                          name="2depth_region" 
+                          value={formData['2depth_region']} 
+                          onChange={handleInputChange} 
+                          className={style.select}
+                        >
+                          <option value="">시/구/군</option>
+                          {formData['1depth_region'] && locations[formData['1depth_region']].map(district => (
+                            <option key={district} value={district}>{district}</option>
+                          ))}
+                        </select>
+                        <button
+                          type="button"
+                          className={style.addRegionBtn}
+                          onClick={handleAddDesiredRegion}
+                        >
+                          추가
+                        </button>
+                      </div>
+                      {formData.desired_regions.length > 0 && (
+                        <div className={style.selectedRegions}>
+                          {formData.desired_regions.map(region => (
+                            <span key={region} className={style.regionTag}>
+                              {region}
+                              <button 
+                                type="button" 
+                                className={style.removeTag}
+                                onClick={() => handleRemoveDesiredRegion(region)}
+                              >
+                                ×
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className={style.divider} />
+
+                {/* 경력 */}
+                <div className={style.subSection}>
+                  <div className={style.formRow}>
+                    <div className={style.formLabel}>경력사항</div>
+                    <div className={style.formInput}>
+                      {formData.career_history.map(career => (
+                        <div key={career.id} className={style.careerCard}>
+                          <div className={style.careerHeader}>
+                            <strong>{career.company_name}</strong>
+                            <button 
+                              type="button" 
+                              className={style.careerDeleteBtn}
+                              onClick={() => handleRemoveCareer(career.id)}
+                            >
+                              삭제
+                            </button>
+                          </div>
+                          <div className={style.careerInfo}>
+                            {career.job_duties.join(', ')}
+                          </div>
+                          <div className={style.careerDate}>
+                            {career.start_date} ~ {career.end_date || '현재'}
+                            <span className={`${style.careerStatus} ${career.work_status === '재직중' ? style.working : ''}`}>
+                              {career.work_status}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        className={style.addCareerBtn}
+                        onClick={() => setShowCareerModal(true)}
+                      >
+                        경력 추가하기
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
           </>
         )}
 
@@ -741,6 +1250,95 @@ const WritePage: React.FC = () => {
               onClick={() => setShowSalaryWarningModal(false)}
             >
               확인
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 경력 추가 모달 */}
+      {showCareerModal && (
+        <div className={style.careerModalOverlay} onClick={() => setShowCareerModal(false)}>
+          <div className={style.careerModal} onClick={e => e.stopPropagation()}>
+            <div className={style.careerModalHeader}>
+              <h3>경력 추가하기</h3>
+              <button className={style.careerModalClose} onClick={() => setShowCareerModal(false)}>×</button>
+            </div>
+            
+            <div className={style.careerModalBody}>
+              <div className={style.careerFormGroup}>
+                <label>업체명</label>
+                <input
+                  type="text"
+                  value={newCareer.company_name}
+                  onChange={e => setNewCareer({...newCareer, company_name: e.target.value})}
+                  placeholder="업체명을 입력해 주세요"
+                  className={style.input}
+                />
+              </div>
+              
+              <div className={style.careerFormGroup}>
+                <label>근무상태</label>
+                <div className={style.radioGroup}>
+                  <label className={style.radioLabel}>
+                    <input
+                      type="radio"
+                      checked={newCareer.work_status === '재직중'}
+                      onChange={() => setNewCareer({...newCareer, work_status: '재직중'})}
+                    />
+                    <span>재직중</span>
+                  </label>
+                  <label className={style.radioLabel}>
+                    <input
+                      type="radio"
+                      checked={newCareer.work_status === '계약종료'}
+                      onChange={() => setNewCareer({...newCareer, work_status: '계약종료'})}
+                    />
+                    <span>계약종료</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className={style.careerFormGroup}>
+                <label>근무기간</label>
+                <div className={style.dateRange}>
+                  <input
+                    type="month"
+                    value={newCareer.start_date}
+                    onChange={e => setNewCareer({...newCareer, start_date: e.target.value})}
+                    className={style.dateInput}
+                    placeholder="시작일"
+                  />
+                  <span>~</span>
+                  <input
+                    type="month"
+                    value={newCareer.end_date}
+                    onChange={e => setNewCareer({...newCareer, end_date: e.target.value})}
+                    className={style.dateInput}
+                    placeholder="종료일"
+                    disabled={newCareer.work_status === '재직중'}
+                  />
+                </div>
+              </div>
+
+              <div className={style.careerFormGroup}>
+                <label>담당업무</label>
+                <div className={style.tagContainer}>
+                  {Object.keys(categories).map(cat => (
+                    <button
+                      key={cat}
+                      type="button"
+                      className={`${style.conditionTag} ${newCareer.job_duties.includes(cat) ? style.conditionTagSelected : ''}`}
+                      onClick={() => handleCareerDutyToggle(cat)}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <button className={style.careerModalSubmit} onClick={handleAddCareer}>
+              추가하기
             </button>
           </div>
         </div>
