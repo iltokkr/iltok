@@ -44,6 +44,7 @@ interface Job {
   view_count?: number;
   popularity_score?: number;
   community_tag?: string;
+  is_urgent?: boolean;
   is_day_pay?: boolean;
   // 구직정보 필드
   korean_name?: string;
@@ -457,7 +458,7 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
               <div className={styles.jobSeekerLine1}>
                 <span className={styles.jobSeekerName}>{maskName(job.korean_name)}</span>
                 <span className={styles.jobSeekerBasicInfo}>
-                  ({job.nationality || '한국'}, {job.seeker_gender === 'male' ? '남' : job.seeker_gender === 'female' ? '여' : '-'}{age ? `, 만 ${age}세` : ''})
+                  ({job.nationality || '한국'}, {job.seeker_gender === '남성' ? '남' : job.seeker_gender === '여성' ? '여' : '-'}{age ? `, 만 ${age}세` : ''})
                 </span>
                 {job.visa_status && job.visa_status !== '해당없음' && (
                   <span className={styles.jobSeekerVisa}>({job.visa_status})</span>
@@ -480,20 +481,16 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
                 )}
               </div>
               
-              {/* 3줄: 희망근무조건 (박스형태) */}
-              {workConditions.length > 0 && (
-                <div className={styles.jobSeekerLine3}>
-                  {workConditions.slice(0, 4).map((condition: string, idx: number) => (
+              {/* 3줄: 희망근무조건 (박스형태) + 게시시간 */}
+              <div className={styles.jobSeekerLine3}>
+                <div className={styles.jobSeekerConditions}>
+                  {workConditions.slice(0, 5).map((condition: string, idx: number) => (
                     <span key={idx} className={styles.conditionTag}>{condition}</span>
                   ))}
-                  {workConditions.length > 4 && (
-                    <span className={styles.conditionMore}>+{workConditions.length - 4}</span>
+                  {workConditions.length > 5 && (
+                    <span className={styles.conditionMore}>+{workConditions.length - 5}</span>
                   )}
                 </div>
-              )}
-              
-              {/* 하단: 게시시간 */}
-              <div className={styles.jobSeekerFooter}>
                 <span className={styles.jobSeekerTime}>{formatRelativeTime(job.updated_time)}</span>
               </div>
             </div>
@@ -544,12 +541,21 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
   );
 
   // 일반 게시판용 아이템 렌더링
-  const renderJobItem = (job: Job, isAd = false) => (
-    <li key={`${isAd ? 'ad-' : ''}${job.id}`} className={`${styles.jobItem} ${isRead(job.id) ? styles.readPost : ''} ${!job.salary_type || !job.salary_detail ? 'no-salary' : ''}`}>
+  const renderJobItem = (job: Job, isAd = false) => {
+    // 디버깅
+    console.log('Job:', job.id, 'is_urgent:', job.is_urgent, 'boardType:', boardType);
+    return (
+    <li key={`${isAd ? 'ad-' : ''}${job.id}`} className={`${styles.jobItem} ${isRead(job.id) ? styles.readPost : ''} ${!job.salary_type || !job.salary_detail ? 'no-salary' : ''} ${job.is_urgent ? styles.urgentItem : ''}`}>
       <span className={styles.time}>{formatDate(job.updated_time)}</span>
       <div className={styles.jobContent}>
         <p className={styles.title}>
           <Link href={`/jd/${job.id}`} scroll={false} onClick={() => handlePostClick(job.id)}>
+            {boardType === '0' && job.is_urgent && (
+              <span className={styles.urgentTag}>
+                <img src="/icons/urgent-icon.svg" alt="긴급" className={styles.urgentIcon} />
+                긴급
+              </span>
+            )}
             {formatTitle(job)}
           </Link>
         </p>
@@ -559,6 +565,7 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
       </div>
     </li>
   );
+  };
 
   // 인기글: 인기점수 기준 상위 3개 (공지 제외)
   const hotPosts = [...jobs]

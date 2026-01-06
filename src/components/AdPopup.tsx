@@ -23,7 +23,7 @@ const AdPopup: React.FC<AdPopupProps> = ({ onClose }) => {
 
   const [vip, setVip] = useState('');
   const [phone, setPhone] = useState('');
-  const [receipt, setReceipt] = useState('');
+  const [receipt, setReceipt] = useState('T');
   const [email, setEmail] = useState('');
   const [file, setFile] = useState<File | null>(null);
 
@@ -90,72 +90,109 @@ const AdPopup: React.FC<AdPopupProps> = ({ onClose }) => {
   };
 
   return (
-    <div className={styles.popWrap}>
-      <div className={styles.popbox}>
-        <div className={styles.title}>
-          <div className={styles.tit}>TOP 광고 등록 안내</div>
-          <div className={styles.close} onClick={onClose}>X</div>
-        </div>
-        <div className={styles.cont}>
-          <dl>
-            <dt>상품내용 :</dt>
-            <dd><b>TOP광고 영역 게시글 상위 노출</b></dd>
-            <dt>상품금액 :</dt>
-            <dd>30일/22만원(VAT포함)</dd>
-            <dt>계좌번호 :</dt>
-            <dd>
-              <span id="account-number">국민은행 630301-01-270341</span>
-            </dd>
-            <dt>입금자명 :</dt>
-            <dd>주식회사 일톡</dd>
-            <dt>등록절차 :</dt>
-            <dd>입금 후 신청</dd>
-            <dt>등록문의 :</dt>
-            <dd><a href="http://pf.kakao.com/_ywaMn" target="_blank" rel="noopener noreferrer">https://open.kakao.com/me/114114KR</a></dd>
-          </dl>
-        </div>
-        <form onSubmit={handleSubmit} className={styles.formContainer}>
-          <div className={styles.radioGroup}>
-            <label><input type="radio" name="receipt" value="" checked={receipt === ''} onChange={() => setReceipt('')} />안함</label>
-            <label><input type="radio" name="receipt" value="C" checked={receipt === 'C'} onChange={() => setReceipt('C')} />현금영수증</label>
-            <label><input type="radio" name="receipt" value="T" checked={receipt === 'T'} onChange={() => setReceipt('T')} />세금계산서</label>
+    <div className={styles.overlay} onClick={onClose}>
+      <div className={styles.popWrap} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.popbox}>
+          <div className={styles.header}>
+            <h2 className={styles.title}>TOP 광고 등록 안내</h2>
+            <button className={styles.closeBtn} onClick={onClose}>×</button>
           </div>
-          <input 
-            type="text" 
-            value={vip} 
-            onChange={(e) => setVip(e.target.value)} 
-            placeholder="입금자명" 
-            maxLength={20} 
-            className={styles.inputAuth}
-          />
-          <input 
-            type="text" 
-            value={phone} 
-            onChange={(e) => setPhone(e.target.value)} 
-            placeholder="휴대폰번호" 
-            maxLength={11} 
-            className={styles.inputAuth}
-          />
-          {receipt === 'T' && (
-            <>
+          
+          <div className={styles.infoSection}>
+            <div className={styles.infoRow}>
+              <span className={styles.infoLabel}>상품내용</span>
+              <span className={styles.infoValue}><strong>TOP광고 영역 게시글 상위 노출</strong></span>
+            </div>
+            <div className={styles.infoRow}>
+              <span className={styles.infoLabel}>상품금액</span>
+              <span className={styles.infoValue}>30일 / 22만원 (VAT포함)</span>
+            </div>
+            <div className={styles.infoRow}>
+              <span className={styles.infoLabel}>계좌번호</span>
+              <span className={styles.infoValue}>국민은행 630301-01-270341</span>
+            </div>
+            <div className={styles.infoRow}>
+              <span className={styles.infoLabel}>입금자명</span>
+              <span className={styles.infoValue}>주식회사 일톡</span>
+            </div>
+            <div className={styles.infoRow}>
+              <span className={styles.infoLabel}>등록절차</span>
+              <span className={styles.infoValue}>입금 후 신청</span>
+            </div>
+            <div className={styles.infoRow}>
+              <span className={styles.infoLabel}>등록문의</span>
+              <a href="http://pf.kakao.com/_ywaMn" target="_blank" rel="noopener noreferrer" className={styles.linkValue}>
+                카카오톡 문의하기
+              </a>
+            </div>
+          </div>
+
+          <form onSubmit={handleSubmit} className={styles.formSection}>
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>증빙서류</label>
+              <select 
+                value={receipt} 
+                onChange={(e) => setReceipt(e.target.value)}
+                className={styles.selectInput}
+              >
+                <option value="">안함</option>
+                <option value="C">현금영수증</option>
+                <option value="T">세금계산서</option>
+              </select>
+            </div>
+
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>입금자명</label>
               <input 
                 type="text" 
-                value={email} 
-                onChange={(e) => setEmail(e.target.value)} 
-                placeholder="세금계산서발행 이메일" 
-                maxLength={100} 
-                className={styles.inputAuth}
+                value={vip} 
+                onChange={(e) => setVip(e.target.value)} 
+                placeholder="입금자명을 입력하세요" 
+                maxLength={20} 
+                className={styles.textInput}
               />
+            </div>
+
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>휴대폰번호</label>
               <input 
-                type="file" 
-                onChange={(e) => setFile(e.target.files?.[0] || null)} 
-                accept=".pdf,.jpg,.png"
-                className={styles.inputAuth}
+                type="text" 
+                value={phone} 
+                onChange={(e) => setPhone(e.target.value)} 
+                placeholder="'-' 없이 입력하세요" 
+                maxLength={11} 
+                className={styles.textInput}
               />
-            </>
-          )}
-          <button type="submit" className={styles.vipgo}>신청</button>
-        </form>
+            </div>
+
+            {receipt === 'T' && (
+              <>
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>이메일</label>
+                  <input 
+                    type="email" 
+                    value={email} 
+                    onChange={(e) => setEmail(e.target.value)} 
+                    placeholder="세금계산서 발행용 이메일" 
+                    maxLength={100} 
+                    className={styles.textInput}
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>사업자등록증</label>
+                  <input 
+                    type="file" 
+                    onChange={(e) => setFile(e.target.files?.[0] || null)} 
+                    accept=".pdf,.jpg,.png"
+                    className={styles.fileInput}
+                  />
+                </div>
+              </>
+            )}
+
+            <button type="submit" className={styles.submitBtn}>신청하기</button>
+          </form>
+        </div>
       </div>
     </div>
   );

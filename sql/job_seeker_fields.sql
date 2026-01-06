@@ -35,3 +35,4 @@ ALTER TABLE jd ADD COLUMN IF NOT EXISTS career_history TEXT; -- JSON 형태로 �
 --   '생산·건설', '생산직', '서울', '강남구'
 -- );
 
+

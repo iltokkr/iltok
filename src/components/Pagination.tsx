@@ -8,7 +8,7 @@ interface PaginationProps {
 }
 
 const Pagination: React.FC<PaginationProps> = ({ currentPage, pageCount, onPageChange }) => {
-  const pagesPerSet = 10;
+  const pagesPerSet = 6;
   const currentSet = Math.ceil(currentPage / pagesPerSet);
   const lastPageInCurrentSet = currentSet * pagesPerSet;
   const firstPageInCurrentSet = lastPageInCurrentSet - pagesPerSet + 1;

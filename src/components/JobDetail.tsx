@@ -570,14 +570,18 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
             {jobDetail.uploader.number && (
               <>
                 <div className={style.companyInfo}>
-                  <div className={style.infoRow}>
-                    <span className={style.infoLabel}>업체명</span>
-                    <span className={style.infoValue}>{jobDetail.uploader.company_name || "정보없음"}</span>
-                  </div>
-                  <div className={style.infoRow}>
-                    <span className={style.infoLabel}>대표자명</span>
-                    <span className={style.infoValue}>{jobDetail.uploader.name || "정보없음"}</span>
-                  </div>
+                  {jobDetail.board_type !== '1' && (
+                    <>
+                      <div className={style.infoRow}>
+                        <span className={style.infoLabel}>업체명</span>
+                        <span className={style.infoValue}>{jobDetail.uploader.company_name || "정보없음"}</span>
+                      </div>
+                      <div className={style.infoRow}>
+                        <span className={style.infoLabel}>대표자명</span>
+                        <span className={style.infoValue}>{jobDetail.uploader.name || "정보없음"}</span>
+                      </div>
+                    </>
+                  )}
                   <div className={style.infoRow}>
                     <span className={style.infoLabel}>전화번호</span>
                     <span 
@@ -593,14 +597,14 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
                     className={style.applyButton} 
                     onClick={() => handleApplyButtonClick(formatPhoneNumber(jobDetail.uploader.number))}
                   >
-                    문자 지원하기
+                    문자 보내기
                   </button>
                   <button 
                     className={`${style.bookmarkButton} ${isBookmarked ? style.bookmarked : ''}`}
                     onClick={handleBookmark}
                   >
                     {isBookmarked ? <BsHeartFill /> : <BsHeart />}
-                    <span>공고 저장하기</span>
+                    <span>저장하기</span>
                   </button>
                 </div>
                 <div className={style.notice}>

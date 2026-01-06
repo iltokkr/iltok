@@ -19,6 +19,7 @@ interface JobForm {
   id?: number;
   title: string;
   board_type: string;
+  community_tag: string;
   // 채용조건
   experience: string;
   gender: string;
@@ -102,6 +103,7 @@ const WritePage: React.FC = () => {
   const [formData, setFormData] = useState<JobForm>({
     title: '',
     board_type: '0',
+    community_tag: '',
     experience: '무관',
     gender: '무관',
     education: '무관',

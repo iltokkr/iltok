@@ -19,3 +19,4 @@ ALTER TABLE jd ADD COLUMN IF NOT EXISTS desired_regions TEXT;
 -- 경력 사항 (JSON 배열로 저장)
 ALTER TABLE jd ADD COLUMN IF NOT EXISTS career_history TEXT;
 
+

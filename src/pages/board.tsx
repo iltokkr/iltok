@@ -46,6 +46,7 @@ interface Job {
   bookmarked?: boolean;
   comment_count?: number;
   community_tag?: string;
+  is_urgent?: boolean;
 }
 
 interface AdJob extends Job {
@@ -277,6 +278,7 @@ const BoardPage: React.FC = () => {
         .from('jd')
         .select(`
           *,
+          is_urgent,
           users!inner (
             is_accept
           )
@@ -363,6 +365,9 @@ const BoardPage: React.FC = () => {
         }
       }
 
+      // 디버깅: DB에서 오는 원본 데이터 확인
+      console.log('Raw jobs from DB:', jobs?.slice(0, 3));
+      
       // 북마크 상태와 댓글 수, 조회수를 포함하여 jobs 매핑
       const mappedJobs = (jobs || []).map((job: any) => ({
         ...job,
@@ -406,6 +411,7 @@ const BoardPage: React.FC = () => {
               2depth_category,
               ad,
               uploader_id,
+              is_urgent,
               users!inner (
                 is_accept
               )
