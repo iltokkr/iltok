@@ -178,8 +178,8 @@ const WritePage: React.FC = () => {
 
   // 제목 유효성 검사 함수
   const validateTitle = (value: string): boolean => {
-    // 허용되는 문자: 한글, 중국어, 영문, 숫자, 공백, 특수문자(- + # ( ) [ ] % & , . ' / ~ : ; = ★ ! ?)
-    const allowedPattern = /^[가-힣ㄱ-ㅎㅏ-ㅣ\u4e00-\u9fffa-zA-Z0-9\s\-\+#\(\)\[\]%&,\.'\/~:;=★!?\u0020]*$/;
+    // 허용되는 문자: 한글, 중국어, 영문, 숫자, 공백, 특수문자(- + # ( ) [ ] % & . ㈜ ㈔ /)
+    const allowedPattern = /^[가-힣ㄱ-ㅎㅏ-ㅣ\u4e00-\u9fffa-zA-Z0-9\s\-\+#\(\)\[\]%&\.㈜㈔\/\u0020]*$/;
     return allowedPattern.test(value);
   };
 
@@ -422,7 +422,7 @@ const WritePage: React.FC = () => {
     // 제목 특수문자 유효성 검사
     if (!validateTitle(formData.title)) {
       setTitleInvalid(true);
-      setErrorMessage('공고제목에는 한글, 중국어, 영문, 숫자, 일부 특수문자(- + # () [] % & , . (주) (사) \' / ~ : ; = ★ ! ?) 만 사용할 수 있습니다.');
+      setErrorMessage('제목에는 한글, 영문, 중국어, 숫자, 일부 특수문자(- + # () [] % & . ㈜ ㈔ /)만 사용할 수 있습니다.');
       setIsModalOpen(true);
       return;
     }
@@ -829,7 +829,7 @@ const WritePage: React.FC = () => {
                 maxLength={40}
               />
               <div className={style.titleCharCount}>{formData.title.length}/40 [최소2자]</div>
-              {titleInvalid && <div className={style.errorText}>공고제목에는 한글, 중국어, 영문, 숫자, 일부 특수문자(- + # () [] % &amp; , . (주) (사) ' / ~ : ; = ★ ! ?) 만 사용할 수 있습니다.</div>}
+              {titleInvalid && <div className={style.errorText}>제목에는 한글, 영문, 중국어, 숫자, 일부 특수문자(- + # () [] % &amp; . ㈜ ㈔ /)만 사용할 수 있습니다.</div>}
               {errors.title && !titleInvalid && <div className={style.errorText}>제목을 입력해주세요</div>}
             </div>
           </div>
