@@ -182,7 +182,19 @@
   align-items: center;
   padding: 2px 0;
   width: 100%;
-  font-size: 12px;
+  font-size: 14px;
+}
+
+/* PC에서 글자 크기 */
+@media (min-width: 769px) {
+  .jobItem {
+    font-size: 14px;
+    padding: 4px 0;
+  }
+  
+  .jobItem .title a {
+    line-height: 1.5em;
+  }
 }
 
 .time {
@@ -262,6 +274,11 @@
 
 /* 모바일 대응 */
 @media (max-width: 768px) {
+  .jobItem {
+    font-size: 12px;
+    padding: 2px 0;
+  }
+
   /* board_type이 4일 때의 특별한 스타일 */
   [data-board-type="4"] .jobContent .title {
     flex: 1 1 100%;
