@@ -1,8 +1,8 @@
 .commentSection {
-  margin-top: 10px;
+  margin: 10px 15px;
   background-color: #fff;
   border-radius: 8px;
-  padding: 10px;
+  padding: 10px 0;
 }
 
 .commentTitle {
@@ -97,7 +97,8 @@
 
 @media (max-width: 768px) {
   .commentSection {
-    padding: 15px;
+    margin: 10px 15px;
+    padding: 10px 0;
   }
   
   .commentInput {

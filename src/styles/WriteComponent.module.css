@@ -216,6 +216,37 @@
   border-color: #1a1a1a;
 }
 
+.timeInputRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.twoShiftLabel {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 12px;
+  font-size: 14px;
+  color: #555;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.twoShiftLabel input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #ff5722;
+}
+
+.shiftLabel {
+  font-size: 13px;
+  color: #888;
+  margin-left: 8px;
+}
+
 /* 텍스트에어리어 */
 .textarea {
   width: 100%;

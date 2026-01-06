@@ -127,8 +127,7 @@ const Comment: React.FC<CommentProps> = ({ jdId, initialComments }) => {
             onClick={() => setShowLoginPopup(true)}
             style={{ cursor: 'pointer' }}
           >
-            쾌적한 댓글 환경을 위해 휴대폰 인증 후 작성할 수 있습니다.<br />
-            휴대폰 인증 후 댓글을 작성해보세요!
+            휴대폰 인증 후 대화를 시작해보세요!
           </div>
         ) : (
           <textarea

@@ -8,16 +8,22 @@
 /* ======================
    article content
 */
+.articleHeader {
+  padding: 20px 15px 14px;
+  border-bottom: 1px solid #eee;
+}
+
 .articleTitle {
-  padding: 20px 15px 10px;
+  padding: 0;
+  margin-bottom: 6px;
 }
 
 .articleTitle h1 {
-  display: inline;
-  font-size: 14px;
-  font-weight: bold;
-  padding: 0 5px 0 0;
-  vertical-align: middle;
+  display: block;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #222;
 }
 
 .articleTitle .addFav {
@@ -33,31 +39,47 @@
   background-position: 0 -49px;
 }
 
+.articleMetaRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .articleMeta {
-  padding: 0 15px 6px;
-  color: #333;
+  padding: 0;
+  color: #888;
+  font-size: 13px;
 }
 
 .articleMeta li {
   display: inline;
-  padding: 0 10px 0 0;
+  padding: 0 12px 0 0;
+}
+
+.articleMeta li:not(:last-child)::after {
+  content: '';
+  display: inline-block;
+  width: 1px;
+  height: 10px;
+  background: #ddd;
+  margin-left: 12px;
+  vertical-align: middle;
 }
 
 .articleDetail {
-  padding: 10px 15px;
+  padding: 16px 15px;
   line-height: 1.6;
-  border-top: 1px solid #ccc;
 }
 
 .content {
-  padding: 0 0 35px;
+  padding: 0 0 25px;
   word-break: break-all;
 }
 
 .articleFoot {
-  margin-bottom: 20px;
-  padding: 10px 15px 30px;
-  border-top: 1px solid #ccc;
+  margin: 0 15px 20px;
+  padding: 10px 0 30px;
+  border-top: 1px solid #eee;
 }
 
 .acts {
@@ -126,22 +148,25 @@
 
 .languageSelector {
   display: flex;
-  padding: 5px 0;
-  gap: 5px;
-  justify-content: flex-start;
+  padding: 0;
+  gap: 4px;
+  justify-content: flex-end;
 }
 
 .languageSelector button {
-  padding: 3px 6px;
+  padding: 4px 8px;
   border: 1px solid #ddd;
-  border-radius: 4px;
-  background: white;
+  border-radius: 3px;
+  background: #fafafa;
   cursor: pointer;
   transition: all 0.2s;
+  font-size: 11px;
+  color: #666;
 }
 
 .languageSelector button:hover {
-  background: #f5f5f5;
+  background: #f0f0f0;
+  border-color: #ccc;
 }
 
 .languageSelector button.activeLanguage {
@@ -151,7 +176,7 @@
 }
 
 .jobInfoSection {
-  margin: 20px 0;
+  margin: 16px 0;
   padding: 20px;
   background-color: #f8f9fa;
   border-radius: 8px;
@@ -192,19 +217,64 @@
   .layout {
     width: 100%;
   }
+  
+  .articleHeader {
+    padding: 16px 15px 12px;
+  }
+  
+  .articleTitle h1 {
+    font-size: 16px;
+  }
+  
+  .articleMetaRow {
+    flex-direction: row;
+    align-items: center;
+    gap: 0;
+  }
+  
+  .articleMeta {
+    font-size: 11px;
+  }
+  
+  .articleMeta li {
+    padding: 0 8px 0 0;
+  }
+  
+  .articleMeta li:not(:last-child)::after {
+    margin-left: 6px;
+    height: 8px;
+  }
+  
+  .articleDetail {
+    padding: 12px 15px;
+  }
+  
   .languageSelector {
-    display: flex;
-    gap: 5px;
-    justify-content: flex-start;
+    justify-content: flex-end;
+    gap: 3px;
   }
 
   .languageSelector button {
-    padding: 3px 6px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    background: white;
-    cursor: pointer;
-    transition: all 0.2s;
+    padding: 2px 5px;
+    font-size: 10px;
+  }
+  
+  .seekerInfoSection {
+    margin: 12px 0;
+    gap: 12px;
+  }
+  
+  .jobInfoSection {
+    margin: 12px 0;
+  }
+  
+  .actionArea {
+    margin: 15px 0;
+    padding: 15px;
+  }
+  
+  .content {
+    padding: 0 0 20px;
   }
 }
 
@@ -387,11 +457,6 @@
 }
 
 @media (max-width: 768px) {
-  .actionArea {
-    padding: 15px;
-    margin: 15px 0;
-  }
-
   .buttonGroup {
     flex-direction: column;
     gap: 6px;
@@ -509,26 +574,26 @@
 
 /* 구직정보 상세 스타일 */
 .seekerInfoSection {
-  margin: 20px 0;
+  margin: 12px 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .seekerInfoCard {
   background: #fff;
   border: 1px solid #eee;
   border-radius: 8px;
-  padding: 16px 20px;
+  padding: 16px 18px;
 }
 
 .seekerInfoTitle {
   font-size: 13px;
   font-weight: 600;
   color: #555;
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #eee;
+  margin-bottom: 14px;
+  padding-bottom: 0;
+  border-bottom: none;
 }
 
 /* 기본 정보 - 라벨만 회색 박스 */
@@ -645,8 +710,13 @@
     padding: 14px 16px;
   }
   
+  .seekerInfoTitle {
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+  
   .seekerBasicInfoList {
-    gap: 10px 16px;
+    gap: 8px 12px;
   }
   
   .seekerBasicLabel {
@@ -655,11 +725,11 @@
   }
   
   .seekerBasicValue {
-    font-size: 13px;
+    font-size: 12px;
   }
   
   .seekerTag {
-    padding: 5px 10px;
+    padding: 4px 10px;
     font-size: 12px;
   }
   
@@ -673,6 +743,7 @@
   
   .seekerContents {
     font-size: 13px;
+    line-height: 1.6;
   }
 }
 

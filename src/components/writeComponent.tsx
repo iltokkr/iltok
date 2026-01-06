@@ -38,6 +38,9 @@ interface JobForm {
   work_location_detail: string;
   work_start_time: string;
   work_end_time: string;
+  is_two_shift: boolean;
+  work_start_time2: string;
+  work_end_time2: string;
   // 상세내용
   contents: string;
   // 구직정보 전용 필드
@@ -118,6 +121,9 @@ const WritePage: React.FC = () => {
     work_location_detail: '',
     work_start_time: '08:00',
     work_end_time: '17:00',
+    is_two_shift: false,
+    work_start_time2: '17:00',
+    work_end_time2: '02:00',
     contents: '',
     // 구직정보 전용 필드 초기값
     korean_name: '',
@@ -315,6 +321,11 @@ const WritePage: React.FC = () => {
         jobData.birth_day = '';
       }
 
+      // 2교대 관련 필드 기본값 설정
+      jobData.is_two_shift = jobData.is_two_shift || false;
+      jobData.work_start_time2 = jobData.work_start_time2 || '17:00';
+      jobData.work_end_time2 = jobData.work_end_time2 || '02:00';
+
       setFormData(jobData);
       console.log('Form data set:', jobData);
     } catch (error) {
@@ -391,17 +402,17 @@ const WritePage: React.FC = () => {
       return !newErrors.title && !newErrors['1depth_category'] && !newErrors.contents;
     } else {
       // 채용정보: 기존 검증
-      const newErrors = {
-        title: formData.title.trim() === '',
-        '1depth_category': formData['1depth_category'] === '',
-        '2depth_category': formData['2depth_category'] === '',
-        '1depth_region': formData['1depth_region'] === '',
-        '2depth_region': formData['2depth_region'] === '',
-        work_location_detail: formData.work_location_detail.trim() === '',
-        contents: formData.contents.trim() === ''
-      };
-      setErrors(newErrors);
-      return !Object.values(newErrors).some(error => error);
+    const newErrors = {
+      title: formData.title.trim() === '',
+      '1depth_category': formData['1depth_category'] === '',
+      '2depth_category': formData['2depth_category'] === '',
+      '1depth_region': formData['1depth_region'] === '',
+      '2depth_region': formData['2depth_region'] === '',
+      work_location_detail: formData.work_location_detail.trim() === '',
+      contents: formData.contents.trim() === ''
+    };
+    setErrors(newErrors);
+    return !Object.values(newErrors).some(error => error);
     }
   };
 
@@ -420,9 +431,9 @@ const WritePage: React.FC = () => {
     if (containsUrl(formData.contents)) {
       setContentsUrlError(true);
       setErrorMessage('상세내용에 URL(http, www, .com 등)을 포함할 수 없습니다.');
-      setIsModalOpen(true);
-      return;
-    }
+        setIsModalOpen(true);
+        return;
+      }
 
     // 시급 유효성 검사 추가 (콤마 제거 후 검사)
     const salaryNumber = formData.salary_detail.replace(/,/g, '');
@@ -478,25 +489,25 @@ const WritePage: React.FC = () => {
       // 자유게시판이 아닐 때만 비즈니스 인증 체크
       // 채용정보만 하루 1건 제한 적용 (구직정보, 자유게시판은 제한 없음)
       if (formData.board_type === '0') {
-        const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('is_accept, is_upload')
-          .eq('id', user.id)
-          .maybeSingle();
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('is_accept, is_upload')
+        .eq('id', user.id)
+        .maybeSingle();
 
-        if (userError) throw userError;
+      if (userError) throw userError;
 
-        if (!userData) {
+      if (!userData) {
           setErrorMessage('사용자 정보를 찾을 수 없습니다.');
-          setIsModalOpen(true);
-          return;
-        }
+        setIsModalOpen(true);
+        return;
+      }
 
-        if (!isEditing && userData.is_upload) {
+      if (!isEditing && userData.is_upload) {
           setErrorMessage('채용정보는 하루에 하나만 올릴 수 있습니다.');
-          setIsModalOpen(true);
-          return;
-        }
+        setIsModalOpen(true);
+        return;
+      }
       }
 
       // 생년월일 합치기
@@ -505,10 +516,10 @@ const WritePage: React.FC = () => {
         : null;
 
       const submissionData = {
-        ...formData,
+            ...formData,
         salary_detail: formData.salary_detail.replace(/,/g, ''), // 콤마 제거하고 저장
-        uploader_id: user.id,
-        ad: false,
+            uploader_id: user.id,
+            ad: false,
         // 구직정보인 경우 배열 데이터를 JSON 문자열로 변환
         work_conditions: formData.board_type === '1' ? JSON.stringify(formData.work_conditions) : null,
         desired_regions: formData.board_type === '1' ? JSON.stringify(formData.desired_regions) : null,
@@ -828,163 +839,181 @@ const WritePage: React.FC = () => {
         {formData.board_type !== '4' && (
           <>
             {/* 채용정보일 때 보이는 섹션들 */}
-            {formData.board_type === '0' && (
-              <>
-                {/* 채용 조건 */}
-                <h2 className={style.sectionTitle}>채용 조건</h2>
-                <div className={style.subSection}>
-                  <div className={style.formRow}>
-                    <div className={style.formLabel}>조건</div>
-                    <div className={style.conditionFormInput}>
-                      <select name="experience" value={formData.experience} onChange={handleInputChange} className={style.select}>
-                        <option value="무관">경력 무관</option>
-                        <option value="1년이상">1년 이상</option>
-                        <option value="3년이상">3년 이상</option>
-                        <option value="5년이상">5년 이상</option>
-                        <option value="10년이상">10년 이상</option>
-                      </select>
-                      <select name="gender" value={formData.gender} onChange={handleInputChange} className={style.select}>
-                        <option value="무관">성별 무관</option>
-                        <option value="남자">남자</option>
-                        <option value="여자">여자</option>
-                      </select>
-                      <select name="education" value={formData.education} onChange={handleInputChange} className={style.select}>
-                        <option value="무관">학력 무관</option>
-                        <option value="고졸이상">고졸이상</option>
-                        <option value="초대졸이상">초대졸이상</option>
-                        <option value="대졸이상">대졸이상</option>
-                      </select>
-                      <select name="age_limit" value={formData.age_limit} onChange={handleInputChange} className={style.select}>
-                        <option value="무관">나이 무관</option>
-                        <option value="55세이하">55세 이하</option>
-                        <option value="50세이하">50세 이하</option>
-                        <option value="45세이하">45세 이하</option>
-                        <option value="40세이하">40세 이하</option>
-                        <option value="35세이하">35세 이하</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className={style.warningText}>
-                    ⚠️ 성별 제한 시 남녀고용평등법 위반으로 500만 원 이하의 벌금이 부과될 수 있습니다.<br/>
-                    ⚠️ 연령 제한 시 연령차별금지법 위반으로 500만 원 이하의 벌금이 부과될 수 있습니다.
-                  </div>
+        {formData.board_type === '0' && (
+          <>
+            {/* 채용 조건 */}
+            <h2 className={style.sectionTitle}>채용 조건</h2>
+            <div className={style.subSection}>
+              <div className={style.formRow}>
+                <div className={style.formLabel}>조건</div>
+                <div className={style.conditionFormInput}>
+                  <select name="experience" value={formData.experience} onChange={handleInputChange} className={style.select}>
+                    <option value="무관">경력 무관</option>
+                    <option value="1년이상">1년 이상</option>
+                    <option value="3년이상">3년 이상</option>
+                    <option value="5년이상">5년 이상</option>
+                    <option value="10년이상">10년 이상</option>
+                  </select>
+                  <select name="gender" value={formData.gender} onChange={handleInputChange} className={style.select}>
+                    <option value="무관">성별 무관</option>
+                    <option value="남자">남자</option>
+                    <option value="여자">여자</option>
+                  </select>
+                  <select name="education" value={formData.education} onChange={handleInputChange} className={style.select}>
+                    <option value="무관">학력 무관</option>
+                    <option value="고졸이상">고졸이상</option>
+                    <option value="초대졸이상">초대졸이상</option>
+                    <option value="대졸이상">대졸이상</option>
+                  </select>
+                  <select name="age_limit" value={formData.age_limit} onChange={handleInputChange} className={style.select}>
+                    <option value="무관">나이 무관</option>
+                    <option value="55세이하">55세 이하</option>
+                    <option value="50세이하">50세 이하</option>
+                    <option value="45세이하">45세 이하</option>
+                    <option value="40세이하">40세 이하</option>
+                    <option value="35세이하">35세 이하</option>
+                  </select>
                 </div>
+              </div>
+              <div className={style.warningText}>
+                ⚠️ 성별 제한 시 남녀고용평등법 위반으로 500만 원 이하의 벌금이 부과될 수 있습니다.<br/>
+                ⚠️ 연령 제한 시 연령차별금지법 위반으로 500만 원 이하의 벌금이 부과될 수 있습니다.
+              </div>
+            </div>
 
-                {/* 급여 정보와 근무시간 */}
-                <h2 className={style.sectionTitle}>급여 및 근무시간</h2>
-                <div className={style.subSection}>
-                  <div className={style.formGrid}>
-                    <div className={style.formRow}>
-                      <div className={style.formLabel}>급여</div>
-                      <div className={style.formInput}>
-                        <select name="salary_type" value={formData.salary_type} onChange={handleInputChange} className={style.select}>
-                          <option value="시급">시급</option>
-                          <option value="일급">일급</option>
-                          <option value="주급">주급</option>
-                          <option value="월급">월급</option>
-                          <option value="협의">협의</option>
-                        </select>
-                        <input
-                          type="text"
-                          name="salary_detail"
-                          value={formData.salary_detail}
-                          onChange={handleInputChange}
-                          className={style.input}
-                          placeholder="급여 상세 정보"
-                        />
-                      </div>
-                    </div>
-                    <div className={style.formRow}>
-                      <div className={style.formLabel}>근무시간</div>
-                      <div className={style.formInput}>
-                        <input type="time" name="work_start_time" value={formData.work_start_time} onChange={handleInputChange} className={style.timeInput} />
-                        <span>~</span>
-                        <input type="time" name="work_end_time" value={formData.work_end_time} onChange={handleInputChange} className={style.timeInput} />
-                      </div>
-                    </div>
-                  </div>
-                  <div className={style.warningText}>
-                    ⚠️ 최저임금(10,320원)에 미달하는 급여는 법적 처벌 대상이 될 수 있습니다.<br/>
-                    ⚠️ 최저임금법 위반 시 3년 이하의 징역 또는 2천만 원 이하의 벌금이 부과될 수 있습니다.
+            {/* 급여 정보와 근무시간 */}
+            <h2 className={style.sectionTitle}>급여 및 근무시간</h2>
+            <div className={style.subSection}>
+              <div className={style.formGrid}>
+                <div className={style.formRow}>
+                  <div className={style.formLabel}>급여</div>
+                  <div className={style.formInput}>
+                    <select name="salary_type" value={formData.salary_type} onChange={handleInputChange} className={style.select}>
+                      <option value="시급">시급</option>
+                      <option value="일급">일급</option>
+                      <option value="주급">주급</option>
+                      <option value="월급">월급</option>
+                      <option value="협의">협의</option>
+                    </select>
+                    <input
+                      type="text"
+                      name="salary_detail"
+                      value={formData.salary_detail}
+                      onChange={handleInputChange}
+                      className={style.input}
+                      placeholder="급여 상세 정보"
+                    />
                   </div>
                 </div>
-              </>
-            )}
+                <div className={style.formRow}>
+                  <div className={style.formLabel}>근무시간</div>
+                  <div className={style.formInput}>
+                    <div className={style.timeInputRow}>
+                      <input type="time" name="work_start_time" value={formData.work_start_time} onChange={handleInputChange} className={style.timeInput} />
+                      <span>~</span>
+                      <input type="time" name="work_end_time" value={formData.work_end_time} onChange={handleInputChange} className={style.timeInput} />
+                      <label className={style.twoShiftLabel}>
+                        <input 
+                          type="checkbox" 
+                          checked={formData.is_two_shift} 
+                          onChange={(e) => setFormData(prev => ({ ...prev, is_two_shift: e.target.checked }))}
+                        />
+                        2교대
+                      </label>
+                    </div>
+                    {formData.is_two_shift && (
+                      <div className={style.timeInputRow} style={{ marginTop: '8px' }}>
+                        <input type="time" name="work_start_time2" value={formData.work_start_time2} onChange={handleInputChange} className={style.timeInput} />
+                        <span>~</span>
+                        <input type="time" name="work_end_time2" value={formData.work_end_time2} onChange={handleInputChange} className={style.timeInput} />
+                        <span className={style.shiftLabel}>2교대</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className={style.warningText}>
+                    ⚠️ 최저임금(10,320원)에 미달하는 급여는 법적 처벌 대상이 될 수 있습니다.<br/>
+                ⚠️ 최저임금법 위반 시 3년 이하의 징역 또는 2천만 원 이하의 벌금이 부과될 수 있습니다.
+              </div>
+            </div>
+          </>
+        )}
 
             {/* 채용정보용 기본 정보 */}
             {formData.board_type === '0' && (
               <>
                 <h2 className={style.sectionTitle}>근무 정보</h2>
-                <div className={style.subSection}>
-                  <div className={style.formRow}>
+        <div className={style.subSection}>
+          <div className={style.formRow}>
                     <div className={style.formLabel}>직무 <span className={style.required}>*</span></div>
-                    <div className={style.formInput}>
-                      <select 
-                        name="1depth_category" 
-                        value={formData['1depth_category']} 
-                        onChange={handleInputChange} 
-                        className={getInputClassName('1depth_category', style.select)}
-                      >
-                        <option value="">1차 분류</option>
-                        {Object.keys(categories).map(category => (
-                          <option key={category} value={category}>{category}</option>
-                        ))}
-                      </select>
-                      <select 
-                        name="2depth_category" 
-                        value={formData['2depth_category']} 
-                        onChange={handleInputChange} 
-                        className={getInputClassName('2depth_category', style.select)}
-                      >
-                        <option value="">2차 분류</option>
-                        {formData['1depth_category'] && categories[formData['1depth_category']].map(subCategory => (
-                          <option key={subCategory} value={subCategory}>{subCategory}</option>
-                        ))}
-                      </select>
-                      {(errors['1depth_category'] || errors['2depth_category']) && 
-                        <div className={style.errorText}>카테고리를 선택해주세요</div>}
-                    </div>
-                  </div>
-                  <div className={style.formRow}>
+            <div className={style.formInput}>
+              <select 
+                name="1depth_category" 
+                value={formData['1depth_category']} 
+                onChange={handleInputChange} 
+                className={getInputClassName('1depth_category', style.select)}
+              >
+                <option value="">1차 분류</option>
+                {Object.keys(categories).map(category => (
+                  <option key={category} value={category}>{category}</option>
+                ))}
+              </select>
+              <select 
+                name="2depth_category" 
+                value={formData['2depth_category']} 
+                onChange={handleInputChange} 
+                className={getInputClassName('2depth_category', style.select)}
+              >
+                <option value="">2차 분류</option>
+                {formData['1depth_category'] && categories[formData['1depth_category']].map(subCategory => (
+                  <option key={subCategory} value={subCategory}>{subCategory}</option>
+                ))}
+              </select>
+              {(errors['1depth_category'] || errors['2depth_category']) && 
+                <div className={style.errorText}>카테고리를 선택해주세요</div>}
+            </div>
+          </div>
+          <div className={style.formRow}>
                     <div className={style.formLabel}>근무지 <span className={style.required}>*</span></div>
-                    <div className={style.formInput}>
-                      <div className={style.locationSelects}>
-                        <select 
-                          name="1depth_region" 
-                          value={formData['1depth_region']} 
-                          onChange={handleInputChange} 
-                          className={getInputClassName('1depth_region', style.select)}
-                        >
-                          <option value="">시/도</option>
-                          {Object.keys(locations).map(city => (
-                            <option key={city} value={city}>{city}</option>
-                          ))}
-                        </select>
-                        <select 
-                          name="2depth_region" 
-                          value={formData['2depth_region']} 
-                          onChange={handleInputChange} 
-                          className={getInputClassName('2depth_region', style.select)}
-                        >
-                          <option value="">시/구/군</option>
-                          {formData['1depth_region'] && locations[formData['1depth_region']].map(district => (
-                            <option key={district} value={district}>{district}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <input
-                        type="text"
-                        name="work_location_detail"
-                        value={formData.work_location_detail}
-                        onChange={handleInputChange}
-                        className={getInputClassName('work_location_detail', style.input)}
-                        placeholder="상세 주소"
-                      />
-                      {(errors['1depth_region'] || errors['2depth_region'] || errors.work_location_detail) && 
-                        <div className={style.errorText}>지역 정보를 모두 입력해주세요</div>}
-                    </div>
-                  </div>
-                </div>
+            <div className={style.formInput}>
+              <div className={style.locationSelects}>
+                <select 
+                  name="1depth_region" 
+                  value={formData['1depth_region']} 
+                  onChange={handleInputChange} 
+                  className={getInputClassName('1depth_region', style.select)}
+                >
+                  <option value="">시/도</option>
+                  {Object.keys(locations).map(city => (
+                    <option key={city} value={city}>{city}</option>
+                  ))}
+                </select>
+                <select 
+                  name="2depth_region" 
+                  value={formData['2depth_region']} 
+                  onChange={handleInputChange} 
+                  className={getInputClassName('2depth_region', style.select)}
+                >
+                  <option value="">시/구/군</option>
+                  {formData['1depth_region'] && locations[formData['1depth_region']].map(district => (
+                    <option key={district} value={district}>{district}</option>
+                  ))}
+                </select>
+              </div>
+              <input
+                type="text"
+                name="work_location_detail"
+                value={formData.work_location_detail}
+                onChange={handleInputChange}
+                className={getInputClassName('work_location_detail', style.input)}
+                placeholder="상세 주소"
+              />
+              {(errors['1depth_region'] || errors['2depth_region'] || errors.work_location_detail) && 
+                <div className={style.errorText}>지역 정보를 모두 입력해주세요</div>}
+            </div>
+          </div>
+        </div>
               </>
             )}
 
@@ -1329,11 +1358,11 @@ const WritePage: React.FC = () => {
 
         {/* 법적 경고 문구 - 채용정보(board_type='0')에만 표시 */}
         {formData.board_type === '0' && (
-          <div className={style.legalWarning}>
+        <div className={style.legalWarning}>
             <p>⚠️ 성매매 알선 등 행위의 처벌에 관한 법률 제4조에 해당되는 내용이 포함된 채용 광고 관련 법령에 따라 성매매를 알선한 경우, 3년 이하의 징역형 또는 3천만 원 이하의 벌금에 처해질 수 있습니다.</p>
-            <p>⚠️ 노래방 종업원 및 BAR 종업원등 유흥업소에 대한 공고는 게시가 제한됩니다.</p>
-            <p>⚠️ 1개의 공고에 여러 회사의 공고를 업로드할 경우 게시가 제한됩니다.</p>
-          </div>
+          <p>⚠️ 노래방 종업원 및 BAR 종업원등 유흥업소에 대한 공고는 게시가 제한됩니다.</p>
+          <p>⚠️ 1개의 공고에 여러 회사의 공고를 업로드할 경우 게시가 제한됩니다.</p>
+        </div>
         )}
 
         {/* 제출 버튼 */}

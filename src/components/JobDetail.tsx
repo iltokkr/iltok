@@ -49,6 +49,9 @@ interface JobDetailProps {
     work_location_detail: string;
     work_start_time: string;
     work_end_time: string;
+    is_two_shift?: boolean;
+    work_start_time2?: string;
+    work_end_time2?: string;
     // 구직정보 전용 필드
     korean_name?: string;
     english_name?: string;
@@ -327,88 +330,149 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
 
       {copySuccess && <div className={style.copyAlert}>전화번호가 복사되었습니다!</div>}
       
-      <div className={style.articleTitle}>
-        <h1>{translatedTitle}</h1>
-      </div>
-
-      <ul className={style.articleMeta}>
-        <li>등록일: {formatDate(jobDetail.updated_time)}</li>
-        <li>글번호: {jobDetail.id}</li>
-      </ul>
-      <div className={style.articleDetail}>
-      <div className={style.languageSelector}>
-        <button 
-          className={currentLanguage === 'ko' ? style.activeLanguage : ''} 
-          onClick={() => changeLanguage('ko')}
-        >
-          한국어
-        </button>
-        <button 
-          className={currentLanguage === 'en' ? style.activeLanguage : ''} 
-          
-          onClick={() => changeLanguage('en')}
-        >
-          English
-        </button>
-        <button 
-          className={currentLanguage === 'zh' ? style.activeLanguage : ''} 
-          onClick={() => changeLanguage('zh')}
-        >
-          中文
-        </button>
-        <button 
-          className={currentLanguage === 'ja' ? style.activeLanguage : ''} 
-          onClick={() => changeLanguage('ja')}
-        >
-          日本語
-          </button>
+      <div className={style.articleHeader}>
+        <div className={style.articleTitle}>
+          <h1>{translatedTitle}</h1>
         </div>
+
+        <div className={style.articleMetaRow}>
+          <ul className={style.articleMeta}>
+            <li>등록일: {formatDate(jobDetail.updated_time)}</li>
+            <li>글번호: {jobDetail.id}</li>
+          </ul>
+          <div className={style.languageSelector}>
+            <button 
+              className={currentLanguage === 'ko' ? style.activeLanguage : ''} 
+              onClick={() => changeLanguage('ko')}
+            >
+              한국어
+            </button>
+            <button 
+              className={currentLanguage === 'en' ? style.activeLanguage : ''} 
+              onClick={() => changeLanguage('en')}
+            >
+              EN
+            </button>
+            <button 
+              className={currentLanguage === 'zh' ? style.activeLanguage : ''} 
+              onClick={() => changeLanguage('zh')}
+            >
+              中文
+            </button>
+            <button 
+              className={currentLanguage === 'ja' ? style.activeLanguage : ''} 
+              onClick={() => changeLanguage('ja')}
+            >
+              日本
+            </button>
+          </div>
+        </div>
+      </div>
+      <div className={style.articleDetail}>
         {jobDetail.board_type === '0' && (
-          <div className={style.jobInfoGrid}>
-            {/* 채용 조건 - 데이터가 하나라도 있을 때만 표시 */}
+          <div className={style.seekerInfoSection}>
+            {/* 채용 조건 */}
             {(jobDetail.experience || jobDetail.gender || jobDetail.education || jobDetail.age_limit) && (
-              <div className={style.infoCard}>
-                <h3>채용 조건</h3>
-                {jobDetail.experience && <span>경력 {jobDetail.experience}</span>}
-                {jobDetail.gender && <span>성별 {jobDetail.gender}</span>}
-                {jobDetail.education && <span>학력 {jobDetail.education}</span>}
-                {jobDetail.age_limit && <span>연령 {jobDetail.age_limit}</span>}
+              <div className={style.seekerInfoCard}>
+                <h3 className={style.seekerInfoTitle}>채용 조건</h3>
+                <div className={style.seekerBasicInfoList}>
+                  {jobDetail.experience && (
+                    <div className={style.seekerBasicInfoItem}>
+                      <span className={style.seekerBasicLabel}>경력</span>
+                      <span className={style.seekerBasicValue}>{jobDetail.experience}</span>
+                    </div>
+                  )}
+                  {jobDetail.gender && (
+                    <div className={style.seekerBasicInfoItem}>
+                      <span className={style.seekerBasicLabel}>성별</span>
+                      <span className={style.seekerBasicValue}>{jobDetail.gender}</span>
+                    </div>
+                  )}
+                  {jobDetail.education && (
+                    <div className={style.seekerBasicInfoItem}>
+                      <span className={style.seekerBasicLabel}>학력</span>
+                      <span className={style.seekerBasicValue}>{jobDetail.education}</span>
+                    </div>
+                  )}
+                  {jobDetail.age_limit && (
+                    <div className={style.seekerBasicInfoItem}>
+                      <span className={style.seekerBasicLabel}>연령</span>
+                      <span className={style.seekerBasicValue}>{jobDetail.age_limit}</span>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
-            {/* 급여 정보 - 데이터가 하나라도 있을 때만 표시 */}
-
+            {/* 급여·근무 */}
             {(jobDetail.salary_type || (jobDetail.work_start_time && jobDetail.work_end_time)) && (
-              <div className={style.infoCard}>
-                <h3 style={{ whiteSpace: 'nowrap' }}>
+              <div className={style.seekerInfoCard}>
+                <h3 className={style.seekerInfoTitle}>
                   급여·근무
-                  <span style={{ fontSize: '0.8em', marginLeft: '8px', color: '#666', fontWeight: 'normal' }}>
-                    2026년 최저임금은 10,320원입니다
+                  <span style={{ fontSize: '0.85em', marginLeft: '10px', color: '#888', fontWeight: 'normal' }}>
+                    2026년 최저임금 10,320원
                   </span>
                 </h3>
-                
-                {jobDetail.salary_type && jobDetail.salary_detail && (
-                  <span>{jobDetail.salary_type} {jobDetail.salary_detail}원</span>
-                )}
-                {jobDetail.work_start_time && jobDetail.work_end_time && (
-                  <span>{jobDetail.work_start_time}~{jobDetail.work_end_time}</span>
-                )}
+                <div className={style.seekerBasicInfoList}>
+                  {jobDetail.salary_type && jobDetail.salary_detail && (
+                    <div className={style.seekerBasicInfoItem}>
+                      <span className={style.seekerBasicLabel}>{jobDetail.salary_type}</span>
+                      <span className={style.seekerBasicValue}>{Number(jobDetail.salary_detail).toLocaleString()}원</span>
+                    </div>
+                  )}
+                  {jobDetail.work_start_time && jobDetail.work_end_time && (
+                    <div className={style.seekerBasicInfoItem}>
+                      <span className={style.seekerBasicLabel}>근무시간</span>
+                      <span className={style.seekerBasicValue}>
+                        {jobDetail.work_start_time} ~ {jobDetail.work_end_time}
+                        {jobDetail.is_two_shift && jobDetail.work_start_time2 && jobDetail.work_end_time2 && (
+                          <span style={{ marginLeft: '12px', color: '#666' }}>
+                            / {jobDetail.work_start_time2} ~ {jobDetail.work_end_time2} (2교대)
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
-            {/* 근무 정보 - 데이터가 하나라도 있을 때만 표시 */}
+            {/* 근무지 */}
             {(jobDetail['1depth_region'] || jobDetail.work_location_detail) && (
-              <div className={style.infoCard}>
-                <h3>근무지</h3>
-                {jobDetail['1depth_region'] && (
-                  <span>
-                    {jobDetail['1depth_region']}
-                    {jobDetail['2depth_region'] && ` ${jobDetail['2depth_region']}`}
-                  </span>
-                )}
-                {jobDetail.work_location_detail && (
-                  <span>{jobDetail.work_location_detail}</span>
-                )}
+              <div className={style.seekerInfoCard}>
+                <h3 className={style.seekerInfoTitle}>근무지</h3>
+                <div className={style.seekerBasicInfoList}>
+                  {jobDetail['1depth_region'] && (
+                    <div className={style.seekerBasicInfoItem}>
+                      <span className={style.seekerBasicLabel}>지역</span>
+                      <span className={style.seekerBasicValue}>
+                        {jobDetail['1depth_region']}
+                        {jobDetail['2depth_region'] && ` ${jobDetail['2depth_region']}`}
+                      </span>
+                    </div>
+                  )}
+                  {jobDetail.work_location_detail && (
+                    <div className={style.seekerBasicInfoItem}>
+                      <span className={style.seekerBasicLabel}>상세주소</span>
+                      <span className={style.seekerBasicValue}>{jobDetail.work_location_detail}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* 상세 내용 */}
+            {jobDetail.id !== 6599 && (
+              <div className={style.seekerInfoCard}>
+                <h3 className={style.seekerInfoTitle}>상세 내용</h3>
+                <div className={style.seekerContents}>
+                  {translatedContents.split('\n').map((line: string, index: number) => (
+                    <React.Fragment key={index}>
+                      {line}
+                      <br />
+                    </React.Fragment>
+                  ))}
+                </div>
               </div>
             )}
           </div>
@@ -543,26 +607,25 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
             </div>
           </div>
         )}
-        {/* 상세 내용 - 구직정보가 아닌 경우에만 표시 (구직정보는 위에서 같은 템플릿으로 표시) */}
-        {jobDetail.board_type !== '1' && (
+        {/* 특별 광고 이미지 */}
+        {jobDetail.id === 6599 && (
           <div className={style.content}>
-            {jobDetail.id === 6599 ? ( 
-              <img 
-                src="/landing_ad.png" 
-                alt="Landing Ad" 
-                style={{ maxWidth: '980px', width: '100%', height: 'auto' }}
-              /> 
-            ) : ( 
-              <>
-                <h3 className={style.contentTitle}>상세 내용</h3>
-                {translatedContents.split('\n').map((line: string, index: number) => (
-                  <React.Fragment key={index}>
-                    {line}
-                    <br />
-                  </React.Fragment>
-                ))}
-              </>
-            )} 
+            <img 
+              src="/landing_ad.png" 
+              alt="Landing Ad" 
+              style={{ maxWidth: '980px', width: '100%', height: 'auto' }}
+            /> 
+          </div>
+        )}
+        {/* 자유게시판 상세 내용 */}
+        {jobDetail.board_type === '4' && (
+          <div className={style.content}>
+            {translatedContents.split('\n').map((line: string, index: number) => (
+              <React.Fragment key={index}>
+                {line}
+                <br />
+              </React.Fragment>
+            ))}
           </div>
         )}
         {jobDetail.board_type !== '4' && (

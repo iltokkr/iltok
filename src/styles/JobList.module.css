@@ -226,8 +226,7 @@
 }
 
 .title a {
-  display: flex;
-  align-items: center;
+  display: inline;
   white-space: normal;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1142,17 +1141,19 @@
 .urgentTag {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  gap: 1px;
   color: #2196F3;
-  font-size: 0.9em;
+  font-size: 0.85em;
   font-weight: inherit;
   margin-right: 4px;
-  animation: urgentGlow 2s ease-in-out infinite;
+  white-space: nowrap;
+  vertical-align: baseline;
 }
 
 .urgentIcon {
   width: 0.9em;
   height: 0.9em;
+  flex-shrink: 0;
 }
 
 .urgentItem {

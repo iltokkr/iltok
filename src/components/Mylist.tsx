@@ -21,6 +21,7 @@ interface MyPost {
   '1depth_category': string;
   '2depth_category': string;
   board_type?: string;
+  is_hidden?: boolean;
 }
 
 interface BookmarkedPost extends MyPost {
@@ -56,6 +57,10 @@ const Mylist: React.FC<MylistProps> = ({
 }) => {
   const [showModal, setShowModal] = useState(false);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteTargetPost, setDeleteTargetPost] = useState<MyPost | null>(null);
+  const [showHideSuccessModal, setShowHideSuccessModal] = useState(false);
+  const [showUnhideSuccessModal, setShowUnhideSuccessModal] = useState(false);
   const authContext = useContext(AuthContext);
   const [bookmarkedPosts, setBookmarkedPosts] = useState<BookmarkedPost[]>([]);
   const [bookmarkCounts, setBookmarkCounts] = useState<Record<number, number>>({});
@@ -175,17 +180,22 @@ const Mylist: React.FC<MylistProps> = ({
     }
   };
 
-  const handleDelete = async (postId: number) => {
-    try {
-      if (!window.confirm('정말로 이 게시물을 삭제하시겠습니까?')) {
-        return;
-      }
+  // 삭제 확인 모달 열기
+  const openDeleteModal = (post: MyPost) => {
+    setDeleteTargetPost(post);
+    setShowDeleteModal(true);
+  };
 
+  // 실제 삭제 실행
+  const confirmDelete = async () => {
+    if (!deleteTargetPost) return;
+    
+    try {
       // 먼저 해당 게시글의 북마크 삭제
       const { error: bookmarkError } = await supabase
         .from('bookmark')
         .delete()
-        .eq('jd_id', postId);
+        .eq('jd_id', deleteTargetPost.id);
 
       if (bookmarkError) {
         console.error('북마크 삭제 실패:', bookmarkError);
@@ -195,7 +205,7 @@ const Mylist: React.FC<MylistProps> = ({
       const { error: commentError } = await supabase
         .from('comment')
         .delete()
-        .eq('jd_id', postId);
+        .eq('jd_id', deleteTargetPost.id);
 
       if (commentError) {
         console.error('댓글 삭제 실패:', commentError);
@@ -205,20 +215,43 @@ const Mylist: React.FC<MylistProps> = ({
       const { error } = await supabase
         .from('jd')
         .delete()
-        .eq('id', postId);
+        .eq('id', deleteTargetPost.id);
 
       if (error) throw error;
+      
+      setShowDeleteModal(false);
+      setDeleteTargetPost(null);
       
       // Show success modal
       setShowModal(true);
       setTimeout(() => {
         setShowModal(false);
-        // Refresh the page to show updated list
         window.location.reload();
       }, 2000);
     } catch (error) {
       console.error('삭제 실패:', error);
       alert('게시물 삭제에 실패했습니다.');
+    }
+  };
+
+  // 삭제 대신 숨김 처리
+  const hideInsteadOfDelete = async () => {
+    if (!deleteTargetPost) return;
+    
+    try {
+      const { error } = await supabase
+        .from('jd')
+        .update({ is_hidden: true })
+        .eq('id', deleteTargetPost.id);
+
+      if (error) throw error;
+      
+      setShowDeleteModal(false);
+      setDeleteTargetPost(null);
+      setShowHideSuccessModal(true);
+    } catch (error) {
+      console.error('숨기기 실패:', error);
+      alert('숨기기에 실패했습니다.');
     }
   };
 
@@ -239,6 +272,40 @@ const Mylist: React.FC<MylistProps> = ({
       }));
     } catch (error) {
       console.error('북마크 삭제 실패:', error);
+    }
+  };
+
+  // 게시글 숨기기
+  const handleHide = async (postId: number) => {
+    try {
+      const { error } = await supabase
+        .from('jd')
+        .update({ is_hidden: true })
+        .eq('id', postId);
+
+      if (error) throw error;
+      
+      setShowHideSuccessModal(true);
+    } catch (error) {
+      console.error('숨기기 실패:', error);
+      alert('숨기기에 실패했습니다.');
+    }
+  };
+
+  // 게시글 숨김 해제 (원래 위치로 복원)
+  const handleUnhide = async (postId: number) => {
+    try {
+      const { error } = await supabase
+        .from('jd')
+        .update({ is_hidden: false })
+        .eq('id', postId);
+
+      if (error) throw error;
+      
+      setShowUnhideSuccessModal(true);
+    } catch (error) {
+      console.error('숨김 해제 실패:', error);
+      alert('숨김 해제에 실패했습니다.');
     }
   };
 
@@ -311,15 +378,15 @@ const Mylist: React.FC<MylistProps> = ({
       {/* 안내 문구 */}
       <div className={styles.guideCard}>
         <div className={styles.guideItem}>
-          <img src="/icons/megaphone-icon.svg" alt="끌어올리기" className={styles.guideIconImg} />
+          <img src="/icons/check-coral.svg" alt="안내" className={styles.guideIconImg} />
           <span className={styles.guideText}><strong>끌어올리기</strong>를 하면 공고가 게시판 최상단으로 이동합니다.</span>
         </div>
         <div className={styles.guideItem}>
-          <img src="/icons/recharge-icon.svg" alt="충전" className={styles.guideIconImg} />
+          <img src="/icons/check-coral.svg" alt="안내" className={styles.guideIconImg} />
           <span className={styles.guideText}>끌어올리기는 <strong>매일 00시, 06시, 12시, 18시</strong>에 1회씩 충전됩니다.</span>
         </div>
         <div className={styles.guideItem}>
-          <img src="/icons/edit-icon.svg" alt="수정" className={styles.guideIconImg} />
+          <img src="/icons/check-coral.svg" alt="안내" className={styles.guideIconImg} />
           <span className={styles.guideText}>[수정]은 횟수 제한 없이 가능하지만, 게시판 순서는 변경되지 않습니다.</span>
         </div>
       </div>
@@ -331,10 +398,11 @@ const Mylist: React.FC<MylistProps> = ({
 
       <ul className={styles.listWrap}>
         {regularPosts.map((post) => (
-          <li key={post.id}>
+          <li key={post.id} className={post.is_hidden ? styles.hiddenPost : ''}>
             <div className={styles.postInfo}>
               <div className={styles.postContent}>
                 <span className={styles.time}>{formatDate(post.updated_time)}</span>
+                {post.is_hidden && <span className={styles.hiddenBadge}>숨김</span>}
                 <Link href={`/jd/${post.id}`} scroll={false} className={styles.title}>
                   {post.title}
                 </Link>
@@ -344,11 +412,22 @@ const Mylist: React.FC<MylistProps> = ({
                 <span className={styles.recall}>
                   <a href={`/write?id=${post.id}`}>[수정]</a>
                 </span>
+                {!post.is_hidden && (
+                  <span className={styles.recall}>
+                    <a onClick={() => handleReload(post.id)}>[끌어올리기]</a>
+                  </span>
+                )}
+                {post.is_hidden ? (
+                  <span className={styles.recall}>
+                    <a onClick={() => handleUnhide(post.id)}>[숨김해제]</a>
+                  </span>
+                ) : (
+                  <span className={styles.recall}>
+                    <a onClick={() => handleHide(post.id)}>[숨김]</a>
+                  </span>
+                )}
                 <span className={styles.recall}>
-                  <a onClick={() => handleReload(post.id)}>[끌어올리기]</a>
-                </span>
-                <span className={styles.recall}>
-                  <a onClick={() => handleDelete(post.id)}>[삭제]</a>
+                  <a onClick={() => openDeleteModal(post)}>[삭제]</a>
                 </span>
               </div>
             </div>
@@ -375,7 +454,7 @@ const Mylist: React.FC<MylistProps> = ({
                   <a href={`/write?id=${post.id}`}>[수정]</a>
                 </span>
                 <span className={styles.recall}>
-                  <a onClick={() => handleDelete(post.id)}>[삭제]</a>
+                  <a onClick={() => openDeleteModal(post)}>[삭제]</a>
                 </span>
               </div>
             </div>
@@ -425,6 +504,86 @@ const Mylist: React.FC<MylistProps> = ({
         <BusinessVerificationModal 
           onClose={() => setShowVerificationModal(false)} 
         />
+      )}
+
+      {/* 삭제 확인 모달 */}
+      {showDeleteModal && deleteTargetPost && (
+        <div className={styles.deleteModalOverlay} onClick={() => setShowDeleteModal(false)}>
+          <div className={styles.deleteModal} onClick={(e) => e.stopPropagation()}>
+            <button className={styles.deleteModalClose} onClick={() => setShowDeleteModal(false)}>
+              ×
+            </button>
+            <h3 className={styles.deleteModalTitle}>채용공고를 삭제하시겠습니까?</h3>
+            
+            <div className={styles.deleteModalContent}>
+              <p className={styles.deleteModalPostTitle}>{deleteTargetPost.title}</p>
+              <p className={styles.deleteModalPostInfo}>
+                {deleteTargetPost['1depth_region']} {deleteTargetPost['2depth_region']}
+              </p>
+            </div>
+
+            <div className={styles.deleteModalWarning}>
+              <img src="/icons/warning-triangle.svg" alt="경고" className={styles.warningIconImg} />
+              <span>삭제대신 <span className={styles.highlightText}>숨김</span>하세요!</span>
+            </div>
+            
+            <div className={styles.deleteModalDesc}>
+              <p>- "숨김" 처리하면 게재가 중단되며, 후속 관리가 편리합니다.</p>
+              <p>- 삭제하면 관련된 모든 데이터가 함께 삭제됩니다.</p>
+            </div>
+
+            <div className={styles.deleteModalButtons}>
+              <button className={styles.deleteBtn} onClick={confirmDelete}>
+                삭제하기
+              </button>
+              <button className={styles.hideBtn} onClick={hideInsteadOfDelete}>
+                게시글 숨기기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 숨김 성공 모달 */}
+      {showHideSuccessModal && (
+        <div className={styles.successModalOverlay}>
+          <div className={styles.successModal}>
+            <img src="/icons/check-circle.svg" alt="완료" className={styles.successIconImg} />
+            <h3 className={styles.successTitle}>게시글이 숨김 처리되었습니다</h3>
+            <p className={styles.successDesc}>게시판에서 더 이상 노출되지 않습니다.</p>
+            <button 
+              className={styles.successBtn}
+              onClick={() => {
+                setShowHideSuccessModal(false);
+                window.location.reload();
+              }}
+            >
+              확인
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 숨김 해제 성공 모달 */}
+      {showUnhideSuccessModal && (
+        <div className={styles.successModalOverlay}>
+          <div className={styles.successModal}>
+            <img src="/icons/check-circle.svg" alt="완료" className={styles.successIconImg} />
+            <h3 className={styles.successTitle}>게시글이 숨김 해제되었습니다</h3>
+            <div className={styles.unhideTip}>
+              [끌어올리기]로 상단 노출이 가능합니다.
+            </div>
+            <button 
+              className={styles.successBtn}
+              onClick={() => {
+                setShowUnhideSuccessModal(false);
+                window.location.reload();
+              }}
+            >
+              확인
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -541,22 +541,24 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
   );
 
   // 일반 게시판용 아이템 렌더링
-  const renderJobItem = (job: Job, isAd = false) => {
-    // 디버깅
-    console.log('Job:', job.id, 'is_urgent:', job.is_urgent, 'boardType:', boardType);
-    return (
+  const renderJobItem = (job: Job, isAd = false) => (
     <li key={`${isAd ? 'ad-' : ''}${job.id}`} className={`${styles.jobItem} ${isRead(job.id) ? styles.readPost : ''} ${!job.salary_type || !job.salary_detail ? 'no-salary' : ''} ${job.is_urgent ? styles.urgentItem : ''}`}>
       <span className={styles.time}>{formatDate(job.updated_time)}</span>
       <div className={styles.jobContent}>
         <p className={styles.title}>
           <Link href={`/jd/${job.id}`} scroll={false} onClick={() => handlePostClick(job.id)}>
-            {boardType === '0' && job.is_urgent && (
-              <span className={styles.urgentTag}>
-                <img src="/icons/urgent-icon.svg" alt="긴급" className={styles.urgentIcon} />
-                긴급
+            <span className={styles.titleText}>
+              {boardType === '0' && job.is_urgent && (
+                <span className={styles.urgentTag}>
+                  <img src="/icons/urgent-fire.png" alt="긴급" className={styles.urgentIcon} />
+                  긴급
+                </span>
+              )}
+              {job.title}
+              <span className={styles.locationText}>
+                {` (${job['1depth_region']} ${job['2depth_region']})`}
               </span>
-            )}
-            {formatTitle(job)}
+            </span>
           </Link>
         </p>
         <p className={styles.jobDetails}>
@@ -565,7 +567,6 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
       </div>
     </li>
   );
-  };
 
   // 인기글: 인기점수 기준 상위 3개 (공지 제외)
   const hotPosts = [...jobs]

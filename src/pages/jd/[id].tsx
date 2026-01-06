@@ -43,6 +43,9 @@ interface JobDetailType {
   work_location_detail: string;
   work_start_time: string;
   work_end_time: string;
+  is_two_shift?: boolean;
+  work_start_time2?: string;
+  work_end_time2?: string;
   // 구직정보 전용 필드
   korean_name?: string;
   english_name?: string;

@@ -285,7 +285,8 @@ const BoardPage: React.FC = () => {
         `, { count: 'exact' })
         .eq('ad', false)
         .eq('board_type', currentBoardType)
-        .not('uploader_id', 'is', null);
+        .not('uploader_id', 'is', null)
+        .or('is_hidden.is.null,is_hidden.eq.false'); // 숨김 처리된 게시글 제외
 
       // board_type이 0일 때만 is_accept 조건 추가
       if (currentBoardType === '0') {
@@ -365,9 +366,6 @@ const BoardPage: React.FC = () => {
         }
       }
 
-      // 디버깅: DB에서 오는 원본 데이터 확인
-      console.log('Raw jobs from DB:', jobs?.slice(0, 3));
-      
       // 북마크 상태와 댓글 수, 조회수를 포함하여 jobs 매핑
       const mappedJobs = (jobs || []).map((job: any) => ({
         ...job,
@@ -418,7 +416,8 @@ const BoardPage: React.FC = () => {
             `)
             .eq('ad', true)
             .eq('board_type', currentBoardType)
-            .eq('users.is_accept', true);
+            .eq('users.is_accept', true)
+            .or('is_hidden.is.null,is_hidden.eq.false');
 
           // uploader_id가 null인 광고도 별도로 가져옴
           let nullUploaderQuery = supabase
@@ -426,7 +425,8 @@ const BoardPage: React.FC = () => {
             .select()
             .eq('ad', true)
             .eq('board_type', currentBoardType)
-            .is('uploader_id', null);
+            .is('uploader_id', null)
+            .or('is_hidden.is.null,is_hidden.eq.false');
 
           // 필터 조건 추가
           if (city1) {
