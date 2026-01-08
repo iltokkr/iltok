@@ -780,10 +780,17 @@
 /* 전체 건수 섹션 */
 .totalCountSection {
   display: flex;
-  align-items: baseline;
+  align-items: center;
+  justify-content: space-between;
   gap: 8px;
   padding: 25px 20px 20px 20px;
   margin: 0;
+}
+
+.totalCountLeft {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
 }
 
 .totalCountLabel {
@@ -796,6 +803,100 @@
   font-size: 13px;
   font-weight: 400;
   color: #888;
+}
+
+/* 이력서 작성 CTA 버튼 */
+.resumeCtaWrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.resumeCta {
+  display: inline-block;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.resumeCta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(255, 107, 53, 0.3);
+}
+
+.resumeCtaSub {
+  font-size: 12px;
+  color: #888;
+}
+
+/* 채용정보 페이지 이력서 CTA 배너 */
+.resumeCtaBanner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 14px 20px;
+  margin: 0 0 10px 0;
+  background: linear-gradient(135deg, #fff5f2 0%, #fff0eb 100%);
+  border: 1px solid #ffe0d6;
+  border-radius: 8px;
+  position: relative;
+}
+
+.resumeCtaClose {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  color: #999;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s, color 0.2s;
+  padding: 0;
+  line-height: 1;
+}
+
+.resumeCtaClose:hover {
+  background-color: rgba(0, 0, 0, 0.08);
+  color: #666;
+}
+
+.resumeCtaBannerBtn {
+  display: inline-block;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.resumeCtaBannerBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(255, 107, 53, 0.3);
+}
+
+.resumeCtaBannerSub {
+  font-size: 13px;
+  color: #666;
 }
 
 /* 모바일에서는 슬라이더, PC에서는 리스트 */
@@ -821,6 +922,8 @@
   .totalCountSection {
     padding: 20px 15px 15px 15px;
     margin: 0;
+    flex-wrap: wrap;
+    gap: 10px;
   }
   
   .totalCountLabel {
@@ -828,6 +931,54 @@
   }
   
   .totalCountNumber {
+    font-size: 12px;
+  }
+
+  .resumeCtaWrap {
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    order: 3;
+  }
+
+  .resumeCta {
+    width: 100%;
+    text-align: center;
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+
+  .resumeCtaSub {
+    font-size: 11px;
+    text-align: center;
+    width: 100%;
+  }
+
+  .resumeCtaBanner {
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 15px;
+    padding-top: 28px;
+    margin: 0 0 8px 0;
+  }
+
+  .resumeCtaBannerBtn {
+    width: 100%;
+    text-align: center;
+    padding: 10px 16px;
+    font-size: 13px;
+  }
+
+  .resumeCtaBannerSub {
+    font-size: 12px;
+  }
+
+  .resumeCtaClose {
+    top: 6px;
+    right: 6px;
+    width: 22px;
+    height: 22px;
     font-size: 12px;
   }
 }

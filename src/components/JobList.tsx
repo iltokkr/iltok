@@ -86,6 +86,38 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
   const [bookmarkedJobs, setBookmarkedJobs] = useState<number[]>([]);
   const [bookmarkCounts, setBookmarkCounts] = useState<Record<number, number>>({});
   const [showLoginPopup, setShowLoginPopup] = useState(false);
+  
+  // 구직정보 등록 여부 및 CTA 숨김 상태
+  const [hasJobSeekerPost, setHasJobSeekerPost] = useState(false);
+  const [hideResumeCta, setHideResumeCta] = useState(false);
+
+  // localStorage에서 CTA 숨김 상태 확인
+  useEffect(() => {
+    const hidden = localStorage.getItem('hideResumeCta');
+    if (hidden === 'true') {
+      setHideResumeCta(true);
+    }
+  }, []);
+
+  // 사용자가 구직정보를 등록했는지 확인
+  useEffect(() => {
+    const checkJobSeekerPost = async () => {
+      if (!isLoggedIn || !user) return;
+      
+      const { data, error } = await supabase
+        .from('jd')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('board_type', '1')
+        .limit(1);
+        
+      if (data && data.length > 0 && !error) {
+        setHasJobSeekerPost(true);
+      }
+    };
+
+    checkJobSeekerPost();
+  }, [isLoggedIn, user]);
 
   useEffect(() => {
     const fetchBookmarks = async () => {
@@ -289,6 +321,14 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
       label: 'top_ad_guide_button'
     });
     setShowAdPopup(true);
+  };
+
+  // CTA 다시 보지 않기
+  const handleCloseResumeCta = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    localStorage.setItem('hideResumeCta', 'true');
+    setHideResumeCta(true);
   };
 
   const handleBookmark = async (jobId: number) => {
@@ -690,8 +730,18 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
 
       {(boardType === '4' || boardType === '1') && (
         <div className={styles.totalCountSection}>
-          <span className={styles.totalCountLabel}>{boardType === '1' ? '최신 인재정보' : '전체'}</span>
-          <span className={styles.totalCountNumber}>총 {totalCount.toLocaleString()} 건</span>
+          <div className={styles.totalCountLeft}>
+            <span className={styles.totalCountLabel}>{boardType === '1' ? '최신 인재정보' : '전체'}</span>
+            <span className={styles.totalCountNumber}>총 {totalCount.toLocaleString()} 건</span>
+          </div>
+          {boardType === '1' && !hasJobSeekerPost && (
+            <div className={styles.resumeCtaWrap}>
+              <Link href="/write?board_type=1" className={styles.resumeCta}>
+                1분만에 이력서 작성하기
+              </Link>
+              <span className={styles.resumeCtaSub}>회사가 일자리를 직접 찾아줘요!</span>
+            </div>
+          )}
         </div>
       )}
 
@@ -704,6 +754,22 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
             </div>
             {adJobs.map(job => renderJobItem(job, true))}
           </ul>
+        )}
+
+        {boardType === '0' && currentPage === 1 && !hasJobSeekerPost && !hideResumeCta && (
+          <div className={styles.resumeCtaBanner}>
+            <button 
+              className={styles.resumeCtaClose}
+              onClick={handleCloseResumeCta}
+              aria-label="다시 보지 않기"
+            >
+              ✕
+            </button>
+            <Link href="/write?board_type=1" className={styles.resumeCtaBannerBtn}>
+              1분만에 이력서 작성하기
+            </Link>
+            <span className={styles.resumeCtaBannerSub}>회사가 일자리를 직접 찾아줘요!</span>
+          </div>
         )}
 
         <ul className={`${styles.listWrap} ${styles.listText} ${boardType === '4' ? styles.communityList : ''} ${boardType === '1' ? styles.jobSeekerList : ''}`}>

@@ -782,8 +782,8 @@ const BoardPage: React.FC = () => {
       <MainCarousel  
           images={[
             { 
-              src: '/banner_50off.png', 
-              mobileSrc: '/banner_50off.png',
+              src: '/50.png', 
+              mobileSrc: '/50.png',
               action: 'popup'
             },
             { 
