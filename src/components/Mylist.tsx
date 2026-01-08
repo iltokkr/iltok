@@ -22,6 +22,9 @@ interface MyPost {
   '2depth_category': string;
   board_type?: string;
   is_hidden?: boolean;
+  salary_type?: string;
+  salary_detail?: string;
+  is_wage_violation?: boolean;
 }
 
 interface BookmarkedPost extends MyPost {
@@ -61,6 +64,7 @@ const Mylist: React.FC<MylistProps> = ({
   const [deleteTargetPost, setDeleteTargetPost] = useState<MyPost | null>(null);
   const [showHideSuccessModal, setShowHideSuccessModal] = useState(false);
   const [showUnhideSuccessModal, setShowUnhideSuccessModal] = useState(false);
+  const [showWageViolationModal, setShowWageViolationModal] = useState(false);
   const authContext = useContext(AuthContext);
   const [bookmarkedPosts, setBookmarkedPosts] = useState<BookmarkedPost[]>([]);
   const [bookmarkCounts, setBookmarkCounts] = useState<Record<number, number>>({});
@@ -130,8 +134,24 @@ const Mylist: React.FC<MylistProps> = ({
     fetchBookmarkCounts();
   }, [authContext?.user?.id]);
 
+  // 최저임금 위반 여부 확인 (시급이 10,320원 미만인 경우)
+  const checkWageViolation = (post: MyPost): boolean => {
+    if (post.salary_type !== '시급' || !post.salary_detail) return false;
+    const salaryNum = Number(post.salary_detail.replace(/,/g, ''));
+    return !isNaN(salaryNum) && salaryNum < 10320;
+  };
+
   const handleReload = async (postId: number) => {
     try {
+      // 해당 게시물 찾기
+      const targetPost = posts.find(p => p.id === postId);
+      
+      // 최저임금 위반 체크
+      if (targetPost && (targetPost.is_wage_violation || checkWageViolation(targetPost))) {
+        setShowWageViolationModal(true);
+        return;
+      }
+
       // Check if reload_times is available
       if (reloadTimes <= 0) {
         alert('끌어올리기 횟수가 모두 소진되었습니다. 다음 충전 시간까지 기다려주세요.');
@@ -295,6 +315,15 @@ const Mylist: React.FC<MylistProps> = ({
   // 게시글 숨김 해제 (원래 위치로 복원)
   const handleUnhide = async (postId: number) => {
     try {
+      // 해당 게시물 찾기
+      const targetPost = posts.find(p => p.id === postId);
+      
+      // 최저임금 위반 체크
+      if (targetPost && (targetPost.is_wage_violation || checkWageViolation(targetPost))) {
+        setShowWageViolationModal(true);
+        return;
+      }
+
       const { error } = await supabase
         .from('jd')
         .update({ is_hidden: false })
@@ -403,6 +432,9 @@ const Mylist: React.FC<MylistProps> = ({
               <div className={styles.postContent}>
                 <span className={styles.time}>{formatDate(post.updated_time)}</span>
                 {post.is_hidden && <span className={styles.hiddenBadge}>숨김</span>}
+                {(post.is_wage_violation || checkWageViolation(post)) && (
+                  <span className={styles.wageViolationBadge}>⚠️ 최저임금 위반</span>
+                )}
                 <Link href={`/jd/${post.id}`} scroll={false} className={styles.title}>
                   {post.title}
                 </Link>
@@ -579,6 +611,29 @@ const Mylist: React.FC<MylistProps> = ({
                 setShowUnhideSuccessModal(false);
                 window.location.reload();
               }}
+            >
+              확인
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 최저임금 위반 경고 모달 */}
+      {showWageViolationModal && (
+        <div className={styles.successModalOverlay}>
+          <div className={styles.wageViolationModal}>
+            <div className={styles.wageViolationIcon}>⚠️</div>
+            <h3 className={styles.wageViolationTitle}>최저임금 위반 공고</h3>
+            <p className={styles.wageViolationDesc}>
+              이 공고의 시급이 2025년 최저임금(10,320원) 미만입니다.
+            </p>
+            <p className={styles.wageViolationDesc}>
+              <strong>시급을 10,320원 이상으로 수정</strong>해야<br />
+              숨김해제 및 끌어올리기가 가능합니다.
+            </p>
+            <button 
+              className={styles.successBtn}
+              onClick={() => setShowWageViolationModal(false)}
             >
               확인
             </button>

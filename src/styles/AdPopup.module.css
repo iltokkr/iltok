@@ -90,6 +90,11 @@
   color: #ff4757;
 }
 
+.discountPrice {
+  color: #ff4757;
+  font-size: 15px;
+}
+
 .linkValue {
   flex: 1;
   font-size: 13px;

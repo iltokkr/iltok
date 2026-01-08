@@ -1165,7 +1165,7 @@
   margin-right: 4px;
   white-space: nowrap;
   vertical-align: baseline;
-  animation: urgentGlow 2s ease-in-out infinite;
+  animation: urgentGlow 0.8s ease-in-out infinite;
 }
 
 .urgentIcon {

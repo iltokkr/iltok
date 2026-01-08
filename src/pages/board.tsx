@@ -7,6 +7,7 @@ import JobList from '@/components/JobList';
 import Pagination from '@/components/Pagination';
 import Footer from '@/components/Footer';
 import MainCarousel from '@/components/MainCarousel';
+import AdPopup from '@/components/AdPopup';
 import styles from '@/styles/Board.module.css';
 import { createClient } from '@supabase/supabase-js'
 import Head from 'next/head'// 사용자에게 알림을 표시하기 위해 추가
@@ -239,6 +240,7 @@ const BoardPage: React.FC = () => {
   const auth = useContext(AuthContext);
   const [bookmarkedJobs, setBookmarkedJobs] = useState<number[]>([]);
   const [showModal, setShowModal] = useState(true); // 모달 상태 추가
+  const [showAdPopup, setShowAdPopup] = useState(false); // 광고 팝업 상태
 
   // AuthContext가 는 경우 에러 처리
   if (!auth) throw new Error("AuthContext not found");
@@ -780,13 +782,20 @@ const BoardPage: React.FC = () => {
       <MainCarousel  
           images={[
             { 
-              src: '/image copy.png', 
-              link: 'https://open.kakao.com/me/114114KR',
-              mobileSrc: '/image copy_mo.png'
+              src: '/banner_50off.png', 
+              mobileSrc: '/banner_50off.png',
+              action: 'popup'
+            },
+            { 
+              src: '/job.png', 
+              mobileSrc: '/job.png',
+              action: 'navigate',
+              navigateTo: '/write?board_type=1'
             }
-            // 추가 이미지와 링크를 여기에 추가
         ]}
+          onAdPopupOpen={() => setShowAdPopup(true)}
       />
+      {showAdPopup && <AdPopup onClose={() => setShowAdPopup(false)} />}
       <div className={styles.layout} ref={contentRef}>
         <JobFilter
           filters={filters}

@@ -706,9 +706,6 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
               <p className={style.minWageSubtext}>
                 변경된 최저임금이 준수되었는 지 공고 내용을 미리 확인해 주세요.
               </p>
-              <p className={style.minWageDeadline}>
-                최저임금 미만 게시글 수정 유예기간 : 2026년 1월 1일 ~ 2026년 1월 9일
-              </p>
             </div>
             <label className={style.minWageCheckbox}>
               <input 

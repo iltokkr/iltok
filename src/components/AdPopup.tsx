@@ -105,7 +105,7 @@ const AdPopup: React.FC<AdPopupProps> = ({ onClose }) => {
             </div>
             <div className={styles.infoRow}>
               <span className={styles.infoLabel}>상품금액</span>
-              <span className={styles.infoValue}>30일 / 22만원 (VAT포함)</span>
+              <span className={styles.infoValue}>30일 / <s>22만원</s> → <strong className={styles.discountPrice}>11만원</strong> (VAT포함)</span>
             </div>
             <div className={styles.infoRow}>
               <span className={styles.infoLabel}>계좌번호</span>

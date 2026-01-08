@@ -11,9 +11,9 @@
   width: 100%;
   max-width: 980px;
   margin: 0 auto;
-  padding: 10px 0 0 0;
-  height: 80px !important;
-  max-height: 80px !important;
+  padding: 8px 0 0 0;
+  height: auto !important;
+  max-height: none !important;
   overflow: hidden;
   box-sizing: border-box;
 }
@@ -27,8 +27,8 @@
 .carousel :global(.slick-track),
 .carousel :global(.slick-slide),
 .carousel :global(.slick-slide > div) {
-  height: 70px !important;
-  max-height: 70px !important;
+  height: auto !important;
+  max-height: none !important;
 }
 
 .carousel :global(.slick-prev),
@@ -52,69 +52,63 @@
 .slideWrapper {
   position: relative;
   width: 100%;
-  height: 70px !important;
-  max-height: 70px !important;
+  height: auto !important;
+  max-height: none !important;
   overflow: hidden;
 }
 
 .slideWrapper a {
   display: block;
-  height: 70px !important;
+  height: auto !important;
 }
 
 .image {
   width: 100%;
-  height: 70px !important;
-  max-height: 70px !important;
-  object-fit: cover;
-  border-radius: 5px;
-  border: 1px solid #eee;
+  height: auto !important;
+  max-height: none !important;
+  object-fit: contain;
+  border-radius: 8px;
+  border: none;
 }
 
+/* 슬라이더 dots 스타일 */
+.carousel :global(.slick-dots) {
+  bottom: 10px;
+}
+
+.carousel :global(.slick-dots li button:before) {
+  font-size: 10px;
+  color: #fff;
+  opacity: 0.6;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.carousel :global(.slick-dots li.slick-active button:before) {
+  color: #fff;
+  opacity: 1;
+}
+
+/* 모바일 */
 @media (max-width: 768px) {
   .carousel {
     padding: 5px 0 0 0;
     margin: 0 !important;
-    height: auto !important;
-    max-height: none !important;
-    overflow: hidden;
-  }
-
-  .carousel :global(.slick-list) {
-    height: auto !important;
-    overflow: hidden;
-  }
-
-  .carousel :global(.slick-track) {
-    height: auto !important;
-  }
-
-  .carousel :global(.slick-slide) {
-    height: auto !important;
-  }
-
-  .carousel :global(.slick-slide > div) {
-    height: auto !important;
-  }
-
-  .slideWrapper {
-    height: auto !important;
-    max-height: none !important;
-  }
-
-  .slideWrapper a {
-    height: auto !important;
-  }
-  
-  .image {
-    border-radius: 0;
-    height: auto !important;
-    max-height: none !important;
-    width: 100%;
   }
 
   .carousel :global(.slick-prev),
   .carousel :global(.slick-next) {
     display: none !important;
+  }
+
+  .carousel :global(.slick-dots) {
+    bottom: 12px;
+  }
+  
+  .carousel :global(.slick-dots li button:before) {
+    font-size: 12px;
+  }
+  
+  .image {
+    border-radius: 0;
   }
 }
