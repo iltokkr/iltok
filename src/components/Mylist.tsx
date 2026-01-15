@@ -408,6 +408,10 @@ const Mylist: React.FC<MylistProps> = ({
       <div className={styles.guideCard}>
         <div className={styles.guideItem}>
           <img src="/icons/check-coral.svg" alt="안내" className={styles.guideIconImg} />
+          <span className={styles.guideText}><strong>이력서 및 자유게시판</strong>은 사업자 인증 없이 게시글 작성 가능합니다.</span>
+        </div>
+        <div className={styles.guideItem}>
+          <img src="/icons/check-coral.svg" alt="안내" className={styles.guideIconImg} />
           <span className={styles.guideText}><strong>끌어올리기</strong>를 하면 공고가 게시판 최상단으로 이동합니다.</span>
         </div>
         <div className={styles.guideItem}>
@@ -417,6 +421,10 @@ const Mylist: React.FC<MylistProps> = ({
         <div className={styles.guideItem}>
           <img src="/icons/check-coral.svg" alt="안내" className={styles.guideIconImg} />
           <span className={styles.guideText}>[수정]은 횟수 제한 없이 가능하지만, 게시판 순서는 변경되지 않습니다.</span>
+        </div>
+        <div className={styles.guideItem}>
+          <img src="/icons/check-coral.svg" alt="안내" className={styles.guideIconImg} />
+          <span className={styles.guideText}><strong>[모니터링]</strong> 중복 게시글은 별도의 안내 없이 삭제됩니다.</span>
         </div>
       </div>
 
