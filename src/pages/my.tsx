@@ -35,6 +35,7 @@ interface UserData {
   number: string | null;
   business_number: string | null;
   business_address: string | null;
+  user_type: string | null;
 }
 
 const My: React.FC = () => {
@@ -42,6 +43,7 @@ const My: React.FC = () => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [showVerificationAlert, setShowVerificationAlert] = useState(false);
   const [showPendingAlert, setShowPendingAlert] = useState(false);
+  const [showDuplicateNoticeAlert, setShowDuplicateNoticeAlert] = useState(false);
   const authContext = useContext(AuthContext);
   const router = useRouter();
 
@@ -81,7 +83,7 @@ const My: React.FC = () => {
   const fetchUserData = async () => {
     const { data, error } = await supabase
       .from('users')
-      .select('id, is_accept, is_upload, reload_times, biz_file, company_name, name, number, business_number, business_address')
+      .select('id, is_accept, is_upload, reload_times, biz_file, company_name, name, number, business_number, business_address, user_type')
       .eq('id', authContext?.user?.id)
       .single();
 
@@ -91,6 +93,16 @@ const My: React.FC = () => {
       setUserData(data);
     }
   };
+
+  // 기업 회원 마이페이지 진입 시 중복 공고 경고 팝업 (다시 보지 않기 미선택 시만)
+  useEffect(() => {
+    if (typeof window === 'undefined' || !userData?.id || !authContext?.user) return;
+    const isBusiness = userData.user_type !== 'jobseeker';
+    const dismissedKey = `duplicate_notice_dismissed_${userData.id}`;
+    if (isBusiness && !localStorage.getItem(dismissedKey)) {
+      setShowDuplicateNoticeAlert(true);
+    }
+  }, [userData?.id, userData?.user_type, authContext?.user]);
 
   return (
     <div className={styles.container}>
@@ -165,6 +177,53 @@ const My: React.FC = () => {
               onClick={() => setShowPendingAlert(false)}
             >
               확인
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 중복 공고 등록 경고 팝업 (기업 회원 마이페이지 진입 시) */}
+      {showDuplicateNoticeAlert && userData?.id && (
+        <div className={styles.modalOverlay} onClick={() => {}}>
+          <div className={styles.modalContentDuplicateNotice} onClick={(e) => e.stopPropagation()}>
+            <h2 className={styles.dupNoticeTitle}>중복 공고 등록에 따른 즉시 이용 정지 안내</h2>
+            <p className={styles.dupNoticeLead}>
+              구직자가 편안하게 채용 정보를 탐색할 수 있는 환경 유지를 위해,<br />
+              다음과 같은 행위에 대해 이용 제한 조치를 시행합니다.
+            </p>
+            <div className={styles.modalScrollBody}>
+              <section className={styles.dupNoticeSection}>
+                <h3 className={styles.dupNoticeSectionTitle}>운영 정책 위반 행위</h3>
+                <ul className={styles.dupNoticeList}>
+                  <li><span className={styles.dupNoticeCheck}>✓</span> 복수 계정을 이용해 동일한 채용공고를 분산 등록하는 행위</li>
+                  <li><span className={styles.dupNoticeCheck}>✓</span> 동일한 제목과 동일한 내용의 채용공고를 반복 등록하는 행위</li>
+                  <li><span className={styles.dupNoticeCheck}>✓</span> 기존 공고와 내용이 사실상 동일함에도 형식만 일부 수정하여 재등록하는 행위</li>
+                  <li><span className={styles.dupNoticeCheck}>✓</span> 서로 다른 휴대전화 번호를 사용하여 동일 공고를 중복 게시하는 행위</li>
+                </ul>
+              </section>
+              <section className={styles.dupNoticeSection}>
+                <h3 className={styles.dupNoticeSectionTitle}>위반 시 조치 사항</h3>
+                <ul className={styles.dupNoticeList}>
+                  <li><span className={styles.dupNoticeCheck}>✓</span> 사전 경고 없이 공고 삭제</li>
+                  <li><span className={styles.dupNoticeCheck}>✓</span> 반복 위반 시 영구 이용 제한</li>
+                  <li><span className={styles.dupNoticeCheck}>✓</span> 관련된 모든 계정 이용 정지</li>
+                </ul>
+              </section>
+              <p className={styles.dupNoticeNote}>
+                중복 공고는 구직자 피로를 유발해 엄격히 제한됩니다.<br />
+                공정한 환경 유지를 위해 등록 전 반드시 확인해 주세요.
+              </p>
+            </div>
+            <button
+              className={styles.dupNoticeButton}
+              onClick={() => {
+                if (typeof window !== 'undefined' && userData?.id) {
+                  localStorage.setItem(`duplicate_notice_dismissed_${userData.id}`, '1');
+                }
+                setShowDuplicateNoticeAlert(false);
+              }}
+            >
+              확인했습니다
             </button>
           </div>
         </div>

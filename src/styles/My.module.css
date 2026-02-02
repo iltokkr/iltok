@@ -104,6 +104,134 @@
   background: #e64a19;
 }
 
+/* 중복 공고 경고 팝업 - 트렌디/깔끔 */
+.modalContentDuplicateNotice {
+  background: #fff;
+  border-radius: 20px;
+  padding: 0;
+  max-width: 440px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.12);
+  animation: modalFadeIn 0.25s ease-out;
+  overflow: hidden;
+}
+
+.dupNoticeTitle {
+  font-size: 17px;
+  font-weight: 700;
+  color: #111;
+  margin: 0;
+  padding: 24px 24px 16px;
+  line-height: 1.35;
+  letter-spacing: -0.02em;
+  border-bottom: 1px solid #eee;
+  flex-shrink: 0;
+}
+
+.dupNoticeLead {
+  font-size: 13px;
+  color: #555;
+  line-height: 1.6;
+  margin: 0;
+  padding: 16px 24px 0;
+  flex-shrink: 0;
+}
+
+.modalScrollBody {
+  flex: 1;
+  overflow-y: auto;
+  margin: 0;
+  padding: 16px 24px 20px;
+  min-height: 0;
+}
+
+.modalScrollBody::-webkit-scrollbar {
+  width: 5px;
+}
+
+.modalScrollBody::-webkit-scrollbar-thumb {
+  background: #e0e0e0;
+  border-radius: 10px;
+}
+
+.dupNoticeSection {
+  margin-bottom: 20px;
+}
+
+.dupNoticeSection:last-of-type {
+  margin-bottom: 16px;
+}
+
+.dupNoticeSectionTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 10px 0;
+}
+
+.dupNoticeList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 14px;
+  color: #333;
+  line-height: 1.65;
+}
+
+.dupNoticeList li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.dupNoticeList li:last-child {
+  margin-bottom: 0;
+}
+
+.dupNoticeCheck {
+  flex-shrink: 0;
+  color: #22c55e;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.dupNoticeNote {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.6;
+  margin: 0;
+  padding: 16px 0 0;
+  border-top: 1px solid #f0f0f0;
+}
+
+.dupNoticeButton {
+  display: block;
+  width: calc(100% - 48px);
+  margin: 0 24px 24px;
+  padding: 14px 20px;
+  background: #111;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, opacity 0.2s ease;
+  flex-shrink: 0;
+}
+
+.dupNoticeButton:hover {
+  background: #333;
+}
+
 @media (max-width: 768px) {
   .modalContent {
     padding: 24px 20px;
@@ -120,5 +248,30 @@
 
   .modalSubText {
     font-size: 13px;
+  }
+
+  .modalContentDuplicateNotice {
+    margin: 0 16px;
+    max-height: 85vh;
+  }
+
+  .dupNoticeTitle {
+    padding: 20px 20px 14px;
+    font-size: 16px;
+  }
+
+  .dupNoticeLead {
+    padding: 14px 20px 0;
+    font-size: 12px;
+  }
+
+  .modalScrollBody {
+    padding: 14px 20px 16px;
+  }
+
+  .dupNoticeButton {
+    width: calc(100% - 40px);
+    margin: 0 20px 20px;
+    font-size: 14px;
   }
 }

@@ -98,11 +98,11 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose }) => {
       console.log('userType:', userType);
       console.log('data.user:', data.user);
 
-      // user_type을 DB에 저장 (구직자로 선택한 경우)
-      if (data.user && userType === 'jobseeker') {
+      // user_type을 DB에 저장 (기업/구직자 선택에 따라)
+      if (data.user) {
         await supabase
           .from('users')
-          .update({ user_type: 'jobseeker' })
+          .update({ user_type: userType })
           .eq('id', data.user.id);
       }
 
