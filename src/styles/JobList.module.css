@@ -1329,6 +1329,21 @@
   /* 배경색 없음 */
 }
 
+/* is_ads 제목 옆 제휴 태그 - 회색 박스 */
+.partnerTag {
+  display: inline-block;
+  padding: 2px 6px;
+  margin-right: 6px;
+  font-size: 0.85em;
+  font-weight: 600;
+  color: #6b7280;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  vertical-align: baseline;
+  white-space: nowrap;
+}
+
 @keyframes urgentGlow {
   0%, 100% {
     opacity: 1;

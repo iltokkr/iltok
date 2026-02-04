@@ -281,6 +281,7 @@ const BoardPage: React.FC = () => {
         .select(`
           *,
           is_urgent,
+          is_ads,
           users!inner (
             is_accept
           )
@@ -412,6 +413,7 @@ const BoardPage: React.FC = () => {
               ad,
               uploader_id,
               is_urgent,
+              is_ads,
               users!inner (
                 is_accept
               )

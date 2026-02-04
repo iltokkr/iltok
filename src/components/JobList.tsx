@@ -45,6 +45,7 @@ interface Job {
   popularity_score?: number;
   community_tag?: string;
   is_urgent?: boolean;
+  is_ads?: boolean;
   is_day_pay?: boolean;
   // 구직정보 필드
   korean_name?: string;
@@ -593,6 +594,9 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
                   <img src="/icons/urgent-fire.png" alt="긴급" className={styles.urgentIcon} />
                   긴급
                 </span>
+              )}
+              {boardType === '0' && job.is_ads === true && (
+                <span className={styles.partnerTag}>제휴</span>
               )}
               {job.title}
               <span className={styles.locationText}>
