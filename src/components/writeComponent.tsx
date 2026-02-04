@@ -43,6 +43,9 @@ interface JobForm {
   work_end_time2: string;
   // 상세내용
   contents: string;
+  // 광고(is_ads) 글: 상세내용만 노출, 상세 위 이미지
+  is_ads?: boolean;
+  content_image?: string;
   // 구직정보 전용 필드
   korean_name: string;
   english_name: string;
@@ -125,6 +128,8 @@ const WritePage: React.FC = () => {
     work_start_time2: '17:00',
     work_end_time2: '02:00',
     contents: '',
+    is_ads: false,
+    content_image: '',
     // 구직정보 전용 필드 초기값
     korean_name: '',
     english_name: '',
@@ -325,6 +330,8 @@ const WritePage: React.FC = () => {
       jobData.is_two_shift = jobData.is_two_shift || false;
       jobData.work_start_time2 = jobData.work_start_time2 || '17:00';
       jobData.work_end_time2 = jobData.work_end_time2 || '02:00';
+      jobData.is_ads = jobData.is_ads ?? false;
+      jobData.content_image = jobData.content_image ?? '';
 
       setFormData(jobData);
       console.log('Form data set:', jobData);
@@ -520,6 +527,8 @@ const WritePage: React.FC = () => {
         salary_detail: formData.salary_detail.replace(/,/g, ''), // 콤마 제거하고 저장
             uploader_id: user.id,
             ad: false,
+        is_ads: formData.board_type === '0' ? (formData.is_ads ?? false) : false,
+        content_image: formData.board_type === '0' && (formData.is_ads && formData.content_image) ? formData.content_image.trim() || null : null,
         // 구직정보인 경우 배열 데이터를 JSON 문자열로 변환
         work_conditions: formData.board_type === '1' ? JSON.stringify(formData.work_conditions) : null,
         desired_regions: formData.board_type === '1' ? JSON.stringify(formData.desired_regions) : null,

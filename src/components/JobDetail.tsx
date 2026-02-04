@@ -52,6 +52,8 @@ interface JobDetailProps {
     is_two_shift?: boolean;
     work_start_time2?: string;
     work_end_time2?: string;
+    is_ads?: boolean;
+    content_image?: string | null;
     // 구직정보 전용 필드
     korean_name?: string;
     english_name?: string;
@@ -371,8 +373,8 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
       <div className={style.articleDetail}>
         {jobDetail.board_type === '0' && (
           <div className={style.seekerInfoSection}>
-            {/* 채용 조건 */}
-            {(jobDetail.experience || jobDetail.gender || jobDetail.education || jobDetail.age_limit) && (
+            {/* 채용 조건 - is_ads(광고) 글에서는 숨김 */}
+            {!jobDetail.is_ads && (jobDetail.experience || jobDetail.gender || jobDetail.education || jobDetail.age_limit) && (
               <div className={style.seekerInfoCard}>
                 <h3 className={style.seekerInfoTitle}>채용 조건</h3>
                 <div className={style.seekerBasicInfoList}>
@@ -404,8 +406,8 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
               </div>
             )}
 
-            {/* 급여·근무 */}
-            {(jobDetail.salary_type || (jobDetail.work_start_time && jobDetail.work_end_time)) && (
+            {/* 급여·근무 - is_ads(광고) 글에서는 숨김 */}
+            {!jobDetail.is_ads && (jobDetail.salary_type || (jobDetail.work_start_time && jobDetail.work_end_time)) && (
               <div className={style.seekerInfoCard}>
                 <h3 className={style.seekerInfoTitle}>
                   급여·근무
@@ -437,8 +439,8 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
               </div>
             )}
 
-            {/* 근무지 */}
-            {(jobDetail['1depth_region'] || jobDetail.work_location_detail) && (
+            {/* 근무지 - is_ads(광고) 글에서는 숨김 */}
+            {!jobDetail.is_ads && (jobDetail['1depth_region'] || jobDetail.work_location_detail) && (
               <div className={style.seekerInfoCard}>
                 <h3 className={style.seekerInfoTitle}>근무지</h3>
                 <div className={style.seekerBasicInfoList}>
@@ -461,6 +463,12 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
               </div>
             )}
 
+            {/* 상세 내용 위 이미지 (is_ads일 때만 표시 가능) */}
+            {jobDetail.content_image && (
+              <div className={style.contentImageWrap}>
+                <img src={jobDetail.content_image} alt="" className={style.contentImage} />
+              </div>
+            )}
             {/* 상세 내용 */}
             {jobDetail.id !== 6599 && (
               <div className={style.seekerInfoCard}>
