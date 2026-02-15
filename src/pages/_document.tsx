@@ -9,11 +9,14 @@ export default function Document() {
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet" />
         
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5358954637109366"
-          crossOrigin="anonymous"
-        />
+        {/* Google Ads - 프로덕션 환경에서만 로드 */}
+        {process.env.NODE_ENV === 'production' && (
+          <script
+            async
+            src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5358954637109366"
+            crossOrigin="anonymous"
+          />
+        )}
 
         {/* 네이버 애널리틱스 */}
         <script src="//wcs.naver.net/wcslog.js" />
