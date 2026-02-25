@@ -4,6 +4,16 @@
   background: var(--color-bg);
 }
 
+/* 회원정보 수정용 (마이페이지 내) - 균형 잡힌 크기 */
+.editMain {
+  min-height: auto;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 24px 20px 40px;
+  background: var(--color-bg);
+  border-radius: 16px;
+}
+
 .container {
   max-width: 480px;
   margin: 0 auto;

@@ -35,16 +35,27 @@
   border-bottom: 3px solid transparent;
   cursor: pointer;
   transition: all 0.2s;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .sectionTab:hover {
   color: var(--color-text);
+  text-decoration: none;
 }
 
 .sectionTabActive {
   color: var(--color-primary);
   font-weight: 600;
   border-bottom-color: var(--color-primary);
+  text-decoration: none;
+}
+
+.sectionTabActive:hover {
+  text-decoration: none;
 }
 
 @media (max-width: 768px) {
@@ -107,7 +118,7 @@
 }
 
 .modalText strong {
-  color: #ff5722;
+  color: var(--color-primary);
   font-weight: 600;
 }
 
@@ -136,7 +147,7 @@
 }
 
 .modalButton:hover {
-  background: #e64a19;
+  background: var(--color-primary-dark);
 }
 
 /* 사업자 심사중 팝업 - 리디자인 */
@@ -318,7 +329,7 @@
 
 .dupNoticeCheck {
   flex-shrink: 0;
-  color: #22c55e;
+  color: var(--color-success);
   font-size: 14px;
   font-weight: 600;
   line-height: 1.5;

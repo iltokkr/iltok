@@ -12,7 +12,7 @@
 .articleHeader {
   padding: 24px 20px 20px;
   border-bottom: 1px solid var(--color-border);
-  background: #fff;
+  background: var(--color-surface);
 }
 
 .articleTitle {
@@ -64,7 +64,7 @@
   display: inline-block;
   width: 1px;
   height: 10px;
-  background: #ddd;
+  background: var(--color-border);
   margin-left: 12px;
   vertical-align: middle;
 }
@@ -72,7 +72,7 @@
 .articleDetail {
   padding: 24px 20px;
   line-height: 1.6;
-  background: var(--color-bg);
+  background: var(--color-surface);
 }
 
 /* 급여·근무 하이라이트 - 최상단 강조 카드 */
@@ -163,12 +163,12 @@
   line-height: 20px;
   padding: 1px 16px 0;
   border: 1px solid #ccc;
-  background: #eee;
+  background: var(--color-bg-input);
   margin: 0 3px 0 0;
 }
 
 .acts li a:hover {
-  background: #ddd;
+  background: var(--color-border);
   text-decoration: none;
   color: #333;
 }
@@ -189,7 +189,7 @@
   height: 450px;
   width: 600px;
   vertical-align: middle;
-  border: 1px solid #EAEAEA;
+  border: 1px solid var(--color-border);
 }
 
 .galleryView .bigPic img {
@@ -222,18 +222,18 @@
 
 .languageSelector button {
   padding: 4px 8px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border);
   border-radius: 3px;
   background: #fafafa;
   cursor: pointer;
   transition: all 0.2s;
   font-size: 11px;
-  color: #666;
+  color: var(--color-text-secondary);
 }
 
 .languageSelector button:hover {
-  background: #f0f0f0;
-  border-color: #ccc;
+  background: var(--color-bg-input);
+  border-color: var(--color-border);
 }
 
 .languageSelector button.activeLanguage {
@@ -245,7 +245,7 @@
 .jobInfoSection {
   margin: 16px 0;
   padding: 20px;
-  background-color: #f8f9fa;
+  background-color: var(--color-bg-input);
   border-radius: 8px;
 }
 
@@ -253,7 +253,7 @@
   font-size: 1.2rem;
   color: #333;
   padding-bottom: 8px;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .jobInfoList {
@@ -266,11 +266,11 @@
   padding: 8px 0;
   display: flex;
   align-items: center;
-  color: #555;
+  color: var(--color-text-secondary);
 }
 
 .jobInfoList li:not(:last-child) {
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--color-border);
 }
 
 @media (max-width: 980px) {
@@ -395,7 +395,7 @@
   color: var(--color-primary);
   margin-bottom: 8px;
   padding-bottom: 4px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .infoCard span {
@@ -405,7 +405,7 @@
   padding: 3px 8px;
   margin: 0 4px 4px 0;
   border-radius: 4px;
-  border: 1px solid #eee;
+  border: 1px solid var(--color-border);
 }
 
 @media (max-width: 768px) {
@@ -421,17 +421,19 @@
   color: var(--color-primary);
   margin-bottom: 12px;
   padding-bottom: 4px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--color-border);
   padding-top: 10px;
 }
 
 .actionArea {
-  margin: 24px 0 0;
+  margin: 0 0 24px 0;
   padding: 24px;
-  background: #fff;
+  background: var(--color-surface);
   border-radius: 12px;
   border: 1px solid var(--color-border);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  position: relative;
+  z-index: 10;
 }
 
 .companyInfo {
@@ -504,6 +506,7 @@
 
 .applyButton {
   flex: 1;
+  min-height: 44px;
   padding: 8px 16px;
   background-color: var(--color-primary);
   color: white;
@@ -513,6 +516,15 @@
   font-size: 0.9rem;
   font-weight: 500;
   transition: all 0.2s ease;
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  pointer-events: auto;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .applyButton:hover {
@@ -541,8 +553,8 @@
   gap: 6px;
   padding: 8px 16px;
   background-color: white;
-  color: #666;
-  border: 1px solid #ddd;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.9rem;
@@ -562,7 +574,7 @@
 }
 
 .bookmarkButton:hover {
-  background-color: #f8f9fa;
+  background-color: var(--color-bg-input);
   transform: translateY(-1px);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
@@ -687,7 +699,7 @@
   border: none;
   font-size: 20px;
   cursor: pointer;
-  color: #999;
+  color: var(--color-text-muted);
   line-height: 1;
 }
 
@@ -704,7 +716,7 @@
 }
 
 .minWageContent {
-  background: #f5f5f5;
+  background: var(--color-bg-input);
   border-radius: 8px;
   padding: 25px 20px;
   text-align: center;
@@ -767,7 +779,7 @@
 }
 
 .seekerInfoCard {
-  background: #fff;
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 12px;
   padding: 20px 24px;
@@ -848,7 +860,7 @@
   padding: 16px;
   background: #fafafa;
   border-radius: 10px;
-  border-left: 4px solid #ff5722;
+  border-left: 4px solid var(--color-primary);
 }
 
 .careerCompany {
@@ -867,14 +879,14 @@
 .careerStatus {
   font-size: 12px;
   padding: 3px 10px;
-  background: #e8f5e9;
-  color: #4caf50;
+  background: var(--color-success-bg);
+  color: var(--color-success);
   border-radius: 12px;
 }
 
 .careerPeriod {
   font-size: 13px;
-  color: #666;
+  color: var(--color-text-secondary);
   margin-bottom: 10px;
 }
 
@@ -887,8 +899,8 @@
 .careerDutyTag {
   display: inline-block;
   padding: 4px 10px;
-  background: #f5f5f5;
-  color: #666;
+  background: var(--color-bg-input);
+  color: var(--color-text-secondary);
   border-radius: 4px;
   font-size: 12px;
 }

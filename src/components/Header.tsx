@@ -36,10 +36,16 @@ const Header: React.FC = () => {
         .from('users')
         .select('user_type, user_id, email, name')
         .eq('id', auth.user.id)
-        .single()
-        .then(({ data }) => {
+        .maybeSingle()
+        .then(({ data, error }) => {
           if (cancelled) return;
-          setUserType(data?.user_type || null);
+          if (error) {
+            console.error('Header users 조회 오류:', error);
+            setUserType('jobseeker');
+            setUserId(null);
+            return;
+          }
+          setUserType(data?.user_type || 'jobseeker');
           setUserId(data?.user_type === 'jobseeker' ? (data?.name || data?.user_id || data?.email || null) : (data?.user_id || data?.email || null));
         });
       return () => { cancelled = true; };
@@ -54,7 +60,7 @@ const Header: React.FC = () => {
   const { isLoggedIn } = auth;
 
   const currentBoardType = (router.pathname === '/board' ? (router.query.board_type as string) : null) || '0';
-  const currentSection = (router.pathname === '/my' ? (router.query.section as string) : null) as 'ads' | 'info' | 'applications' | undefined;
+  const currentSection = (router.pathname === '/my' ? (router.query.section as string) : router.pathname === '/write' && router.query.board_type === '1' ? 'resume' : undefined) as 'ads' | 'info' | 'applications' | 'resume' | undefined;
   const showMenuItems = !['/signup/business', '/signup/personal', '/privacy', '/privacy-policy'].includes(router.pathname) && !router.pathname.startsWith('/resume');
 
   const handleFreeAdClick = (e: React.MouseEvent) => {
@@ -243,10 +249,19 @@ const Header: React.FC = () => {
             )}
             {isLoggedIn ? (
               <>
-                <Link href="/my" onClick={closeMobileMenu} className={styles.mobileMenuLink}>
-                  {userType === 'jobseeker' || (userType === 'both' && (currentSection === 'applications' || currentSection === 'info')) ? '개인서비스' : '기업서비스'}
-                </Link>
-                <a href="#" onClick={(e) => { e.preventDefault(); auth.logout().then(() => { closeMobileMenu(); router.push('/'); }); }} className={styles.mobileMenuLink}>
+                <a
+                  href={userType === 'jobseeker' ? '/my?section=applications' : (userType === 'both' && (currentSection === 'applications' || currentSection === 'info' || currentSection === 'resume' || currentSection !== 'ads') ? '/my?section=applications' : '/my')}
+                  className={styles.mobileMenuLink}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    const href = userType === 'jobseeker' ? '/my?section=applications' : (userType === 'both' && (currentSection === 'applications' || currentSection === 'info' || currentSection === 'resume' || currentSection !== 'ads') ? '/my?section=applications' : '/my');
+                    closeMobileMenu();
+                    router.push(href);
+                  }}
+                >
+                  {userType === 'jobseeker' ? '개인서비스' : (userType === 'both' && (currentSection === 'applications' || currentSection === 'info' || currentSection === 'resume' || currentSection !== 'ads') ? '개인서비스' : '기업서비스')}
+                </a>
+                <a href="#" onClick={(e) => { e.preventDefault(); auth.logout().then(() => { closeMobileMenu(); router.push('/board'); }); }} className={styles.mobileMenuLink}>
                   로그아웃
                 </a>
               </>

@@ -1,98 +1,315 @@
+/* 로그인 팝업 - Albamon 스타일 참고 */
 .popWrap {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(4px);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 100005;
+  padding: 20px;
 }
 
 .popbox {
-  background-color: white;
-  padding: 20px;
-  border-radius: 5px;
-  width: 320px;
+  background: #fff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.15), 0 0 0 1px rgba(15, 23, 42, 0.04);
+  overflow: hidden;
 }
 
-.title {
+/* 헤더 */
+.header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .tit {
-  font-weight: bold;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.02em;
 }
 
-.close a {
-  color: #000;
-  text-decoration: none;
-}
-
-.notice {
-  margin-bottom: 10px;
+.closeBtn {
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
-  gap: 10px;
-}
-
-.inputAuth {
-  flex: 1;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  outline: none;
-}
-
-.inputAuth:focus {
-  border-color: var(--color-primary);
-}
-
-.btnPhone,
-.btnAuthNum {
-  width: 80px;
-  padding: 8px;
-  background-color: var(--color-primary);
-  color: white;
+  justify-content: center;
+  background: var(--color-bg-input);
   border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-/* 회원 유형 선택 */
-.userTypeSelector {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 15px;
-}
-
-.userTypeBtn {
-  flex: 1;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  background: #fff;
-  color: #666;
-  font-size: 14px;
+  border-radius: 10px;
+  font-size: 20px;
+  color: var(--color-text-secondary);
   cursor: pointer;
   transition: all 0.2s;
 }
 
+.closeBtn:hover {
+  background: var(--color-border);
+  color: var(--color-text);
+}
+
+/* 본문 */
+.body {
+  padding: 24px;
+}
+
+/* 말풍선 힌트 */
+.tabHint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%);
+  border: 1px solid #fed7aa;
+  border-radius: 12px;
+  font-size: 14px;
+  color: #c2410c;
+  margin-bottom: 20px;
+}
+
+.tabHint::before {
+  content: '';
+  width: 20px;
+  height: 20px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ea580c'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z'/%3E%3C/svg%3E") no-repeat center;
+  background-size: contain;
+  flex-shrink: 0;
+}
+
+/* 회원 유형 탭 */
+.userTypeSelector {
+  display: flex;
+  gap: 0;
+  margin-bottom: 24px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.userTypeBtn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 16px;
+  border: none;
+  background: #fff;
+  color: var(--color-text-secondary);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.userTypeIcon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.userTypeBtn:first-child {
+  border-right: 1px solid var(--color-border);
+}
+
 .userTypeBtn:hover {
-  border-color: var(--color-primary);
+  background: var(--color-bg);
 }
 
 .userTypeActive {
+  background: var(--color-gradient-cta);
+  color: #fff;
+  font-weight: 600;
+}
+
+.userTypeActive:hover {
+  background: linear-gradient(135deg, #5a7fb5 0%, #4a6fa5 100%);
+}
+
+/* 기업회원 로그인 방식 선택 */
+.loginModeSelector {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.loginModeBtn {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.loginModeBtn:hover {
   border-color: var(--color-primary);
-  background: var(--color-bg-input);
+  color: var(--color-primary);
+}
+
+.loginModeActive {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
   color: var(--color-primary);
   font-weight: 600;
+}
+
+/* 입력 필드 그룹 */
+.fieldGroup {
+  margin-bottom: 16px;
+}
+
+.fieldLabel {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 8px;
+}
+
+.inputWrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  height: 48px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: #fff;
+  transition: all 0.2s;
+}
+
+.inputWrap:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(74, 111, 165, 0.15);
+}
+
+.inputIcon {
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+  font-size: 20px;
+}
+
+.inputAuth {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 15px;
+  color: var(--color-text);
+  background: transparent;
+}
+
+.inputAuth::placeholder {
+  color: var(--color-text-muted);
+}
+
+/* 인증번호 + 버튼 행 */
+.inputRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.inputRow .inputWrap {
+  flex: 1;
+}
+
+.btnPhone {
+  flex-shrink: 0;
+  padding: 0 20px;
+  height: 48px;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btnPhone:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+}
+
+.btnPhone:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 로그인 버튼 */
+.btnLogin {
+  width: 100%;
+  padding: 16px 24px;
+  margin-top: 8px;
+  background: var(--color-gradient-cta);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(74, 111, 165, 0.3);
+}
+
+.btnLogin:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(74, 111, 165, 0.4);
+}
+
+.btnLogin:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 아이디 저장 */
+.checkboxRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.checkboxRow input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.checkboxRow label {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+/* 에러 메시지 */
+.error {
+  margin-top: 12px;
+  padding: 12px 16px;
+  background: var(--color-error-bg);
+  border: 1px solid var(--color-error);
+  border-radius: 8px;
+  color: var(--color-error);
+  font-size: 13px;
+  text-align: center;
 }
 
 /* 이력서 작성 유도 팝업 */
@@ -179,12 +396,4 @@
 
 .resumePromptWriteBtn:hover {
   background: #1976D2;
-}
-
-
-.error {
-  color: #ff3b30;
-  font-size: 13px;
-  margin-top: 10px;
-  text-align: center;
 }

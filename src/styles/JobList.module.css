@@ -2,10 +2,43 @@
     margin-top: 20px;
   }
 
-  .btnTop {
-    font-size: 1em;
-    margin-left: 10px;
-  }
+.btnTop {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--color-gradient-cta);
+  border: none;
+  border-radius: 6px;
+  text-decoration: none;
+  box-shadow: 0 1px 4px rgba(74, 111, 165, 0.2);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btnTop::before {
+  content: '';
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='2'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 16v-4M12 8h.01'/%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.95;
+}
+
+.btnTop:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(74, 111, 165, 0.3);
+}
+
+.btnTop:active {
+  transform: translateY(0);
+}
 
   .layout {
     width: 100%;
@@ -20,27 +53,21 @@
   }
   
   .topArea {
-    background-color: var(--color-bg-input);
-    border-top: 1px solid #ccc;
-    border-bottom: 1px solid #ccc;
-    padding: 10px;
+    background-color: #f1f3f5;
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    padding: 15px 10px 10px;
+    box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.04);
+    border-radius: 8px;
   }
-  
-  .topDiv {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-  }
-  
-  .topTitle {
-    font-size: 15px;
-    font-weight: bold;
-    color: #ff5205;
+
+  .topArea .jobCard {
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04);
   }
   
   
   .time {
-    color: #888;
+    color: var(--color-text-muted);
     margin-right: 10px;
   }
   
@@ -53,7 +80,7 @@
   }
   
   .title em {
-    color: #888;
+    color: var(--color-text-muted);
     font-style: normal;
     margin-left: 10px;
   }
@@ -68,8 +95,8 @@
     display: inline-block;
     padding: 5px 10px;
     margin: 0 2px;
-    border: 1px solid #ddd;
-    color: #333;
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
   }
   
   .pages .current {
@@ -84,7 +111,7 @@
 
 .listHead {
   padding: 1em 15px 8px;
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .listHead .checkbox {
@@ -98,7 +125,7 @@
 }
 
 .listHead .delAll {
-  color: #aaa;
+  color: var(--color-text-muted);
 }
 
 .listText {
@@ -147,7 +174,7 @@
 }
 
 .listWrap li .title em {
-  color: #aaa;
+  color: var(--color-text-muted);
   padding: 0 0 0 3px;
 }
 
@@ -162,8 +189,8 @@
 
 .listP {
   background-color: var(--color-bg-input);
-  border-bottom: 1px solid #CCCCCC;
-  border-top: 1px solid #CCCCCC;
+  border-bottom: 1px solid var(--color-border);
+  border-top: 1px solid var(--color-border);
   margin-top: 15px;
 }
 
@@ -174,7 +201,7 @@
 
 .listPA {
   text-decoration: underline;
-  color: #999999;
+  color: var(--color-text-muted);
 }
 
 .jobItem {
@@ -199,7 +226,7 @@
 
 .time {
   flex: 0 0 35px;
-  color: #888;
+  color: var(--color-text-muted);
   font-size: 0.9em;
   margin-right: 8px;
 }
@@ -356,14 +383,30 @@
 
 .listHeaderLeft {
   display: flex;
-  align-items: baseline;
-  gap: 8px;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .listHeaderTitle {
   font-size: 18px;
   font-weight: bold;
   color: var(--color-text);
+}
+
+/* 프리미엄일 때 헤더 하단 얇은 그라데이션 바 */
+.listHeaderPremium {
+  position: relative;
+}
+
+.listHeaderPremium::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: var(--color-gradient-cta);
 }
 
 /* 리스트/카드 뷰 전환 버튼 - 세그먼트 컨트롤 스타일 */
@@ -509,7 +552,7 @@
 
   .locationText {
     font-size: 0.85em;
-    color: #888;
+    color: var(--color-text-muted);
   }
 
   /* 급여 정보가 없을 때 제목 영역 최대화 */
@@ -583,7 +626,7 @@
 }
 
 .languageSelector button.activeLanguage {
-  background: #ff4800;
+  background: var(--color-primary);
   color: white;
   border-color: var(--color-primary);
 }
@@ -593,7 +636,7 @@
 }
 
 .readPost .title a {
-  color: #666;
+  color: var(--color-text-secondary);
 }
 
 .salaryInfo {
@@ -607,29 +650,29 @@
   font-weight: 600;
 }
 
-/* 급여 유형별 색상 */
+/* 급여 유형별 색상 (톤다운) */
 .salaryType.hourly {
-  color: #16a34a; /* 시급 - 그린 */
+  color: #2d9d5c; /* 시급 */
 }
 
 .salaryType.daily {
-  color: #7c3aed; /* 일급 - 보라 */
+  color: #6b5b95; /* 일급 */
 }
 
 .salaryType.weekly {
-  color: var(--color-primary); /* 주급 - 블루 */
+  color: #5a7fb5; /* 주급 */
 }
 
 .salaryType.monthly {
-  color: #ea580c; /* 월급 - 오렌지 */
+  color: #b45309; /* 월급 */
 }
 
 .salaryType.yearly {
-  color: #0891b2; /* 연봉 - 청록색 */
+  color: #0d9488; /* 연봉 */
 }
 
 .salaryType.negotiable {
-  color: #525252; /* 협의 - 그레이 */
+  color: var(--color-text-secondary); /* 협의 */
 }
 
 .salaryDetail {
@@ -639,31 +682,31 @@
 
 /* 이미 읽은 게시물의 경우에도 급여 유형 색상 유지 */
 .readPost .salaryType {
-  opacity: 0.8;
+  opacity: 0.85;
 }
 
 .readPost .salaryType.hourly {
-  color: #16a34a;
+  color: #2d9d5c;
 }
 
 .readPost .salaryType.daily {
-  color: #7c3aed;
+  color: #6b5b95;
 }
 
 .readPost .salaryType.weekly {
-  color: var(--color-primary);
+  color: #5a7fb5;
 }
 
 .readPost .salaryType.monthly {
-  color: #ea580c;
+  color: #b45309;
 }
 
 .readPost .salaryType.yearly {
-  color: #0891b2;
+  color: #0d9488;
 }
 
 .readPost .salaryType.negotiable {
-  color: #525252;
+  color: var(--color-text-secondary);
 }
 
 .jobItem.no-salary .jobContent .title {
@@ -677,7 +720,7 @@
 }
 
 .categoryText {
-  color: #888;
+  color: var(--color-text-muted);
   font-size: 0.9em;
 }
 
@@ -707,7 +750,7 @@
 
 /* 북마크되지 않은 상태 */
 .emptyBookmark {
-  color: #888;  /* 테두리 회색 */
+  color: var(--color-text-muted);  /* 테두리 회색 */
 }
 
 /* 북마크된 상태 */
@@ -717,7 +760,7 @@
 
 /* 호버 상태 */
 .bookmarkButton:hover svg {
-  color: #888;
+  color: var(--color-text-muted);
 }
 
 @media (max-width: 768px) {
@@ -921,7 +964,7 @@
 
 .hotListPreview {
   font-size: 14px;
-  color: #888;
+  color: var(--color-text-muted);
   margin: 0;
   line-height: 1.5;
   display: -webkit-box;
@@ -974,7 +1017,7 @@
 .totalCountNumber {
   font-size: 13px;
   font-weight: 400;
-  color: #888;
+  color: var(--color-text-muted);
 }
 
 /* 이력서 작성 CTA 버튼 */
@@ -1000,12 +1043,12 @@
 
 .resumeCta:hover {
   transform: translateY(-1px);
-  box-shadow: 0 3px 10px rgba(255, 107, 53, 0.3);
+  box-shadow: 0 3px 10px rgba(74, 111, 165, 0.25);
 }
 
 .resumeCtaSub {
   font-size: 12px;
-  color: #888;
+  color: var(--color-text-muted);
 }
 
 /* 채용정보 페이지 이력서 CTA 배너 */
@@ -1063,7 +1106,7 @@
 
 .resumeCtaBannerBtn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 3px 10px rgba(255, 107, 53, 0.3);
+  box-shadow: 0 3px 10px rgba(74, 111, 165, 0.25);
 }
 
 .resumeCtaBannerSub {
@@ -1230,7 +1273,7 @@
 
 .hotPreview {
   font-size: 13px;
-  color: #888;
+  color: var(--color-text-muted);
   line-height: 1.6;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -1271,7 +1314,7 @@
 }
 
 .hotBookmarkCount.bookmarked {
-  color: #ff6b6b;
+  color: var(--color-error);
 }
 
 .hotHeartIcon {
@@ -1279,7 +1322,7 @@
 }
 
 .hotBookmarkCount.bookmarked .hotHeartIcon {
-  color: #ff6b6b;
+  color: var(--color-error);
 }
 
 .hotFooter {
@@ -1483,7 +1526,7 @@
 }
 
 .noticeTag {
-  background: #ff6b6b !important;
+  background: var(--color-error) !important;
 }
 
 .urgentTag {
@@ -1534,24 +1577,30 @@
 }
 
 .jobSeekerTag {
-  background: transparent !important;
-  border: 1px solid #10b981 !important;
-  color: #10b981 !important;
+  background: var(--color-bg-input) !important;
+  border: 1px solid var(--color-border) !important;
+  color: var(--color-text-secondary) !important;
   font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 6px;
 }
 
 .freeTag {
-  background: transparent !important;
-  border: 1px solid #6b7280 !important;
-  color: #6b7280 !important;
+  background: var(--color-bg-input) !important;
+  border: 1px solid var(--color-border) !important;
+  color: var(--color-text-secondary) !important;
   font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 6px;
 }
 
 .popularTag {
-  background: transparent !important;
-  border: 1px solid #3b82f6 !important;
-  color: #3b82f6 !important;
+  background: var(--color-primary-light) !important;
+  border: 1px solid var(--color-primary) !important;
+  color: var(--color-primary) !important;
   font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 6px;
 }
 
 .communityContent {
@@ -1613,7 +1662,7 @@
 }
 
 .communityTag {
-  background: #ff6b6b;
+  background: var(--color-error);
   color: white;
   padding: 2px 6px;
   border-radius: 4px;
@@ -1624,12 +1673,12 @@
 }
 
 .communityItem.readPost .communityTitle {
-  color: #888;
+  color: var(--color-text-muted);
 }
 
 .communityPreview {
   font-size: 14px;
-  color: #888;
+  color: var(--color-text-muted);
   margin: 0;
   line-height: 1.5;
   display: -webkit-box;
@@ -1677,7 +1726,7 @@
 }
 
 .communityBookmark.bookmarked {
-  color: #ff6b6b;
+  color: var(--color-error);
 }
 
 .communityHeartIcon {
@@ -1685,7 +1734,7 @@
 }
 
 .communityBookmark.bookmarked .communityHeartIcon {
-  color: #ff6b6b;
+  color: var(--color-error);
 }
 
 @media (max-width: 768px) {
@@ -1816,7 +1865,7 @@
 
 .jobSeekerPreview {
   font-size: 13px;
-  color: #888;
+  color: var(--color-text-muted);
   margin: 0;
   line-height: 1.5;
   display: -webkit-box;
@@ -1869,7 +1918,8 @@
   width: 14px;
   height: 14px;
   flex-shrink: 0;
-  color: #888;
+  color: var(--color-text-secondary);
+  opacity: 0.9;
 }
 
 .jobSeekerLine3 {
@@ -1911,11 +1961,11 @@
 }
 
 .jobSeekerItem.readPost .jobSeekerTitle {
-  color: #888;
+  color: var(--color-text-muted);
 }
 
 .jobSeekerItem.readPost .jobSeekerName {
-  color: #888;
+  color: var(--color-text-muted);
 }
 
 @media (max-width: 768px) {

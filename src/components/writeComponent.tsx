@@ -268,7 +268,9 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
   const [salaryWarningConfirmed, setSalaryWarningConfirmed] = useState(false);
   const [showSalaryWarningModal, setShowSalaryWarningModal] = useState(false);
   const [salaryWarningMessage, setSalaryWarningMessage] = useState('');
+  const [showDailyLimitModal, setShowDailyLimitModal] = useState(false);
   const auth = useContext(AuthContext);
+  const [userPhone, setUserPhone] = useState<string>('');
 
   // 제목 유효성 검사 함수
   const validateTitle = (value: string): boolean => {
@@ -300,6 +302,26 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
       setCurrentUserId(auth.user.id);
     }
   }, [auth?.user]);
+
+  useEffect(() => {
+    if (auth?.user?.id) {
+      supabase.from('users').select('number').eq('id', auth.user.id).single()
+        .then(({ data }) => { if (data?.number) setUserPhone(data.number); });
+    }
+  }, [auth?.user?.id]);
+
+  const formatPhoneDisplay = (number: string) => {
+    if (!number) return '';
+    const raw = number.replace(/\D/g, '');
+    if (raw.startsWith('82') && raw.length >= 11) {
+      const local = '0' + raw.slice(2);
+      return `${local.slice(0, 3)}-${local.slice(3, 7)}-${local.slice(7)}`;
+    }
+    if (raw.length >= 10) {
+      return `${raw.slice(0, 3)}-${raw.slice(3, 7)}-${raw.slice(7)}`;
+    }
+    return number;
+  };
 
   // URL에서 board_type 파라미터를 읽어서 폼에 설정
   useEffect(() => {
@@ -615,8 +637,7 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
       }
 
       if (!isEditing && userData.is_upload) {
-          setErrorMessage('채용정보는 하루에 하나만 올릴 수 있습니다.');
-        setIsModalOpen(true);
+        setShowDailyLimitModal(true);
         return;
       }
       }
@@ -938,7 +959,7 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
                 className={`${style.boardTypeTag} ${formData.board_type === '1' ? style.boardTypeTagSelected : ''}`}
                 onClick={() => setFormData(prev => ({ ...prev, board_type: '1' }))}
               >
-                구직정보
+                인재정보
               </button>
               <button
                 type="button"
@@ -1197,6 +1218,20 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
               <>
                 <h2 className={style.sectionTitle}>기본 정보</h2>
                 <div className={style.subSection}>
+                  {/* 회원가입 시 인증한 핸드폰 (비활성화) */}
+                  <div className={style.formRow}>
+                    <div className={style.formLabel}>핸드폰</div>
+                    <div className={style.formInput}>
+                      <input
+                        type="text"
+                        value={userPhone ? formatPhoneDisplay(userPhone) : ''}
+                        readOnly
+                        disabled
+                        placeholder="회원가입 시 인증한 번호"
+                        className={`${style.input} ${style.inputDisabled}`}
+                      />
+                    </div>
+                  </div>
                   {/* 한글이름, 영문이름 */}
                   <div className={style.formRow}>
                     <div className={style.formLabel}><span className={style.required}>*</span> 한글 이름</div>
@@ -1528,6 +1563,26 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
         <p>{errorMessage}</p>
       </Modal>
+
+      {/* 채용정보 하루 1건 제한 모달 */}
+      {showDailyLimitModal && (
+        <div className={style.dailyLimitOverlay} onClick={() => setShowDailyLimitModal(false)}>
+          <div className={style.dailyLimitModal} onClick={e => e.stopPropagation()}>
+            <div className={style.dailyLimitIcon}><HiOutlineCheckCircle /></div>
+            <h2 className={style.dailyLimitTitle}>채용정보 등록 제한</h2>
+            <p className={style.dailyLimitText}>
+              채용정보는 하루에 하나만 올릴 수 있습니다.
+            </p>
+            <p className={style.dailyLimitSub}>내일 다시 시도해 주세요.</p>
+            <button
+              className={style.dailyLimitButton}
+              onClick={() => setShowDailyLimitModal(false)}
+            >
+              확인
+            </button>
+          </div>
+        </div>
+      )}
       {showBusinessVerificationModal && (
         <BusinessVerificationModal onClose={() => {
           setShowBusinessVerificationModal(false);

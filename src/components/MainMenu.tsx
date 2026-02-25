@@ -15,8 +15,8 @@ const supabase = createClient(
 interface MainMenuProps {
   currentBoardType?: string;
   showMenuItems?: boolean;
-  /** 기업회원 메뉴에서 현재 섹션 (공고관리/회원정보), 개인회원은 지원공고 포함 */
-  currentSection?: 'ads' | 'info' | 'applications';
+  /** 기업회원 메뉴에서 현재 섹션 (공고관리/회원정보), 개인회원은 지원공고/이력서 포함 */
+  currentSection?: 'ads' | 'info' | 'applications' | 'resume';
 }
 
 const MainMenu: React.FC<MainMenuProps> = ({ currentBoardType = '0', showMenuItems = true, currentSection }) => {
@@ -40,10 +40,16 @@ const MainMenu: React.FC<MainMenuProps> = ({ currentBoardType = '0', showMenuIte
         .from('users')
         .select('user_type, user_id, email, name')
         .eq('id', auth.user.id)
-        .single()
-        .then(({ data }) => {
+        .maybeSingle()
+        .then(({ data, error }) => {
           if (cancelled) return;
-          setUserType(data?.user_type || null);
+          if (error) {
+            console.error('MainMenu users 조회 오류:', error);
+            setUserType('jobseeker');
+            setUserId(null);
+            return;
+          }
+          setUserType(data?.user_type || 'jobseeker');
           setUserId(data?.user_type === 'jobseeker' ? (data?.name || data?.user_id || data?.email || null) : (data?.user_id || data?.email || null));
         });
       return () => { cancelled = true; };
@@ -82,8 +88,32 @@ const MainMenu: React.FC<MainMenuProps> = ({ currentBoardType = '0', showMenuIte
         <div className={styles.layout}>
           <div className={styles.menuItems}>
           {showMenuItems ? (
-              !mounted || auth?.isLoading || (auth?.isLoggedIn && userType === null) ? (
+              !mounted ? (
                 <span className={styles.menuItemsPlaceholder} aria-hidden="true" />
+              ) : auth?.isLoading || (auth?.isLoggedIn && userType === null) ? (
+                /* 로딩 중: 비로그인 메뉴 표시 */
+                <>
+                  <li>
+                    <Link href={{ pathname: '/board', query: { board_type: '0' } }} className={currentBoardType === '0' ? styles.focus : ''}>
+                      채용정보
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href={{ pathname: '/board', query: { board_type: '1' } }} className={currentBoardType === '1' ? styles.focus : ''}>
+                      인재정보
+                    </Link>
+                  </li>
+                  <li>
+                    <a href="https://pf.kakao.com/_ywaMn" target="_blank" rel="noopener noreferrer" className={styles.externalLink}>
+                      고객센터
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/write" onClick={handleFreeAdClick} className={`${styles.menuCtaLink} ${router.pathname === '/write' ? styles.focus : ''}`}>
+                      공고등록
+                    </a>
+                  </li>
+                </>
               ) : mounted && (userType === 'business' || userType === 'both') && auth?.isLoggedIn ? (
                 <>
                   <li>
@@ -92,6 +122,14 @@ const MainMenu: React.FC<MainMenuProps> = ({ currentBoardType = '0', showMenuIte
                       className={router.pathname === '/board' && (router.query.board_type === '0' || !router.query.board_type) ? styles.focus : ''}
                     >
                       채용정보
+                    </Link>
+                  </li>
+                  <li>
+                    <Link 
+                      href={{ pathname: '/board', query: { board_type: '1' } }}
+                      className={router.pathname === '/board' && router.query.board_type === '1' ? styles.focus : ''}
+                    >
+                      인재정보
                     </Link>
                   </li>
                   <li>
@@ -121,13 +159,21 @@ const MainMenu: React.FC<MainMenuProps> = ({ currentBoardType = '0', showMenuIte
                     </Link>
                   </li>
                   <li>
+                    <Link 
+                      href={{ pathname: '/board', query: { board_type: '1' } }}
+                      className={router.pathname === '/board' && router.query.board_type === '1' ? styles.focus : ''}
+                    >
+                      인재정보
+                    </Link>
+                  </li>
+                  <li>
                     <Link href="/my?section=applications" className={currentSection === 'applications' ? styles.focus : styles.menuLink}>
                       지원공고
                     </Link>
                   </li>
                   <li>
-                    <Link href="/my?section=info" className={currentSection === 'info' ? styles.focus : styles.menuLink}>
-                      회원정보
+                    <Link href={{ pathname: '/write', query: { board_type: '1' } }} className={currentSection === 'resume' || (router.pathname === '/write' && router.query.board_type === '1') ? styles.focus : styles.menuLink}>
+                      이력서
                     </Link>
                   </li>
                   <li>
@@ -149,6 +195,14 @@ const MainMenu: React.FC<MainMenuProps> = ({ currentBoardType = '0', showMenuIte
                       className={currentBoardType === '0' ? styles.focus : ''}
                     >
                       채용정보
+                    </Link>
+                  </li>
+                  <li>
+                    <Link 
+                      href={{ pathname: '/board', query: { board_type: '1' } }}
+                      className={currentBoardType === '1' ? styles.focus : ''}
+                    >
+                      인재정보
                     </Link>
                   </li>
                   <li>
@@ -177,16 +231,33 @@ const MainMenu: React.FC<MainMenuProps> = ({ currentBoardType = '0', showMenuIte
             )}
             </div>
           <div className={styles.menuRight}>
-            {!mounted || auth?.isLoading || (auth?.isLoggedIn && userType === null) ? (
+            {!mounted ? (
               <span className={styles.menuPlaceholder} aria-hidden="true" />
+            ) : auth?.isLoading || (auth?.isLoggedIn && userType === null) ? (
+              <>
+                <a href="#" onClick={(e) => { e.preventDefault(); setShowLoginPopup(true); }} className={styles.menuLink}>로그인</a>
+                <span className={styles.menuSep}>|</span>
+                <a href="#" onClick={(e) => { e.preventDefault(); setShowSignupTypeModal(true); }} className={styles.menuLink}>회원가입</a>
+              </>
             ) : auth?.isLoggedIn ? (
               <>
-                <a href="/my" className={styles.menuLink}>{(() => {
-                  const showPersonalLabel = userType === 'jobseeker' || (userType === 'both' && (currentSection === 'applications' || currentSection === 'info'));
-                  return showPersonalLabel ? (userId ? <><span className={styles.userTag}>{userId}님</span> 개인서비스</> : '개인서비스') : (userType === 'business' || userType === 'both') ? (userId ? <><span className={styles.userTag}>{userId}님</span> 기업서비스</> : '기업서비스') : '마이페이지';
-                })()}</a>
+                {(() => {
+                  const section = router.pathname === '/my' ? (router.query.section as string) : currentSection;
+                  const showPersonal = userType === 'jobseeker' || (userType === 'both' && (section === 'applications' || section === 'info' || section === 'resume' || section !== 'ads'));
+                  const serviceHref = showPersonal ? '/my?section=applications' : '/my';
+                  const serviceLabel = showPersonal ? (userId ? <><span className={styles.userTag}>{userId}님</span> 개인서비스</> : '개인서비스') : (userId ? <><span className={styles.userTag}>{userId}님</span> 기업서비스</> : '기업서비스');
+                  return (
+                    <a
+                      href={serviceHref}
+                      className={styles.menuLink}
+                      onClick={(e) => { e.preventDefault(); router.push(serviceHref); }}
+                    >
+                      {userType === 'jobseeker' ? (userId ? <><span className={styles.userTag}>{userId}님</span> 개인서비스</> : '개인서비스') : userType === 'business' ? (userId ? <><span className={styles.userTag}>{userId}님</span> 기업서비스</> : '기업서비스') : serviceLabel}
+                    </a>
+                  );
+                })()}
                 <span className={styles.menuSep}>|</span>
-                <a href="#" onClick={(e) => { e.preventDefault(); auth.logout().then(() => router.push('/')); }} className={styles.menuLink}>로그아웃</a>
+                <a href="#" onClick={(e) => { e.preventDefault(); auth.logout().then(() => router.push('/board')); }} className={styles.menuLink}>로그아웃</a>
               </>
             ) : (
               <>

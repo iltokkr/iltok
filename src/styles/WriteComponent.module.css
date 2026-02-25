@@ -62,7 +62,7 @@
 }
 
 .required {
-  color: #ff5722;
+  color: var(--color-primary);
   font-size: 14px;
 }
 
@@ -246,31 +246,32 @@
 
 .boardTypeTag {
   padding: 10px 20px;
-  border: 1.5px solid #e0e0e0;
-  border-radius: 20px;
-  background: #fff;
+  border: 1.5px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface);
   font-size: 14px;
-  font-weight: 500;
-  color: #666;
+  font-weight: 600;
+  color: var(--color-text-secondary);
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
 }
 
 .boardTypeTag:hover {
-  border-color: #999;
-  color: #333;
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-primary-light);
 }
 
 .boardTypeTagSelected {
-  background: #fff5f2;
-  border-color: #ff5722;
-  color: #ff5722;
+  background: var(--color-primary-light);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 .boardTypeTagSelected:hover {
-  background: #333;
-  border-color: #333;
+  background: var(--color-primary);
+  border-color: var(--color-primary);
   color: #fff;
 }
 
@@ -313,6 +314,17 @@
 
 .input::placeholder {
   color: var(--color-text-muted);
+}
+
+.inputDisabled {
+  background: var(--color-bg-input) !important;
+  color: var(--color-text-secondary) !important;
+  cursor: not-allowed !important;
+}
+
+.inputDisabled:hover {
+  border-color: var(--color-border) !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
 }
 
 /* 제목 인풋 */
@@ -505,12 +517,12 @@
 
 /* 에러 스타일 */
 .errorInput {
-  border-color: #ff5722 !important;
-  background-color: #fff8f6;
+  border-color: var(--color-primary) !important;
+  background-color: var(--color-primary-light);
 }
 
 .errorText {
-  color: #ff5722;
+  color: var(--color-primary);
   font-size: 13px;
   margin-top: 4px;
   display: block;
@@ -693,7 +705,104 @@
 }
 
 .salaryWarningButton:hover {
-  background: #e64a19;
+  background: var(--color-primary-dark);
+}
+
+/* 채용정보 하루 1건 제한 모달 */
+.dailyLimitOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: dailyLimitFadeIn 0.2s ease-out;
+}
+
+@keyframes dailyLimitFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.dailyLimitModal {
+  background: var(--color-surface);
+  border-radius: 16px;
+  padding: 32px 28px;
+  max-width: 360px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.15), 0 0 0 1px rgba(15, 23, 42, 0.04);
+  animation: dailyLimitSlideIn 0.25s ease-out;
+}
+
+@keyframes dailyLimitSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.dailyLimitIcon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.dailyLimitIcon svg {
+  width: 48px;
+  height: 48px;
+  color: var(--color-primary);
+}
+
+.dailyLimitTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 12px 0;
+  letter-spacing: -0.02em;
+}
+
+.dailyLimitText {
+  font-size: 15px;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin: 0 0 8px 0;
+}
+
+.dailyLimitSub {
+  font-size: 14px;
+  color: var(--color-text-muted);
+  margin: 0 0 24px 0;
+}
+
+.dailyLimitButton {
+  display: block;
+  width: 100%;
+  padding: 14px 24px;
+  background: var(--color-gradient-cta);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(74, 111, 165, 0.25);
+}
+
+.dailyLimitButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(74, 111, 165, 0.35);
 }
 
 /* 기타 유틸리티 */
@@ -865,6 +974,18 @@
   .salaryWarningText {
     font-size: 14px;
   }
+
+  .dailyLimitModal {
+    padding: 28px 24px;
+  }
+
+  .dailyLimitTitle {
+    font-size: 17px;
+  }
+
+  .dailyLimitText {
+    font-size: 14px;
+  }
 }
 
 /* ===== 구직정보 전용 스타일 ===== */
@@ -896,12 +1017,12 @@
 }
 
 .radioLabel:has(input:checked) {
-  border-color: #ff5722;
-  background: #fff5f2;
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
 }
 
 .radioLabel:has(input:checked) span {
-  color: #ff5722;
+  color: var(--color-primary);
 }
 
 /* 성별 버튼 그룹 */
@@ -922,11 +1043,11 @@
 }
 
 .genderButton:hover {
-  border-color: #ff5722 !important;
+  border-color: var(--color-primary) !important;
 }
 
 .genderButtonSelected {
-  border-color: #ff5722 !important;
+  border-color: var(--color-primary) !important;
   background: #fff5f2 !important;
   color: #ff5722 !important;
 }
@@ -935,7 +1056,7 @@
 .ageDisplay {
   font-weight: 500;
   font-size: 14px;
-  color: #ff5722;
+  color: var(--color-primary);
   margin-left: 12px;
 }
 
@@ -969,7 +1090,7 @@
 .birthInput:focus,
 .birthInputSmall:focus {
   outline: none;
-  border-color: #ff5722;
+  border-color: var(--color-primary);
 }
 
 .birthLabel {
@@ -1035,11 +1156,11 @@
 
 .conditionTag {
   padding: 10px 16px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-border);
   border-radius: 20px;
-  background: #fff;
+  background: var(--color-surface);
   font-size: 14px;
-  color: #666;
+  color: var(--color-text-secondary);
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -1100,7 +1221,7 @@
   width: 100%;
   margin-top: 8px;
   padding: 10px 12px;
-  background: #fff5f2;
+  background: var(--color-primary-light);
   border: 1px solid #ffccbc;
   border-radius: 8px;
   font-size: 13px;
@@ -1110,18 +1231,19 @@
 .addRegionBtn {
   height: 48px;
   padding: 0 20px;
-  background: #ff5722;
+  background: var(--color-gradient-cta);
   border: none;
   border-radius: 12px;
   color: #fff;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: opacity 0.2s, box-shadow 0.2s;
 }
 
 .addRegionBtn:hover {
-  background: #e64a19;
+  opacity: 0.9;
+  box-shadow: 0 2px 8px rgba(74, 111, 165, 0.35);
 }
 
 /* 경력 카드 */
@@ -1177,25 +1299,27 @@
 }
 
 .careerStatus.working {
-  background: #fff5f2;
-  color: #ff5722;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
 }
 
 .addCareerBtn {
   width: 100%;
   padding: 14px;
-  border: 1px dashed #ccc;
+  border: 1px dashed var(--color-border);
   border-radius: 8px;
-  background: #fff;
+  background: var(--color-bg);
   font-size: 14px;
-  color: #666;
+  font-weight: 500;
+  color: var(--color-text-secondary);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .addCareerBtn:hover {
-  border-color: #ff5722;
-  color: #ff5722;
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-primary-light);
 }
 
 /* 경력 추가 모달 */
@@ -1205,53 +1329,66 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(15, 23, 42, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
   padding: 20px;
+  backdrop-filter: blur(4px);
 }
 
 .careerModal {
   width: 100%;
   max-width: 480px;
   max-height: 80vh;
-  background: #fff;
+  background: var(--color-surface);
   border-radius: 16px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.15);
+  border: 1px solid var(--color-border);
 }
 
 .careerModalHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px;
-  border-bottom: 1px solid #eee;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg);
 }
 
 .careerModalHeader h3 {
   margin: 0;
   font-size: 18px;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--color-text);
 }
 
 .careerModalClose {
   border: none;
   background: none;
   font-size: 24px;
-  color: #666;
+  line-height: 1;
+  color: var(--color-text-secondary);
   cursor: pointer;
-  padding: 0;
+  padding: 4px;
+  border-radius: 6px;
+  transition: color 0.2s, background 0.2s;
+}
+
+.careerModalClose:hover {
+  color: var(--color-primary);
+  background: var(--color-primary-light);
 }
 
 .careerModalBody {
-  padding: 20px;
+  padding: 24px;
   overflow-y: auto;
   flex: 1;
+  background: var(--color-surface);
 }
 
 .careerFormGroup {
@@ -1262,7 +1399,7 @@
   display: block;
   font-size: 14px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--color-text);
   margin-bottom: 8px;
 }
 
@@ -1276,14 +1413,16 @@
   flex: 1;
   height: 48px;
   padding: 0 14px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   font-size: 15px;
+  background: var(--color-bg-input);
+  transition: border-color 0.2s;
 }
 
 .dateInput:focus {
   outline: none;
-  border-color: #2196f3;
+  border-color: var(--color-primary);
 }
 
 /* 근무상태 라디오 그룹 (모달용) */
@@ -1297,10 +1436,11 @@
   align-items: center;
   gap: 8px;
   padding: 10px 16px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
+  background: var(--color-surface);
 }
 
 .workStatusLabel input {
@@ -1309,16 +1449,16 @@
 
 .workStatusLabel span {
   font-size: 14px;
-  color: #666;
+  color: var(--color-text-secondary);
 }
 
 .workStatusSelected {
-  border-color: #ff5722;
-  background: #fff5f2;
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
 }
 
 .workStatusSelected span {
-  color: #ff5722;
+  color: var(--color-primary);
   font-weight: 600;
 }
 
@@ -1333,20 +1473,22 @@
   width: 70px;
   height: 48px;
   padding: 0 12px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   font-size: 15px;
   text-align: center;
+  background: var(--color-bg-input);
+  transition: border-color 0.2s;
 }
 
 .durationInput:focus {
   outline: none;
-  border-color: #ff5722;
+  border-color: var(--color-primary);
 }
 
 .durationLabel {
   font-size: 14px;
-  color: #666;
+  color: var(--color-text-secondary);
 }
 
 /* 숫자 입력 스피너 숨기기 */
@@ -1364,17 +1506,19 @@
   width: calc(100% - 40px);
   margin: 0 20px 20px;
   padding: 16px;
-  background: #ff5722;
+  background: var(--color-gradient-cta);
   border: none;
   border-radius: 10px;
   font-size: 16px;
   font-weight: 600;
   color: #fff;
   cursor: pointer;
+  transition: opacity 0.2s, box-shadow 0.2s;
 }
 
 .careerModalSubmit:hover {
-  background: #e64a19;
+  opacity: 0.95;
+  box-shadow: 0 4px 12px rgba(74, 111, 165, 0.35);
 }
 
 /* 모바일 대응 */

@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useContext } from 'react';
 import Link from 'next/link';
 import styles from '@/styles/Mylist.module.css';
-import filterStyles from '@/styles/JobFilter.module.css';
+import signupStyles from '@/styles/BusinessSignup.module.css';
 import { createClient } from '@supabase/supabase-js';
 import { AuthContext } from '@/contexts/AuthContext';
-import SelectDropdown from './SelectDropdown';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -32,7 +31,17 @@ const locations: { [key: string]: string[] } = {
 };
 
 const nationalities = ['대한민국', '중국', '베트남', '필리핀', '인도네시아', '태국', '미얀마', '캄보디아', '네팔', '스리랑카', '방글라데시', '파키스탄', '우즈베키스탄', '몽골', '러시아', '카자흐스탄', '키르기스스탄', '일본', '대만', '기타'];
-const visaOptions = ['E1-E7', 'H-2', 'F-2', 'F-4', 'F-5', 'F-6', '유학', 'D-10', '기타'];
+// 이력서(job_seeker_profiles)와 동일한 형식
+const visaOptions = ['취업비자(E1-E7)', '취업비자(E9)', '취업비자(E10)', '방문취업(H2)', '재외동포(F4)', '결혼이민(F6)', '영주권(F5)', '거주(F2)', '유학(D2)', '구직비자(D-10)', '기타'];
+
+const mapVisaFromProfile = (v: string | null): string => {
+  if (!v) return '';
+  const map: Record<string, string> = {
+    'E1-E7': '취업비자(E1-E7)', 'H-2': '방문취업(H2)', 'F-2': '거주(F2)', 'F-4': '재외동포(F4)',
+    'F-5': '영주권(F5)', 'F-6': '결혼이민(F6)', '유학': '유학(D2)', 'D-10': '구직비자(D-10)',
+  };
+  return map[v] ?? v;
+};
 
 interface AppliedJob {
   id: number;
@@ -64,6 +73,7 @@ const PersonalService: React.FC<PersonalServiceProps> = ({ activeSection }) => {
   const [appliedJobs, setAppliedJobs] = useState<AppliedJob[]>([]);
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [showCancelSuccessPopup, setShowCancelSuccessPopup] = useState(false);
+  const [cancelConfirmTarget, setCancelConfirmTarget] = useState<{ jdId: number; title: string } | null>(null);
   const [editForm, setEditForm] = useState<ProfileData | null>(null);
   const [saving, setSaving] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
@@ -107,8 +117,12 @@ const PersonalService: React.FC<PersonalServiceProps> = ({ activeSection }) => {
       .eq('user_id', auth.user.id)
       .single();
     if (data) {
-      setProfile(data);
-      setEditForm(data);
+      const mapped = {
+        ...data,
+        visa_status: mapVisaFromProfile(data.visa_status) || data.visa_status || '',
+      };
+      setProfile(mapped);
+      setEditForm(mapped);
     } else {
       const { data: userData } = await supabase
         .from('users')
@@ -130,10 +144,14 @@ const PersonalService: React.FC<PersonalServiceProps> = ({ activeSection }) => {
     }
   };
 
-  const handleRemoveApplication = async (jdId: number) => {
-    if (!auth?.user?.id) return;
-    if (!confirm('지원을 취소하시겠습니까?')) return;
-    const { error } = await supabase.from('bookmark').delete().eq('users_id', auth.user.id).eq('jd_id', jdId);
+  const handleRemoveApplicationClick = (job: AppliedJob) => {
+    setCancelConfirmTarget({ jdId: job.id, title: job.title });
+  };
+
+  const handleRemoveApplicationConfirm = async () => {
+    if (!auth?.user?.id || !cancelConfirmTarget) return;
+    const { error } = await supabase.from('bookmark').delete().eq('users_id', auth.user.id).eq('jd_id', cancelConfirmTarget.jdId);
+    setCancelConfirmTarget(null);
     if (!error) {
       setShowCancelSuccessPopup(true);
       fetchAppliedJobs();
@@ -147,6 +165,12 @@ const PersonalService: React.FC<PersonalServiceProps> = ({ activeSection }) => {
     if (!editForm.gender) err.gender = '성별을 선택해주세요.';
     if (!editForm.nationality) err.nationality = '국적을 선택해주세요.';
     if (!editForm.visa_status) err.visa_status = '비자를 선택해주세요.';
+    const r1 = (editForm.preferred_regions?.[0] || '').split(' ')[0];
+    if (!r1) err.preferred_regions = '거주지(시/도)를 선택해주세요.';
+    else if (r1 !== '세종') {
+      const r2 = (editForm.preferred_regions?.[0] || '').split(' ')[1];
+      if (!r2) err.preferred_regions = '거주지(시/군/구)를 선택해주세요.';
+    }
     setFormErrors(err);
     if (Object.keys(err).length > 0) return;
 
@@ -177,6 +201,17 @@ const PersonalService: React.FC<PersonalServiceProps> = ({ activeSection }) => {
   const formatDate = (dateString: string) => {
     const d = new Date(dateString);
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  };
+
+  const calculateAge = (year: number, month: number, day: number): number | null => {
+    if (!year || !month || !day) return null;
+    const birth = new Date(year, month - 1, day);
+    if (isNaN(birth.getTime())) return null;
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+    return age >= 0 ? age : null;
   };
 
   if (activeSection === 'applications') {
@@ -222,7 +257,7 @@ const PersonalService: React.FC<PersonalServiceProps> = ({ activeSection }) => {
                       <button
                         type="button"
                         className={styles.manageBtn}
-                        onClick={() => handleRemoveApplication(job.id)}
+                        onClick={() => handleRemoveApplicationClick(job)}
                       >
                         지원취소
                       </button>
@@ -234,13 +269,41 @@ const PersonalService: React.FC<PersonalServiceProps> = ({ activeSection }) => {
           </table>
         </div>
 
+        {/* 지원 취소 확인 팝업 */}
+        {cancelConfirmTarget && (
+          <div className={styles.cancelSuccessOverlay} onClick={() => setCancelConfirmTarget(null)}>
+            <div className={styles.cancelSuccessPopup} onClick={(e) => e.stopPropagation()}>
+              <p className={styles.cancelSuccessText}>지원을 취소하시겠습니까?</p>
+              {cancelConfirmTarget.title?.trim() && (
+                <p className={styles.cancelSuccessSubtext}>「{cancelConfirmTarget.title}」</p>
+              )}
+              <div className={styles.cancelSuccessButtonRow}>
+                <button
+                  type="button"
+                  className={styles.cancelSuccessBtnSecondary}
+                  onClick={() => setCancelConfirmTarget(null)}
+                >
+                  아니오
+                </button>
+                <button
+                  type="button"
+                  className={styles.cancelSuccessBtn}
+                  onClick={handleRemoveApplicationConfirm}
+                >
+                  예
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* 지원 취소 완료 팝업 */}
         {showCancelSuccessPopup && (
           <div className={styles.cancelSuccessOverlay} onClick={() => setShowCancelSuccessPopup(false)}>
             <div className={styles.cancelSuccessPopup} onClick={(e) => e.stopPropagation()}>
-              <div className={styles.cancelSuccessIcon}>✓</div>
+              <div className={styles.cancelDoneIcon}>✓</div>
               <p className={styles.cancelSuccessText}>지원이 취소되었습니다</p>
-              <button className={styles.cancelSuccessBtn} onClick={() => setShowCancelSuccessPopup(false)}>
+              <button className={styles.cancelDoneBtn} onClick={() => setShowCancelSuccessPopup(false)}>
                 확인
               </button>
             </div>
@@ -253,125 +316,152 @@ const PersonalService: React.FC<PersonalServiceProps> = ({ activeSection }) => {
   if (activeSection === 'info' && editForm) {
     const regionStr = (editForm.preferred_regions && editForm.preferred_regions[0]) || '';
     const parts = regionStr.split(' ');
-    const r1 = parts[0] || '';
-    const r2 = parts[1] || '';
-    const region1 = r1;
-    const region2 = r2;
+    const region1 = parts[0] || '';
+    const region2 = parts[1] || '';
+    const region2Options = region1 ? (locations[region1] || []) : [];
 
     return (
-      <div className={styles.layout}>
-        <div className={styles.infoSection}>
-          <p className={styles.infoSectionDesc}>회원 정보를 수정할 수 있습니다.</p>
-          <div className={styles.profileForm}>
-            <div className={styles.profileFormSection}>
-              <span className={filterStyles.sectionLabel}>이름</span>
-              <input
-                type="text"
-                className={styles.profileFormInput}
-                value={editForm.korean_name}
-                onChange={(e) => setEditForm({ ...editForm, korean_name: e.target.value })}
-              />
-              {formErrors.korean_name && <span className={styles.profileFormError}>{formErrors.korean_name}</span>}
-            </div>
-            <div className={styles.profileFormSection}>
-              <span className={filterStyles.sectionLabel}>성별</span>
-              <SelectDropdown
-                placeholder="선택"
-                value={editForm.gender}
-                options={[
-                  { value: '', label: '선택' },
-                  { value: '남성', label: '남성' },
-                  { value: '여성', label: '여성' }
-                ]}
-                onSelect={(v) => setEditForm({ ...editForm, gender: v })}
-              />
-              {formErrors.gender && <span className={styles.profileFormError}>{formErrors.gender}</span>}
-            </div>
-            <div className={styles.profileFormSection}>
-              <span className={filterStyles.sectionLabel}>생년월일</span>
-              <div className={styles.profileFormRow}>
+      <div className={signupStyles.editMain}>
+        <div className={signupStyles.container}>
+          <h1 className={signupStyles.title}>회원정보 수정</h1>
+
+          <section className={signupStyles.section}>
+            <h2 className={signupStyles.sectionTitle}>회원정보 <span className={signupStyles.required}>*</span></h2>
+            <div className={signupStyles.form}>
+              <div className={signupStyles.formGroup}>
+                <label>이름 <span className={signupStyles.required}>*</span></label>
                 <input
                   type="text"
-                  className={styles.profileFormInput}
-                  value={editForm.birth_year || ''}
-                  onChange={(e) => setEditForm({ ...editForm, birth_year: parseInt(e.target.value) || 0 })}
-                  placeholder="년"
+                  value={editForm.korean_name}
+                  onChange={(e) => setEditForm({ ...editForm, korean_name: e.target.value })}
+                  placeholder="이름을 입력하세요"
+                  className={signupStyles.input}
+                  maxLength={50}
                 />
-                <input
-                  type="text"
-                  className={styles.profileFormInput}
-                  value={editForm.birth_month || ''}
-                  onChange={(e) => setEditForm({ ...editForm, birth_month: parseInt(e.target.value) || 0 })}
-                  placeholder="월"
-                />
-                <input
-                  type="text"
-                  className={styles.profileFormInput}
-                  value={editForm.birth_day || ''}
-                  onChange={(e) => setEditForm({ ...editForm, birth_day: parseInt(e.target.value) || 0 })}
-                  placeholder="일"
-                />
+                {formErrors.korean_name && <span className={signupStyles.fieldError}>{formErrors.korean_name}</span>}
+              </div>
+              <div className={signupStyles.formGroup}>
+                <label>성별 <span className={signupStyles.required}>*</span></label>
+                <select
+                  value={editForm.gender}
+                  onChange={(e) => setEditForm({ ...editForm, gender: e.target.value })}
+                  className={signupStyles.input}
+                >
+                  <option value="">선택</option>
+                  <option value="남성">남성</option>
+                  <option value="여성">여성</option>
+                </select>
+                {formErrors.gender && <span className={signupStyles.fieldError}>{formErrors.gender}</span>}
+              </div>
+              <div className={signupStyles.formGroup}>
+                <label>
+                  생년월일
+                  {(() => {
+                    const age = calculateAge(editForm.birth_year || 0, editForm.birth_month || 0, editForm.birth_day || 0);
+                    return age !== null ? <span className={signupStyles.optional}> (만 {age}세)</span> : null;
+                  })()}
+                </label>
+                <div className={signupStyles.inputRow}>
+                  <input
+                    type="text"
+                    value={editForm.birth_year || ''}
+                    onChange={(e) => setEditForm({ ...editForm, birth_year: parseInt(e.target.value.replace(/\D/g, '')) || 0 })}
+                    placeholder="년"
+                    className={signupStyles.input}
+                    maxLength={4}
+                  />
+                  <input
+                    type="text"
+                    value={editForm.birth_month || ''}
+                    onChange={(e) => setEditForm({ ...editForm, birth_month: parseInt(e.target.value.replace(/\D/g, '')) || 0 })}
+                    placeholder="월"
+                    className={signupStyles.input}
+                    maxLength={2}
+                  />
+                  <input
+                    type="text"
+                    value={editForm.birth_day || ''}
+                    onChange={(e) => setEditForm({ ...editForm, birth_day: parseInt(e.target.value.replace(/\D/g, '')) || 0 })}
+                    placeholder="일"
+                    className={signupStyles.input}
+                    maxLength={2}
+                  />
+                </div>
+              </div>
+              <div className={signupStyles.formGroup}>
+                <label>국적 <span className={signupStyles.required}>*</span></label>
+                <select
+                  value={editForm.nationality}
+                  onChange={(e) => setEditForm({ ...editForm, nationality: e.target.value })}
+                  className={signupStyles.input}
+                >
+                  <option value="">선택</option>
+                  {nationalities.map((n) => (
+                    <option key={n} value={n}>{n}</option>
+                  ))}
+                </select>
+                {formErrors.nationality && <span className={signupStyles.fieldError}>{formErrors.nationality}</span>}
+              </div>
+              <div className={signupStyles.formGroup}>
+                <label>비자 <span className={signupStyles.required}>*</span></label>
+                <select
+                  value={editForm.visa_status}
+                  onChange={(e) => setEditForm({ ...editForm, visa_status: e.target.value })}
+                  className={signupStyles.input}
+                >
+                  <option value="">선택</option>
+                  {visaOptions.map((v) => (
+                    <option key={v} value={v}>{v}</option>
+                  ))}
+                </select>
+                {formErrors.visa_status && <span className={signupStyles.fieldError}>{formErrors.visa_status}</span>}
+              </div>
+              <div className={signupStyles.formGroup}>
+                <label>거주지 <span className={signupStyles.required}>*</span></label>
+                <div className={signupStyles.inputRow}>
+                  <select
+                    value={region1}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setEditForm({ ...editForm, preferred_regions: v ? [v] : [] });
+                    }}
+                    className={signupStyles.input}
+                  >
+                    <option value="">시/도 선택</option>
+                    {Object.keys(locations).map((r) => (
+                      <option key={r} value={r}>{r}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={region2}
+                    onChange={(e) => setEditForm({ ...editForm, preferred_regions: region1 ? [`${region1} ${e.target.value}`.trim()] : [] })}
+                    className={signupStyles.input}
+                    disabled={!region1 || region1 === '세종'}
+                  >
+                    <option value="">시/군/구 선택</option>
+                    {region2Options.map((r) => (
+                      <option key={r} value={r}>{r || '전체'}</option>
+                    ))}
+                  </select>
+                </div>
+                {formErrors.preferred_regions && <span className={signupStyles.fieldError}>{formErrors.preferred_regions}</span>}
+              </div>
+
+              <div className={signupStyles.buttonRow}>
+                <Link href="/my?section=applications" className={signupStyles.cancelBtn}>
+                  취소
+                </Link>
+                <button
+                  type="button"
+                  className={signupStyles.submitBtn}
+                  onClick={handleSaveProfile}
+                  disabled={saving}
+                >
+                  {saving ? '저장 중...' : '수정하기'}
+                </button>
               </div>
             </div>
-            <div className={styles.profileFormSection}>
-              <span className={filterStyles.sectionLabel}>국적</span>
-              <SelectDropdown
-                placeholder="선택"
-                value={editForm.nationality}
-                options={[
-                  { value: '', label: '선택' },
-                  ...nationalities.map((n) => ({ value: n, label: n }))
-                ]}
-                onSelect={(v) => setEditForm({ ...editForm, nationality: v })}
-              />
-              {formErrors.nationality && <span className={styles.profileFormError}>{formErrors.nationality}</span>}
-            </div>
-            <div className={styles.profileFormSection}>
-              <span className={filterStyles.sectionLabel}>비자</span>
-              <SelectDropdown
-                placeholder="선택"
-                value={editForm.visa_status}
-                options={[
-                  { value: '', label: '선택' },
-                  ...visaOptions.map((v) => ({ value: v, label: v }))
-                ]}
-                onSelect={(v) => setEditForm({ ...editForm, visa_status: v })}
-              />
-              {formErrors.visa_status && <span className={styles.profileFormError}>{formErrors.visa_status}</span>}
-            </div>
-            <div className={styles.profileFormSection}>
-              <span className={filterStyles.sectionLabel}>거주지</span>
-              <div className={styles.profileFormRow}>
-                <SelectDropdown
-                  placeholder="시/도"
-                  value={region1}
-                  options={[
-                    { value: '', label: '시/도' },
-                    ...Object.keys(locations).map((r) => ({ value: r, label: r }))
-                  ]}
-                  onSelect={(v) => setEditForm({ ...editForm, preferred_regions: v ? [v] : [] })}
-                />
-                <SelectDropdown
-                  placeholder="시/군/구"
-                  value={region2}
-                  options={[
-                    { value: '', label: '시/군/구' },
-                    ...(locations[region1] || []).map((r) => ({ value: r, label: r || '전체' }))
-                  ]}
-                  onSelect={(v) => setEditForm({ ...editForm, preferred_regions: region1 ? [`${region1} ${v}`.trim()] : [] })}
-                  disabled={!region1 || region1 === '세종'}
-                />
-              </div>
-            </div>
-            <button
-              type="button"
-              className={`${styles.infoEditBtn} ${styles.profileFormBtn}`}
-              onClick={handleSaveProfile}
-              disabled={saving}
-            >
-              {saving ? '저장 중...' : '저장하기'}
-            </button>
-          </div>
+          </section>
         </div>
       </div>
     );

@@ -13,7 +13,7 @@ import { useContext } from 'react';
 import { AuthContext } from '@/contexts/AuthContext';
 import { createClient } from '@supabase/supabase-js'
 import { BsHeart, BsHeartFill } from 'react-icons/bs';
-import { HiLocationMarker } from 'react-icons/hi';
+import { HiLocationMarker, HiOutlineBriefcase } from 'react-icons/hi';
 import { FaList, FaTh } from 'react-icons/fa';
 import { toast } from 'react-hot-toast';
 import LoginPopup from './LoginPopup';
@@ -141,9 +141,8 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
     const fetchBookmarks = async () => {
       if (!isLoggedIn || !user) return;
       
-      const table = boardType === '0' ? 'job_application' : 'bookmark';
       const { data, error } = await supabase
-        .from(table)
+        .from('bookmark')
         .select('jd_id')
         .eq('users_id', user.id);
         
@@ -153,12 +152,11 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
     };
 
     fetchBookmarks();
-  }, [isLoggedIn, user, boardType]);
+  }, [isLoggedIn, user]);
 
   const fetchBookmarkCounts = async () => {
-    const table = boardType === '0' ? 'job_application' : 'bookmark';
     const { data, error } = await supabase
-      .from(table)
+      .from('bookmark')
       .select('jd_id');
 
     if (data && !error) {
@@ -172,7 +170,7 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
 
   useEffect(() => {
     fetchBookmarkCounts();
-  }, [boardType]);
+  }, []);
 
   // 기존 날짜 형식 (구인/구직정보용) - MM-dd
   const formatDate = (dateString: string) => {
@@ -207,8 +205,8 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
     }
   };  
 
-  // 광고 작업은 첫 페이지에만 표시 (TOP광고 숨김)
-  const showAdJobs = false;
+  // 광고 작업은 첫 페이지에만 표시
+  const showAdJobs = currentPage === 1;
 
   const [showAdPopup, setShowAdPopup] = useState(false);
 
@@ -358,13 +356,10 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
       return;
     }
 
-    const table = boardType === '0' ? 'job_application' : 'bookmark';
-    const isApply = boardType === '0';
-
     try {
       if (bookmarkedJobs.includes(jobId)) {
         const { error: deleteError } = await supabase
-          .from(table)
+          .from('bookmark')
           .delete()
           .eq('users_id', user.id)
           .eq('jd_id', jobId);
@@ -377,11 +372,11 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
           [jobId]: (prev[jobId] || 1) - 1
         }));
         toast.success(currentLanguage === 'ko' 
-          ? (isApply ? '지원이 취소되었습니다.' : '북마크가 해제되었습니다.')
-          : (isApply ? 'Application cancelled' : 'Bookmark removed'));
+          ? '지원이 취소되었습니다.' 
+          : 'Application cancelled');
       } else {
         const { data, error: insertError } = await supabase
-          .from(table)
+          .from('bookmark')
           .insert([{ users_id: user.id, jd_id: jobId }])
           .select();
 
@@ -394,14 +389,14 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
             [jobId]: (prev[jobId] || 0) + 1
           }));
           toast.success(currentLanguage === 'ko' 
-            ? (isApply ? '지원되었습니다.' : '북마크에 추가되었습니다.')
-            : (isApply ? 'Application submitted' : 'Bookmark added'));
+            ? '지원되었습니다.' 
+            : 'Application submitted');
         }
       }
     } catch (error) {
-      console.error('Error toggling:', error);
+      console.error('Error toggling bookmark:', error);
       toast.error(currentLanguage === 'ko' 
-        ? (isApply ? '지원 처리 중 오류가 발생했습니다.' : '북마크 처리 중 오류가 발생했습니다.')
+        ? '지원 처리 중 오류가 발생했습니다.' 
         : 'An error occurred');
     }
   };
@@ -526,7 +521,7 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
               <div className={styles.jobSeekerLine2}>
                 {job['1depth_category'] && (
                   <span className={styles.jobSeekerCategory}>
-                    <img src="/icons/category-icon.svg" alt="" className={styles.jobSeekerIcon} />
+                    <HiOutlineBriefcase className={styles.jobSeekerIcon} />
                     {job['1depth_category']}{job['2depth_category'] ? `, ${job['2depth_category']}` : ''}
                   </span>
                 )}
@@ -794,48 +789,44 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
       )}
 
       <section className={styles.mainList}>
-        {boardType === '0' && jobs.length > 0 && (
-          <div className={styles.listHeader}>
+        {boardType === '0' && (
+          <div className={`${styles.listHeader} ${showAdJobs && adJobs.length > 0 ? styles.listHeaderPremium : ''}`}>
             <div className={styles.listHeaderLeft}>
-              <span className={styles.listHeaderTitle}>채용정보</span>
+              <span className={styles.listHeaderTitle}>
+                {showAdJobs && adJobs.length > 0 ? '프리미엄 채용정보' : '채용정보'}
+              </span>
+              {showAdJobs && adJobs.length > 0 && (
+                <a href="#" onClick={handleAdGuideClick} className={styles.btnTop}>등록안내</a>
+              )}
             </div>
-            <div className={styles.viewToggle}>
-            <button
-              type="button"
-              className={`${styles.viewToggleBtn} ${mobileViewMode === 'list' ? styles.active : ''}`}
-              onClick={() => handleMobileViewChange('list')}
-              aria-label="리스트 보기"
-              title="많은 공고 보기"
-            >
-              <FaList />
-              <span>리스트</span>
-            </button>
-            <button
-              type="button"
-              className={`${styles.viewToggleBtn} ${mobileViewMode === 'card' ? styles.active : ''}`}
-              onClick={() => handleMobileViewChange('card')}
-              aria-label="카드 보기"
-              title="읽기 편하게"
-            >
-              <FaTh />
-              <span>카드</span>
-            </button>
-            </div>
-          </div>
-        )}
-        {boardType === '0' && jobs.length === 0 && (
-          <div className={styles.listHeader}>
-            <div className={styles.listHeaderLeft}>
-              <span className={styles.listHeaderTitle}>채용정보</span>
-            </div>
+            {(jobs.length > 0 || (showAdJobs && adJobs.length > 0)) && (
+              <div className={styles.viewToggle}>
+                <button
+                  type="button"
+                  className={`${styles.viewToggleBtn} ${mobileViewMode === 'list' ? styles.active : ''}`}
+                  onClick={() => handleMobileViewChange('list')}
+                  aria-label="리스트 보기"
+                  title="많은 공고 보기"
+                >
+                  <FaList />
+                  <span>리스트</span>
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.viewToggleBtn} ${mobileViewMode === 'card' ? styles.active : ''}`}
+                  onClick={() => handleMobileViewChange('card')}
+                  aria-label="카드 보기"
+                  title="읽기 편하게"
+                >
+                  <FaTh />
+                  <span>카드</span>
+                </button>
+              </div>
+            )}
           </div>
         )}
         {showAdJobs && adJobs.length > 0 && (
           <ul className={`${styles.listWrap} ${styles.listText} ${styles.topArea}`}>
-            <div className={styles.topDiv}>
-              <span className={styles.topTitle}>TOP광고</span>
-              <a href="#" onClick={handleAdGuideClick} className={styles.btnTop}>등록안내</a>
-            </div>
             {adJobs.map(job => renderJobItem(job, true))}
           </ul>
         )}

@@ -122,6 +122,12 @@
   color: #bbb;
 }
 
+.inputDisabled {
+  background: var(--color-bg-input);
+  color: var(--color-text-secondary);
+  cursor: not-allowed;
+}
+
 /* 셀렉트 스타일 */
 .select {
   width: 100%;
@@ -326,15 +332,23 @@
   padding: 14px 20px;
   border: none;
   border-radius: 8px;
-  background: #4a90d9;
+  background: var(--color-gradient-cta);
   color: white;
   font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
+  transition: opacity 0.2s, box-shadow 0.2s;
+}
+
+.addRegionBtn:hover:not(:disabled) {
+  opacity: 0.9;
+  box-shadow: 0 2px 8px rgba(74, 111, 165, 0.35);
 }
 
 .addRegionBtn:disabled {
-  background: #ccc;
+  background: var(--color-border);
+  color: var(--color-text-muted);
   cursor: not-allowed;
 }
 

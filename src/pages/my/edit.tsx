@@ -8,6 +8,7 @@ import MainMenu from '@/components/MainMenu';
 import Footer from '@/components/Footer';
 import { AuthContext } from '@/contexts/AuthContext';
 import styles from '@/styles/BusinessSignup.module.css';
+import myStyles from '@/styles/My.module.css';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -42,6 +43,7 @@ const BusinessEditPage = () => {
   const [userIdChecked, setUserIdChecked] = useState<boolean | null>(null);
   const [userIdCheckLoading, setUserIdCheckLoading] = useState(false);
   const [hasExistingUserId, setHasExistingUserId] = useState(false);
+  const [showSetupPopup, setShowSetupPopup] = useState(false);
 
   const formatPhoneDisplay = (value: string) => {
     const numbers = value.replace(/[^0-9]/g, '');
@@ -131,6 +133,13 @@ const BusinessEditPage = () => {
     };
     fetchData();
   }, [auth?.user?.id, router]);
+
+  useEffect(() => {
+    if (router.isReady && router.query.setup === '1') {
+      setShowSetupPopup(true);
+      router.replace('/my/edit', undefined, { shallow: true });
+    }
+  }, [router.isReady, router.query.setup]);
 
   const validateForm = () => {
     const err: Record<string, string> = {};
@@ -388,6 +397,20 @@ const BusinessEditPage = () => {
       </main>
 
       <Footer />
+
+      {showSetupPopup && (
+        <div className={myStyles.modalOverlay} onClick={() => setShowSetupPopup(false)}>
+          <div className={myStyles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <h2 className={myStyles.modalTitle}>아이디/비밀번호를 설정해주세요.</h2>
+            <p className={myStyles.modalSubText}>
+              PC에서도 편리하게 로그인할 수 있도록 아이디와 비밀번호를 설정해주세요.
+            </p>
+            <button className={myStyles.modalButton} onClick={() => setShowSetupPopup(false)}>
+              확인
+            </button>
+          </div>
+        </div>
+      )}
     </>
   );
 };

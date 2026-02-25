@@ -30,10 +30,29 @@
   --color-text-secondary: #64748b;
   --color-text-muted: #94a3b8;
 
-  /* UI */
+  /* UI - Surface & Gray scale */
+  --color-surface: #ffffff;
   --color-border: #e2e8f0;
+  --color-border-light: #f1f5f9;
   --color-bg: #f8fafc;
   --color-bg-input: #f1f5f9;
+  --color-gray-100: #f8fafc;
+  --color-gray-200: #f1f5f9;
+  --color-gray-300: #e2e8f0;
+  --color-gray-400: #cbd5e1;
+  --color-gray-500: #94a3b8;
+  --color-gray-600: #64748b;
+  --color-gray-700: #475569;
+  --color-gray-800: #334155;
+  --color-gray-900: #0f172a;
+
+  /* Semantic */
+  --color-error: #dc2626;
+  --color-error-bg: #fef2f2;
+  --color-success: #16a34a;
+  --color-success-bg: #f0fdf4;
+  --color-warning: #ea580c;
+  --color-warning-bg: #fff7ed;
 }
 
 body,html,h1,h2,h3,h4,h5,h6,p,ul,ol,li,dl,dt,dd,th,td,form,object,iframe,blockquote,pre,a,abbr,address,code,img,fieldset,form,label{margin:0;padding:0;}

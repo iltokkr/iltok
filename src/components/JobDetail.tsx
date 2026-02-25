@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { createPortal } from 'react-dom';
 import { useRouter } from 'next/router';
 import style from '@/styles/JobDetail.module.css';
 import { parseISO, format, subHours } from 'date-fns';
@@ -88,6 +89,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
   const [showMinWagePopup, setShowMinWagePopup] = useState(false);
   const [dontShowAgain, setDontShowAgain] = useState(false);
   const [showApplySuccessPopup, setShowApplySuccessPopup] = useState(false);
+  const [isApplying, setIsApplying] = useState(false);
 
   if (!auth) throw new Error("AuthContext not found");
   const { user, isLoggedIn } = auth;
@@ -200,11 +202,12 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
       );
       const data = await response.json();
       
-      // 번역된 문장들을 공백 없이 합치기
-      return data[0]
-        .map((item: any[]) => item[0])
+      // 번역된 문장들을 공백 없이 합치기 (data[0]이 없을 수 있음)
+      const segments = Array.isArray(data?.[0]) ? data[0] : [];
+      return segments
+        .map((item: any[]) => item?.[0])
         .filter(Boolean)
-        .join('');
+        .join('') || text;
     } catch (error) {
       console.error('Translation error:', error);
       return text;
@@ -282,6 +285,8 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
       setShowLoginPopup(true);
       return;
     }
+    if (isApplying) return;
+    setIsApplying(true);
 
     try {
       if (isBookmarked) {
@@ -293,7 +298,10 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
 
         if (deleteError) throw deleteError;
         setIsBookmarked(false);
-        toast.success(currentLanguage === 'ko' ? '지원이 취소되었습니다.' : 'Application cancelled');
+        toast(currentLanguage === 'ko' ? '지원이 취소되었습니다.' : 'Application cancelled', {
+          icon: '✓',
+          style: { background: '#64748b', color: '#fff' },
+        });
       } else {
         const { error: insertError } = await supabase
           .from('bookmark')
@@ -301,11 +309,15 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
 
         if (insertError) throw insertError;
         setIsBookmarked(true);
+        toast.success(currentLanguage === 'ko' ? '지원이 완료되었습니다.' : 'Application submitted');
         setShowApplySuccessPopup(true);
       }
-    } catch (error) {
-      console.error('Error applying:', error);
+    } catch (error: unknown) {
+      const err = error as { message?: string; code?: string; details?: string };
+      console.error('Error applying:', err?.message || err?.code || error);
       toast.error(currentLanguage === 'ko' ? '지원 처리 중 오류가 발생했습니다.' : 'An error occurred.');
+    } finally {
+      setIsApplying(false);
     }
   };
 
@@ -477,6 +489,65 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
                 </div>
               </div>
             )}
+
+            {/* 업체명·대표자명·전화번호·문자보내기·지원하기 - 상세내용 밑 */}
+            {jobDetail.uploader.number && (
+              <div className={style.actionArea}>
+                <div className={style.companyInfo}>
+                  <div className={style.infoRow}>
+                    <span className={style.infoLabel}>업체명</span>
+                    <span className={style.infoValue}>{jobDetail.uploader.company_name || "정보없음"}</span>
+                  </div>
+                  <div className={style.infoRow}>
+                    <span className={style.infoLabel}>대표자명</span>
+                    <span className={style.infoValue}>{jobDetail.uploader.name || "정보없음"}</span>
+                  </div>
+                  <div className={style.infoRow}>
+                    <span className={style.infoLabel}>전화번호</span>
+                    <span
+                      className={style.phoneNumber}
+                      onClick={() => handleCopyPhoneNumber(formatPhoneNumber(jobDetail.uploader.number))}
+                    >
+                      {formatPhoneNumber(jobDetail.uploader.number)}
+                    </span>
+                  </div>
+                </div>
+                <div
+                  className={style.buttonGroup}
+                  onClick={(e) => {
+                    const el = (e.target as HTMLElement).closest('[data-apply-btn]');
+                    if (el) {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleApply();
+                    }
+                  }}
+                >
+                  <a
+                    href={getSmsHref(jobDetail.uploader.number)}
+                    className={style.smsButton}
+                  >
+                    문자보내기
+                  </a>
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    data-apply-btn
+                    className={isBookmarked ? `${style.applyButton} ${style.applyButtonSupported}` : style.applyButton}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleApply(); } }}
+                    style={{ cursor: isApplying ? 'wait' : 'pointer' }}
+                  >
+                    {isApplying ? '처리 중...' : (isBookmarked ? '지원 취소' : '지원하기')}
+                  </div>
+                </div>
+                <div className={style.notice}>
+                  ※ 공고에 대한 오류 및 이로인한 책임은 114114KR에서 책임지지 않습니다.
+                </div>
+                <div className={style.notice}>
+                  ※ 114114KR 통해서 연락한다고 말씀해주세요.
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -607,6 +678,49 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
                 ))}
               </div>
             </div>
+
+            {/* 업체명·대표자명·전화번호·문자보내기·지원하기 - 상세내용 밑 */}
+            {jobDetail.uploader.number && (
+              <div className={style.actionArea}>
+                <div className={style.companyInfo}>
+                  {jobDetail.board_type !== '1' && (
+                    <>
+                      <div className={style.infoRow}>
+                        <span className={style.infoLabel}>업체명</span>
+                        <span className={style.infoValue}>{jobDetail.uploader.company_name || "정보없음"}</span>
+                      </div>
+                      <div className={style.infoRow}>
+                        <span className={style.infoLabel}>대표자명</span>
+                        <span className={style.infoValue}>{jobDetail.uploader.name || "정보없음"}</span>
+                      </div>
+                    </>
+                  )}
+                  <div className={style.infoRow}>
+                    <span className={style.infoLabel}>전화번호</span>
+                    <span
+                      className={style.phoneNumber}
+                      onClick={() => handleCopyPhoneNumber(formatPhoneNumber(jobDetail.uploader.number))}
+                    >
+                      {formatPhoneNumber(jobDetail.uploader.number)}
+                    </span>
+                  </div>
+                </div>
+                <div className={style.buttonGroup}>
+                  <a
+                    href={getSmsHref(jobDetail.uploader.number)}
+                    className={style.smsButton}
+                  >
+                    문자보내기
+                  </a>
+                </div>
+                <div className={style.notice}>
+                  ※ 공고에 대한 오류 및 이로인한 책임은 114114KR에서 책임지지 않습니다.
+                </div>
+                <div className={style.notice}>
+                  ※ 114114KR 통해서 연락한다고 말씀해주세요.
+                </div>
+              </div>
+            )}
           </div>
         )}
         {/* 특별 광고 이미지 */}
@@ -630,57 +744,6 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
             ))}
           </div>
         )}
-        {jobDetail.board_type !== '4' && (
-          <div className={style.actionArea}>
-            {jobDetail.uploader.number && (
-              <>
-                <div className={style.companyInfo}>
-                  {jobDetail.board_type !== '1' && (
-                    <>
-                      <div className={style.infoRow}>
-                        <span className={style.infoLabel}>업체명</span>
-                        <span className={style.infoValue}>{jobDetail.uploader.company_name || "정보없음"}</span>
-                      </div>
-                      <div className={style.infoRow}>
-                        <span className={style.infoLabel}>대표자명</span>
-                        <span className={style.infoValue}>{jobDetail.uploader.name || "정보없음"}</span>
-                      </div>
-                    </>
-                  )}
-                  <div className={style.infoRow}>
-                    <span className={style.infoLabel}>전화번호</span>
-                    <span 
-                      className={style.phoneNumber}
-                      onClick={() => handleCopyPhoneNumber(formatPhoneNumber(jobDetail.uploader.number))}
-                    >
-                      {formatPhoneNumber(jobDetail.uploader.number)}
-                    </span>
-                  </div>
-                </div>
-                <div className={style.buttonGroup}>
-                  <a
-                    href={getSmsHref(jobDetail.uploader.number, jobDetail.title, jobDetail.id)}
-                    className={style.smsButton}
-                  >
-                    문자보내기
-                  </a>
-                  <button 
-                    className={isBookmarked ? `${style.applyButton} ${style.applyButtonSupported}` : style.applyButton}
-                    onClick={handleApply}
-                  >
-                    {isBookmarked ? '지원 취소' : '지원하기'}
-                  </button>
-                </div>
-                <div className={style.notice}>
-                ※ 공고에 대한 오류 및 이로인한 책임은 114114KR에서 책임지지 않습니다.
-                </div>
-                <div className={style.notice}>
-                ※ 114114KR 통해서 연락한다고 말씀해주세요.
-                </div>
-              </>
-            )}
-          </div>
-        )}
       </div>
 
       {/* Comment section with updated props */}
@@ -696,8 +759,8 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
 
       {/* 최저임금 미달 팝업 */}
       {showMinWagePopup && (
-        <div className={style.minWagePopupOverlay}>
-          <div className={style.minWagePopup}>
+        <div className={style.minWagePopupOverlay} onClick={handleCloseMinWagePopup}>
+          <div className={style.minWagePopup} onClick={(e) => e.stopPropagation()}>
             <button className={style.minWageCloseBtn} onClick={handleCloseMinWagePopup}>×</button>
             <h2 className={style.minWageTitle}>2026 최저임금 준수 안내</h2>
             <div className={style.minWageContent}>
@@ -720,8 +783,8 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
         </div>
       )}
 
-      {/* 지원 완료 팝업 */}
-      {showApplySuccessPopup && (
+      {/* 지원 완료 팝업 - Portal로 body에 렌더링하여 항상 최상단 표시 */}
+      {showApplySuccessPopup && typeof document !== 'undefined' && createPortal(
         <div className={style.applySuccessOverlay} onClick={() => setShowApplySuccessPopup(false)}>
           <div className={style.applySuccessPopup} onClick={(e) => e.stopPropagation()}>
             <div className={style.applySuccessIcon}>✓</div>
@@ -731,7 +794,8 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
               확인
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

@@ -101,19 +101,19 @@
   gap: 10px;
   padding: 10px;
   justify-content: flex-end;
-  background: #f5f5f5;
+  background: var(--color-bg-input);
 }
 
 .languageSelector button {
   padding: 5px 10px;
-  border: 1px solid #ddd;
+  border: 1px solid var(--color-border);
   border-radius: 4px;
-  background: white;
+  background: var(--color-surface);
   cursor: pointer;
 }
 
 .languageSelector button:hover {
-  background: #eee;
+  background: var(--color-bg);
 }
 
 /* 글쓰기 플로팅 버튼 */
@@ -171,7 +171,7 @@
 }
 
 .modal {
-  background-color: white;
+  background-color: var(--color-surface);
   padding: 2rem;
   border-radius: 8px;
   max-width: 500px;
@@ -200,7 +200,7 @@
 .modalCloseButton {
   margin-top: 1.5rem;
   padding: 0.5rem 1rem;
-  background-color: #e53e3e;
+  background-color: var(--color-error);
   color: white;
   border: none;
   border-radius: 4px;

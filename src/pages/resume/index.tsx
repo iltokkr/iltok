@@ -31,7 +31,7 @@ const ResumePage: React.FC = () => {
           <title>이력서 등록 - 일톡</title>
         </Head>
         <Header />
-        <MainMenu showMenuItems={false} />
+        <MainMenu showMenuItems={true} currentSection="resume" />
         <div className={styles.loadingContainer}>
           <p>로딩 중...</p>
         </div>
@@ -47,7 +47,7 @@ const ResumePage: React.FC = () => {
         <meta name="description" content="구직자 이력서를 등록하고 관리하세요" />
       </Head>
       <Header />
-      <MainMenu showMenuItems={false} />
+      <MainMenu showMenuItems={true} currentSection="resume" />
       <main className={styles.main}>
         {auth?.isLoggedIn ? (
           <JobSeekerProfileForm />

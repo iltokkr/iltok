@@ -80,7 +80,7 @@ const Write: React.FC = () => {
         <meta name="twitter:image" content="https://114114KR.com/og-image.jpg" />
       </Head>
       <Header />
-      <MainMenu showMenuItems={true} currentBoardType="" />
+      <MainMenu showMenuItems={true} currentBoardType="" currentSection={router.query.board_type === '1' ? 'resume' : undefined} />
       <main className={styles.layout}>
         <WritePage hideBoardTypeSelector />
         {showLoginPopup && <LoginPopup onClose={handleLoginPopupClose} />}

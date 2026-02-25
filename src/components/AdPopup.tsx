@@ -94,14 +94,14 @@ const AdPopup: React.FC<AdPopupProps> = ({ onClose }) => {
       <div className={styles.popWrap} onClick={(e) => e.stopPropagation()}>
         <div className={styles.popbox}>
           <div className={styles.header}>
-            <h2 className={styles.title}>TOP 광고 등록 안내</h2>
+            <h2 className={styles.title}>프리미엄 채용정보 등록 안내</h2>
             <button className={styles.closeBtn} onClick={onClose}>×</button>
           </div>
           
           <div className={styles.infoSection}>
             <div className={styles.infoRow}>
               <span className={styles.infoLabel}>상품내용</span>
-              <span className={styles.infoValue}><strong>TOP광고 영역 게시글 상위 노출</strong></span>
+              <span className={styles.infoValue}><strong>프리미엄 채용정보 영역 게시글 상위 노출</strong></span>
             </div>
             <div className={styles.infoRow}>
               <span className={styles.infoLabel}>상품금액</span>

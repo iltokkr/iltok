@@ -214,6 +214,7 @@ const BoardPage: React.FC = () => {
   const router = useRouter();
   const [regularJobs, setRegularJobs] = useState<Job[]>([]);
   const [adJobs, setAdJobs] = useState<AdJob[]>([]);
+  const [partnerJobs, setPartnerJobs] = useState<Job[]>([]); // 제휴(is_ads) - 프리미엄 상단 고정용
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
@@ -270,7 +271,7 @@ const BoardPage: React.FC = () => {
       const pageSize = 40;
       const offset = (page - 1) * pageSize;
 
-      // 기본 쿼리 설정
+      // 기본 쿼리: 채용정보(board_type 0)는 제휴 제외 일반 공고만, 그 외는 기존대로
       let baseQuery = supabase
         .from('jd')
         .select(`
@@ -281,14 +282,16 @@ const BoardPage: React.FC = () => {
             is_accept
           )
         `, { count: 'exact' })
-        .eq('ad', false)
         .eq('board_type', currentBoardType)
         .not('uploader_id', 'is', null)
         .or('is_hidden.is.null,is_hidden.eq.false'); // 숨김 처리된 게시글 제외
 
-      // board_type이 0일 때만 is_accept 조건 추가
       if (currentBoardType === '0') {
-        baseQuery = baseQuery.eq('users.is_accept', true);
+        baseQuery = baseQuery.eq('users.is_accept', true)
+          .eq('ad', false)
+          .or('is_ads.is.null,is_ads.eq.false'); // 제휴(is_ads) 제외 - 프리미엄 섹션으로 분리
+      } else {
+        baseQuery = baseQuery.or('ad.eq.false,is_ads.eq.true');
       }
 
       // 필터 조건 추가
@@ -351,14 +354,14 @@ const BoardPage: React.FC = () => {
       // 북마크 수 가져오기
       let bookmarkCountsData: Record<number, number> = {};
       if (jobIds.length > 0) {
-        const { data: bookmarks } = await supabase
+        const { data } = await supabase
           .from('bookmark')
           .select('jd_id')
           .in('jd_id', jobIds);
         
-        if (bookmarks) {
-          bookmarkCountsData = bookmarks.reduce((acc: Record<number, number>, bookmark: any) => {
-            acc[bookmark.jd_id] = (acc[bookmark.jd_id] || 0) + 1;
+        if (data) {
+          bookmarkCountsData = data.reduce((acc: Record<number, number>, item: any) => {
+            acc[item.jd_id] = (acc[item.jd_id] || 0) + 1;
             return acc;
           }, {});
         }
@@ -378,15 +381,22 @@ const BoardPage: React.FC = () => {
 
       // 자유게시판(board_type 4)인 경우: 공지 게시글 상단 고정 + 나머지는 시간순
       if (currentBoardType === '4') {
+        setPartnerJobs([]);
         const noticeJobs = mappedJobs.filter((job: any) => job.community_tag === '공지');
         const regularJobsFiltered = mappedJobs.filter((job: any) => job.community_tag !== '공지');
         setRegularJobs([...noticeJobs, ...regularJobsFiltered]);
+      } else if (currentBoardType === '0') {
+        setRegularJobs(mappedJobs);
       } else {
+        setPartnerJobs([]);
         setRegularJobs(mappedJobs);
       }
       setError(null);
 
-      // 광고 게시물 처리 (첫 페이지에만)
+      // 광고·제휴 게시물 처리 (첫 페이지에만)
+      if (page !== 1 && currentBoardType === '0') {
+        setPartnerJobs([]);
+      }
       if (page === 1) {
         let adQuery;
         
@@ -462,6 +472,33 @@ const BoardPage: React.FC = () => {
             }
           }
 
+          // 제휴(is_ads) 게시물 - 프리미엄 섹션 상단 고정용
+          let partnerQuery = supabase
+            .from('jd')
+            .select(`
+              *,
+              is_urgent,
+              is_ads,
+              users!inner (is_accept)
+            `)
+            .eq('board_type', currentBoardType)
+            .eq('is_ads', true)
+            .eq('users.is_accept', true)
+            .not('uploader_id', 'is', null)
+            .or('is_hidden.is.null,is_hidden.eq.false');
+          if (city1) partnerQuery = partnerQuery.eq('1depth_region', city1);
+          if (city2) partnerQuery = partnerQuery.eq('2depth_region', city2);
+          if (cate1) partnerQuery = partnerQuery.eq('1depth_category', cate1);
+          if (cate2) partnerQuery = partnerQuery.eq('2depth_category', cate2);
+          if (keyword) {
+            switch (searchType) {
+              case 'title': partnerQuery = partnerQuery.ilike('title', `%${keyword}%`); break;
+              case 'contents': partnerQuery = partnerQuery.ilike('contents', `%${keyword}%`); break;
+              case 'both': partnerQuery = partnerQuery.or(`title.ilike.%${keyword}%,contents.ilike.%${keyword}%`); break;
+            }
+          }
+          const { data: partnerData } = await partnerQuery.order('updated_time', { ascending: false });
+
           const adResult = await adQuery;
           const nullUploaderResult = await nullUploaderQuery;
 
@@ -477,6 +514,12 @@ const BoardPage: React.FC = () => {
               bookmarked: bookmarkedJobs.includes(job.id)
             }));
 
+          const partnerMapped = (partnerData || []).map((job: any) => ({
+            ...job,
+            board_type: currentBoardType,
+            bookmarked: bookmarkedJobs.includes(job.id)
+          }));
+          setPartnerJobs(partnerMapped);
           setAdJobs(allAdJobs);
         } else {
           // board_type이 1일 때는 users 테이블과 join하지 않음
@@ -725,7 +768,7 @@ const BoardPage: React.FC = () => {
       .eq('users_id', user.id);
       
     if (data && !error) {
-      setBookmarkedJobs(data.map(bookmark => bookmark.jd_id));
+      setBookmarkedJobs(data.map((item: { jd_id: number }) => item.jd_id));
     }
   }, [isLoggedIn, user]);
 
@@ -787,7 +830,7 @@ const BoardPage: React.FC = () => {
 
         <JobList 
           jobs={regularJobs}
-          adJobs={adJobs}
+          adJobs={boardType === '0' ? [...partnerJobs, ...adJobs] : adJobs}
           currentPage={currentPage}
           totalPages={totalPages}
           totalCount={totalCount}

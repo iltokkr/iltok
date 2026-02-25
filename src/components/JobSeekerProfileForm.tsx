@@ -43,6 +43,7 @@ const JobSeekerProfileForm: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [profileImagePreview, setProfileImagePreview] = useState<string | null>(null);
+  const [userPhone, setUserPhone] = useState<string>('');
 
   const [formData, setFormData] = useState<JobSeekerProfile>({
     korean_name: '',
@@ -69,16 +70,18 @@ const JobSeekerProfileForm: React.FC = () => {
   });
 
   // 선택 옵션들
+  // 개인회원 가입과 동일한 목록
   const nationalityOptions = [
-    '중국', '베트남', '필리핀', '인도네시아', '태국', '캄보디아', 
-    '미얀마', '네팔', '방글라데시', '스리랑카', '파키스탄', '우즈베키스탄',
-    '러시아', '몽골', '일본', '기타'
+    '대한민국', '중국', '베트남', '필리핀', '인도네시아', '태국', '미얀마', '캄보디아',
+    '네팔', '스리랑카', '방글라데시', '파키스탄', '우즈베키스탄', '몽골',
+    '러시아', '카자흐스탄', '키르기스스탄', '일본', '대만', '기타'
   ];
 
+  // 개인회원 가입과 동일한 형식
   const visaStatusOptions = [
-    '취업비자(E1-E7)', '취업비자(E9)', '취업비자(E10)', 
-    '방문취업(H2)', '재외동포(F4)', '결혼이민(F6)', 
-    '영주권(F5)', '거주(F2)', '유학(D2)', '기타'
+    '취업비자(E1-E7)', '취업비자(E9)', '취업비자(E10)',
+    '방문취업(H2)', '재외동포(F4)', '결혼이민(F6)', '영주권(F5)', '거주(F2)',
+    '유학(D2)', '구직비자(D-10)', '기타'
   ];
 
   const koreanAbilityOptions = [
@@ -125,8 +128,72 @@ const JobSeekerProfileForm: React.FC = () => {
     }
   }, [auth?.user]);
 
+  // 구직정보(jd) visa_status → 이력서 폼 형식 매핑
+  const mapVisaFromJd = (v: string | null): string => {
+    if (!v) return '';
+    const map: Record<string, string> = {
+      '방문취업(H-2)': '방문취업(H2)',
+      '영주(F-5)': '영주권(F5)',
+      '재외동포(F-4)': '재외동포(F4)',
+      '결혼이민(F-6)': '결혼이민(F6)',
+      '유학생(D2~D4)': '유학(D2)',
+      '해당없음': '기타',
+    };
+    return map[v] ?? v;
+  };
+
+  // 개인회원 가입(구 형식) → 이력서 폼 형식 매핑 (하위 호환)
+  const mapVisaFromProfile = (v: string | null): string => {
+    if (!v) return '';
+    const map: Record<string, string> = {
+      'E1-E7': '취업비자(E1-E7)',
+      'H-2': '방문취업(H2)',
+      'F-2': '거주(F2)',
+      'F-4': '재외동포(F4)',
+      'F-5': '영주권(F5)',
+      'F-6': '결혼이민(F6)',
+      '유학': '유학(D2)',
+      'D-10': '구직비자(D-10)',
+    };
+    return map[v] ?? v;
+  };
+
+  // 구직정보(jd) work_conditions → 이력서 폼 필드 분리
+  const parseWorkConditions = (wc: string | string[] | null): Partial<JobSeekerProfile> => {
+    const arr = !wc ? [] : Array.isArray(wc) ? wc : (() => { try { return JSON.parse(wc); } catch { return []; } })();
+    const time = arr.filter((x: string) => ['주간', '야간', '주야교대'].includes(x));
+    const pay = arr.filter((x: string) => ['일당', '주급', '월급'].includes(x));
+    const duration = arr.filter((x: string) => ['장기', '단기'].includes(x));
+    const day = arr.filter((x: string) => ['평일', '주말'].includes(x));
+    const dorm = arr.includes('기숙사');
+    return {
+      work_time_preference: time,
+      pay_type_preference: pay,
+      work_duration_preference: duration,
+      work_day_preference: day,
+      dormitory_needed: dorm,
+    };
+  };
+
+  const formatPhoneDisplay = (number: string) => {
+    if (!number) return '';
+    const raw = number.replace(/\D/g, '');
+    if (raw.startsWith('82') && raw.length >= 11) {
+      const local = '0' + raw.slice(2);
+      return `${local.slice(0, 3)}-${local.slice(3, 7)}-${local.slice(7)}`;
+    }
+    if (raw.length >= 10) {
+      return `${raw.slice(0, 3)}-${raw.slice(3, 7)}-${raw.slice(7)}`;
+    }
+    return number;
+  };
+
   const fetchExistingProfile = async () => {
     try {
+      if (auth?.user?.id) {
+        const { data: userData } = await supabase.from('users').select('number').eq('id', auth.user.id).single();
+        if (userData?.number) setUserPhone(userData.number);
+      }
       const { data, error } = await supabase
         .from('job_seeker_profiles')
         .select('*')
@@ -146,7 +213,7 @@ const JobSeekerProfileForm: React.FC = () => {
           profile_image_url: data.profile_image_url || '',
           desired_jobs: data.desired_jobs || [],
           nationality: data.nationality || '',
-          visa_status: data.visa_status || '',
+          visa_status: mapVisaFromProfile(data.visa_status) || data.visa_status || '',
           korean_ability: data.korean_ability || '',
           work_time_preference: data.work_time_preference || [],
           pay_type_preference: data.pay_type_preference || [],
@@ -162,10 +229,86 @@ const JobSeekerProfileForm: React.FC = () => {
         if (data.profile_image_url) {
           setProfileImagePreview(data.profile_image_url);
         }
+        return;
       }
-    } catch (error) {
-      // 프로필이 없는 경우 에러를 무시
-      console.log('No existing profile found');
+
+      // 프로필 없으면 구직정보(jd) 게시글에서 최신 글 불러오기
+      const { data: jdList } = await supabase
+        .from('jd')
+        .select('korean_name, english_name, seeker_gender, birth_date, nationality, visa_status, korean_ability, work_conditions, desired_regions, 1depth_category, 2depth_category, contents')
+        .eq('uploader_id', auth?.user?.id)
+        .eq('board_type', '1')
+        .order('updated_time', { ascending: false })
+        .limit(1);
+
+      const jdData = jdList?.[0] ?? null;
+      if (jdData) {
+        const j = jdData as Record<string, unknown>;
+        let birthYear = '';
+        let birthMonth = '';
+        let birthDay = '';
+        if (j.birth_date && typeof j.birth_date === 'string') {
+          const d = new Date(j.birth_date);
+          birthYear = d.getFullYear().toString();
+          birthMonth = (d.getMonth() + 1).toString();
+          birthDay = d.getDate().toString();
+        }
+        const parsedRegions = (() => {
+          const r = j.desired_regions;
+          if (!r) return [];
+          try {
+            const arr = typeof r === 'string' ? JSON.parse(r) : r;
+            return Array.isArray(arr) ? arr : [];
+          } catch {
+            return [];
+          }
+        })();
+        const workParsed = parseWorkConditions(j.work_conditions as string | string[] | null);
+        const cat1 = (j['1depth_category'] as string) || '';
+        const cat2 = (j['2depth_category'] as string) || '';
+        const profileJobCats = ['식품생산직', '건설', '농업', '어업', '제조업', '서비스업', '요리/조리', '청소', '포장', '운전', '사무직', '기타'];
+        const catToJob: Record<string, string> = { 요리: '요리/조리', 생산직: '제조업', 노무직: '제조업' };
+        const desiredJobs: string[] = [];
+        const resolve = (c: string) => catToJob[c] || c;
+        if (cat2 && profileJobCats.includes(resolve(cat2))) desiredJobs.push(resolve(cat2));
+        else if (cat2) desiredJobs.push('기타');
+        if (cat1 && profileJobCats.includes(resolve(cat1)) && !desiredJobs.includes(resolve(cat1))) desiredJobs.push(resolve(cat1));
+        if (desiredJobs.length === 0 && (cat1 || cat2)) desiredJobs.push('기타');
+
+        let fallbackName = '';
+        if (!(j.korean_name as string)?.trim()) {
+          const { data: u } = await supabase.from('users').select('name').eq('id', auth?.user?.id).single();
+          fallbackName = u?.name || '';
+        }
+        setFormData(prev => ({
+          ...prev,
+          korean_name: ((j.korean_name as string) || fallbackName || prev.korean_name).trim() || prev.korean_name,
+          english_name: (j.english_name as string) || '',
+          gender: (j.seeker_gender as string) || '',
+          birth_year: birthYear,
+          birth_month: birthMonth,
+          birth_day: birthDay,
+          nationality: (j.nationality as string) || '',
+          visa_status: mapVisaFromJd(j.visa_status as string | null),
+          korean_ability: (j.korean_ability as string) || '',
+          preferred_regions: parsedRegions,
+          desired_jobs: desiredJobs.length > 0 ? desiredJobs : prev.desired_jobs,
+          message_to_employer: (j.contents as string) || '',
+          ...workParsed,
+        }));
+      } else {
+        // jd도 없으면 users.name으로 korean_name만 pre-fill
+        const { data: userData } = await supabase
+          .from('users')
+          .select('name')
+          .eq('id', auth?.user?.id)
+          .single();
+        if (userData?.name) {
+          setFormData(prev => ({ ...prev, korean_name: userData.name }));
+        }
+      }
+    } catch (err) {
+      console.log('No existing profile found', err);
     }
   };
 
@@ -385,6 +528,19 @@ const JobSeekerProfileForm: React.FC = () => {
             onChange={handleInputChange}
             placeholder="한글 이름을 입력하세요"
             className={styles.input}
+          />
+        </div>
+
+        {/* 회원가입 시 인증한 핸드폰 (비활성화) */}
+        <div className={styles.formGroup}>
+          <label className={styles.label}>핸드폰</label>
+          <input
+            type="text"
+            value={userPhone ? formatPhoneDisplay(userPhone) : ''}
+            readOnly
+            disabled
+            placeholder="회원가입 시 인증한 번호"
+            className={`${styles.input} ${styles.inputDisabled}`}
           />
         </div>
 
