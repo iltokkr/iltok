@@ -14,6 +14,7 @@ import { AuthContext } from '@/contexts/AuthContext';
 import { createClient } from '@supabase/supabase-js'
 import { BsHeart, BsHeartFill } from 'react-icons/bs';
 import { HiLocationMarker } from 'react-icons/hi';
+import { FaList, FaTh } from 'react-icons/fa';
 import { toast } from 'react-hot-toast';
 import LoginPopup from './LoginPopup';
 import Slider from 'react-slick';
@@ -47,6 +48,10 @@ interface Job {
   is_urgent?: boolean;
   is_ads?: boolean;
   is_day_pay?: boolean;
+  // 채용정보 상세
+  work_start_time?: string;
+  work_end_time?: string;
+  age_limit?: string;
   // 구직정보 필드
   korean_name?: string;
   seeker_gender?: string;
@@ -91,6 +96,18 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
   // 구직정보 등록 여부 및 CTA 숨김 상태
   const [hasJobSeekerPost, setHasJobSeekerPost] = useState(false);
   const [hideResumeCta, setHideResumeCta] = useState(false);
+
+  // 모바일 뷰 모드 (리스트: 많은 공고, 카드: 읽기 편함)
+  const [mobileViewMode, setMobileViewMode] = useState<'list' | 'card'>('card');
+  useEffect(() => {
+    const saved = localStorage.getItem('jobListMobileView') as 'list' | 'card' | null;
+    if (saved === 'list' || saved === 'card') setMobileViewMode(saved);
+  }, []);
+
+  const handleMobileViewChange = (mode: 'list' | 'card') => {
+    setMobileViewMode(mode);
+    localStorage.setItem('jobListMobileView', mode);
+  };
 
   // localStorage에서 CTA 숨김 상태 확인
   useEffect(() => {
@@ -308,6 +325,14 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
         {salary && salary}
       </div>
     );
+  };
+
+  // 근무시간 포맷 (09:00 → 9시)
+  const formatWorkTime = (job: Job) => {
+    if (!job.work_start_time || !job.work_end_time) return null;
+    const start = job.work_start_time.replace(/^0(\d):/, '$1:');
+    const end = job.work_end_time.replace(/^0(\d):/, '$1:');
+    return `${start}~${end}`;
   };
 
   const handlePostClick = (postId: number) => {
@@ -582,13 +607,44 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
   );
 
   // 일반 게시판용 아이템 렌더링
-  const renderJobItem = (job: Job, isAd = false) => (
-    <li key={`${isAd ? 'ad-' : ''}${job.id}`} className={`${styles.jobItem} ${isRead(job.id) ? styles.readPost : ''} ${!job.salary_type || !job.salary_detail ? 'no-salary' : ''} ${job.is_urgent ? styles.urgentItem : ''}`}>
-      <span className={styles.time}>{formatDate(job.updated_time)}</span>
-      <div className={styles.jobContent}>
-        <p className={styles.title}>
-          <Link href={`/jd/${job.id}`} scroll={false} onClick={() => handlePostClick(job.id)}>
-            <span className={styles.titleText}>
+  const renderJobItem = (job: Job, isAd = false) => {
+    const region = `${job['1depth_region']} ${job['2depth_region']}`.trim();
+    const salary = formatSalary(job);
+    const workTime = formatWorkTime(job);
+    const ageLimit = job.age_limit || null;
+
+    return (
+      <li key={`${isAd ? 'ad-' : ''}${job.id}`} className={`${styles.jobItem} ${isRead(job.id) ? styles.readPost : ''} ${!job.salary_type || !job.salary_detail ? 'no-salary' : ''} ${job.is_urgent ? styles.urgentItem : ''}`}>
+        {/* PC용: 기존 행 레이아웃 */}
+        <span className={styles.time}>{formatDate(job.updated_time)}</span>
+        <div className={styles.jobContent}>
+          <p className={styles.title}>
+            <Link href={`/jd/${job.id}`} scroll={false} onClick={() => handlePostClick(job.id)}>
+              <span className={styles.titleText}>
+                {boardType === '0' && job.is_urgent && (
+                  <span className={styles.urgentTag}>
+                    <img src="/icons/urgent-fire.png" alt="긴급" className={styles.urgentIcon} />
+                    긴급
+                  </span>
+                )}
+                {boardType === '0' && job.is_ads === true && (
+                  <span className={styles.partnerTag}>제휴</span>
+                )}
+                {job.title}
+                <span className={styles.locationText}>
+                  {` (${region})`}
+                </span>
+              </span>
+            </Link>
+          </p>
+          <p className={styles.jobDetails}>
+            {formatJobDetails(job)}
+          </p>
+        </div>
+        {/* 모바일용: 카드형 2줄 */}
+        <Link href={`/jd/${job.id}`} scroll={false} onClick={() => handlePostClick(job.id)} className={styles.jobCardLink}>
+          <div className={styles.jobCard}>
+            <div className={styles.jobCardTop}>
               {boardType === '0' && job.is_urgent && (
                 <span className={styles.urgentTag}>
                   <img src="/icons/urgent-fire.png" alt="긴급" className={styles.urgentIcon} />
@@ -598,19 +654,20 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
               {boardType === '0' && job.is_ads === true && (
                 <span className={styles.partnerTag}>제휴</span>
               )}
-              {job.title}
-              <span className={styles.locationText}>
-                {` (${job['1depth_region']} ${job['2depth_region']})`}
-              </span>
-            </span>
-          </Link>
-        </p>
-        <p className={styles.jobDetails}>
-          {formatJobDetails(job)}
-        </p>
-      </div>
-    </li>
-  );
+              <span className={styles.jobCardTitle}>{job.title}</span>
+            </div>
+            <div className={styles.jobCardBottom}>
+              <span className={styles.jobCardMeta}>{formatDate(job.updated_time)}</span>
+              {region && <span className={styles.jobCardMeta}>{region}</span>}
+              {salary && <span className={styles.jobCardMeta}>{salary}</span>}
+              {workTime && <span className={styles.jobCardMeta}>{workTime}</span>}
+              {ageLimit && <span className={styles.jobCardMeta}>{ageLimit}</span>}
+            </div>
+          </div>
+        </Link>
+      </li>
+    );
+  };
 
   // 인기글: 인기점수 기준 상위 3개 (공지 제외)
   const hotPosts = [...jobs]
@@ -712,7 +769,7 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
   );
 
   return (
-    <div className={styles.layout} data-board-type={boardType}>
+    <div className={styles.layout} data-board-type={boardType} data-view-mode={mobileViewMode}>
       {boardType === '4' && hotPosts.length > 0 && (
         <div className={styles.hotSection}>
           <h2 className={styles.hotSectionTitle}>
@@ -742,6 +799,42 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
       )}
 
       <section className={styles.mainList}>
+        {boardType === '0' && jobs.length > 0 && (
+          <div className={styles.listHeader}>
+            <div className={styles.listHeaderLeft}>
+              <span className={styles.listHeaderTitle}>채용정보</span>
+            </div>
+            <div className={styles.viewToggle}>
+            <button
+              type="button"
+              className={`${styles.viewToggleBtn} ${mobileViewMode === 'list' ? styles.active : ''}`}
+              onClick={() => handleMobileViewChange('list')}
+              aria-label="리스트 보기"
+              title="많은 공고 보기"
+            >
+              <FaList />
+              <span>리스트</span>
+            </button>
+            <button
+              type="button"
+              className={`${styles.viewToggleBtn} ${mobileViewMode === 'card' ? styles.active : ''}`}
+              onClick={() => handleMobileViewChange('card')}
+              aria-label="카드 보기"
+              title="읽기 편하게"
+            >
+              <FaTh />
+              <span>카드</span>
+            </button>
+            </div>
+          </div>
+        )}
+        {boardType === '0' && jobs.length === 0 && (
+          <div className={styles.listHeader}>
+            <div className={styles.listHeaderLeft}>
+              <span className={styles.listHeaderTitle}>채용정보</span>
+            </div>
+          </div>
+        )}
         {showAdJobs && adJobs.length > 0 && (
           <ul className={`${styles.listWrap} ${styles.listText} ${styles.topArea}`}>
             <div className={styles.topDiv}>

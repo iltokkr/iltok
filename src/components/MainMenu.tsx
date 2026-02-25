@@ -80,9 +80,9 @@ const MainMenu: React.FC<MainMenuProps> = ({ currentBoardType = '0', showMenuIte
     <>
       <ul className={styles.mainMenu}>
         <div className={styles.layout}>
-          {showMenuItems && (
-            <div className={styles.menuItems}>
-              {!mounted || auth?.isLoading || (auth?.isLoggedIn && userType === null) ? (
+          <div className={styles.menuItems}>
+          {showMenuItems ? (
+              !mounted || auth?.isLoading || (auth?.isLoggedIn && userType === null) ? (
                 <span className={styles.menuItemsPlaceholder} aria-hidden="true" />
               ) : mounted && (userType === 'business' || userType === 'both') && auth?.isLoggedIn ? (
                 <>
@@ -103,6 +103,11 @@ const MainMenu: React.FC<MainMenuProps> = ({ currentBoardType = '0', showMenuIte
                     <Link href="/my?section=info" className={currentSection === 'info' ? styles.focus : styles.menuLink}>
                       회원정보
                     </Link>
+                  </li>
+                  <li>
+                    <a href="/write" onClick={handleFreeAdClick} className={`${styles.menuCtaLink} ${router.pathname === '/write' ? styles.focus : ''}`}>
+                      공고등록
+                    </a>
                   </li>
                 </>
               ) : mounted && userType === 'jobseeker' && auth?.isLoggedIn ? (
@@ -156,10 +161,21 @@ const MainMenu: React.FC<MainMenuProps> = ({ currentBoardType = '0', showMenuIte
                       고객센터
                     </a>
                   </li>
+                  <li>
+                    <a href="/write" onClick={handleFreeAdClick} className={`${styles.menuCtaLink} ${router.pathname === '/write' ? styles.focus : ''}`}>
+                      공고등록
+                    </a>
+                  </li>
                 </>
-              )}
+              )
+            ) : (
+              <li>
+                <a href="/write" onClick={handleFreeAdClick} className={`${styles.menuCtaLink} ${router.pathname === '/write' ? styles.focus : ''}`}>
+                  공고등록
+                </a>
+              </li>
+            )}
             </div>
-          )}
           <div className={styles.menuRight}>
             {!mounted || auth?.isLoading || (auth?.isLoggedIn && userType === null) ? (
               <span className={styles.menuPlaceholder} aria-hidden="true" />
@@ -179,10 +195,6 @@ const MainMenu: React.FC<MainMenuProps> = ({ currentBoardType = '0', showMenuIte
                 <a href="#" onClick={(e) => { e.preventDefault(); setShowSignupTypeModal(true); }} className={styles.menuLink}>회원가입</a>
               </>
             )}
-            <span className={styles.menuSep}>|</span>
-            <button className={styles.ctaBtn} onClick={handleFreeAdClick}>
-              무료 공고 등록
-            </button>
           </div>
         </div>
       </ul>

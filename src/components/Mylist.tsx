@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { FaSearch } from 'react-icons/fa';
 import styles from '@/styles/Mylist.module.css';
 import { createClient } from '@supabase/supabase-js';
-import { addHours, format, subHours } from 'date-fns';
+import { addHours, format, parseISO, subHours } from 'date-fns';
 import { AuthContext } from '@/contexts/AuthContext';
 import BusinessVerificationModal from '@/components/BusinessVerificationModal';
 import { event } from '@/lib/gtag';
@@ -100,20 +100,15 @@ const Mylist: React.FC<MylistProps> = ({
   const isVerified = isAccept;  
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-    return `${month}-${day}`;
+    const date = parseISO(dateString);
+    const koreaTime = subHours(date, 9);
+    return format(koreaTime, 'MM-dd');
   };
 
   const formatDateFull = (dateString: string) => {
-    const date = new Date(dateString);
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-    const hour = date.getHours().toString().padStart(2, '0');
-    const min = date.getMinutes().toString().padStart(2, '0');
-    return `${year}년 ${month}월 ${day}일 ${hour}시 ${min}분`;
+    const date = parseISO(dateString);
+    const koreaTime = subHours(date, 9);
+    return format(koreaTime, 'yyyy년 MM월 dd일 HH시 mm분');
   };
   const now = new Date();
   const koreaTime = addHours(now, 9);
