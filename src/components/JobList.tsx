@@ -141,39 +141,38 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
     const fetchBookmarks = async () => {
       if (!isLoggedIn || !user) return;
       
+      const table = boardType === '0' ? 'job_application' : 'bookmark';
       const { data, error } = await supabase
-        .from('bookmark')
+        .from(table)
         .select('jd_id')
         .eq('users_id', user.id);
         
       if (data && !error) {
-        setBookmarkedJobs(data.map(bookmark => bookmark.jd_id));
+        setBookmarkedJobs(data.map((item: { jd_id: number }) => item.jd_id));
       }
     };
 
     fetchBookmarks();
-  }, [isLoggedIn, user]);
+  }, [isLoggedIn, user, boardType]);
 
   const fetchBookmarkCounts = async () => {
+    const table = boardType === '0' ? 'job_application' : 'bookmark';
     const { data, error } = await supabase
-      .from('bookmark')
+      .from(table)
       .select('jd_id');
 
     if (data && !error) {
-      // 각 job_id별로 북마크 수를 계산
-      const counts = data.reduce((acc, item) => {
+      const counts = data.reduce((acc: Record<number, number>, item: { jd_id: number }) => {
         acc[item.jd_id] = (acc[item.jd_id] || 0) + 1;
         return acc;
-      }, {} as Record<number, number>);
-      
-      console.log('Bookmark counts:', counts); // 디버깅용
+      }, {});
       setBookmarkCounts(counts);
     }
   };
 
   useEffect(() => {
     fetchBookmarkCounts();
-  }, []);
+  }, [boardType]);
 
   // 기존 날짜 형식 (구인/구직정보용) - MM-dd
   const formatDate = (dateString: string) => {
@@ -236,7 +235,8 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
     );
   };
 
-  const formatSalary = (job: Job) => {
+  // 급여 포맷 결과 (type/detail 분리용)
+  const getFormattedSalaryParts = (job: Job): { type: string; detail: string; typeClass: string } | null => {
     if (boardType === '4' || boardType !== '0' || !job.salary_type || !job.salary_detail) return null;
     
     let formattedSalary = job.salary_detail;
@@ -296,7 +296,6 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
       }
     }
 
-    // 급여 유형별 CSS 클래스 결정
     const getSalaryTypeClass = (salaryType: string) => {
       switch (salaryType) {
         case '시급': return styles.hourly;
@@ -308,22 +307,18 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
       }
     };
     
-    return (
-      <span className={styles.salaryInfo}>
-        <span className={`${styles.salaryType} ${getSalaryTypeClass(job.salary_type)}`}>{job.salary_type}</span>
-        {' '}
-        <span className={styles.salaryDetail}>{formattedSalary}</span>
-      </span>
-    );
+    return { type: job.salary_type, detail: formattedSalary, typeClass: getSalaryTypeClass(job.salary_type) };
   };
 
-  const formatJobDetails = (job: Job) => {
-    const salary = formatSalary(job);
-    
+  const formatSalary = (job: Job) => {
+    const parts = getFormattedSalaryParts(job);
+    if (!parts) return null;
     return (
-      <div className={styles.detailsContainer}>
-        {salary && salary}
-      </div>
+      <span className={styles.salaryInfo}>
+        <span className={`${styles.salaryType} ${parts.typeClass}`}>{parts.type}</span>
+        {' '}
+        <span className={styles.salaryDetail}>{parts.detail}</span>
+      </span>
     );
   };
 
@@ -363,11 +358,13 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
       return;
     }
 
+    const table = boardType === '0' ? 'job_application' : 'bookmark';
+    const isApply = boardType === '0';
+
     try {
       if (bookmarkedJobs.includes(jobId)) {
-        // Remove bookmark
         const { error: deleteError } = await supabase
-          .from('bookmark')
+          .from(table)
           .delete()
           .eq('users_id', user.id)
           .eq('jd_id', jobId);
@@ -380,18 +377,12 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
           [jobId]: (prev[jobId] || 1) - 1
         }));
         toast.success(currentLanguage === 'ko' 
-          ? '북마크가 해제되었습니다.' 
-          : 'Bookmark removed');
+          ? (isApply ? '지원이 취소되었습니다.' : '북마크가 해제되었습니다.')
+          : (isApply ? 'Application cancelled' : 'Bookmark removed'));
       } else {
-        // Add bookmark
         const { data, error: insertError } = await supabase
-          .from('bookmark')
-          .insert([
-            {
-              users_id: user.id,
-              jd_id: jobId
-            }
-          ])
+          .from(table)
+          .insert([{ users_id: user.id, jd_id: jobId }])
           .select();
 
         if (insertError) throw insertError;
@@ -403,15 +394,15 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
             [jobId]: (prev[jobId] || 0) + 1
           }));
           toast.success(currentLanguage === 'ko' 
-            ? '북마크에 추가되었습니다.' 
-            : 'Bookmark added');
+            ? (isApply ? '지원되었습니다.' : '북마크에 추가되었습니다.')
+            : (isApply ? 'Application submitted' : 'Bookmark added'));
         }
       }
     } catch (error) {
-      console.error('Error toggling bookmark:', error);
+      console.error('Error toggling:', error);
       toast.error(currentLanguage === 'ko' 
-        ? '북마크 처리 중 오류가 발생했습니다.' 
-        : 'Error processing bookmark');
+        ? (isApply ? '지원 처리 중 오류가 발생했습니다.' : '북마크 처리 중 오류가 발생했습니다.')
+        : 'An error occurred');
     }
   };
 
@@ -609,13 +600,14 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
   // 일반 게시판용 아이템 렌더링
   const renderJobItem = (job: Job, isAd = false) => {
     const region = `${job['1depth_region']} ${job['2depth_region']}`.trim();
+    const salaryParts = getFormattedSalaryParts(job);
     const salary = formatSalary(job);
     const workTime = formatWorkTime(job);
     const ageLimit = job.age_limit || null;
 
     return (
       <li key={`${isAd ? 'ad-' : ''}${job.id}`} className={`${styles.jobItem} ${isRead(job.id) ? styles.readPost : ''} ${!job.salary_type || !job.salary_detail ? 'no-salary' : ''} ${job.is_urgent ? styles.urgentItem : ''}`}>
-        {/* PC용: 기존 행 레이아웃 */}
+        {/* PC용: 날짜 | 제목 | 임금종류 | 금액 4열 */}
         <span className={styles.time}>{formatDate(job.updated_time)}</span>
         <div className={styles.jobContent}>
           <p className={styles.title}>
@@ -637,22 +629,25 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
               </span>
             </Link>
           </p>
-          <p className={styles.jobDetails}>
-            {formatJobDetails(job)}
-          </p>
+          {salaryParts && (
+            <span className={`${styles.salaryTypeCol} ${styles.salaryType} ${salaryParts.typeClass}`}>{salaryParts.type}</span>
+          )}
+          {salaryParts && (
+            <span className={styles.salaryDetailCol}>{salaryParts.detail}</span>
+          )}
         </div>
         {/* 모바일용: 카드형 2줄 */}
         <Link href={`/jd/${job.id}`} scroll={false} onClick={() => handlePostClick(job.id)} className={styles.jobCardLink}>
           <div className={styles.jobCard}>
             <div className={styles.jobCardTop}>
+              {boardType === '0' && job.is_ads === true && (
+                <span className={styles.partnerTag}>제휴</span>
+              )}
               {boardType === '0' && job.is_urgent && (
                 <span className={styles.urgentTag}>
                   <img src="/icons/urgent-fire.png" alt="긴급" className={styles.urgentIcon} />
                   긴급
                 </span>
-              )}
-              {boardType === '0' && job.is_ads === true && (
-                <span className={styles.partnerTag}>제휴</span>
               )}
               <span className={styles.jobCardTitle}>{job.title}</span>
             </div>

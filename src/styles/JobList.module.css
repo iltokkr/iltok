@@ -247,14 +247,19 @@
   line-height: 1.6em;
 }
 
-.detailsContainer {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
+/* 4열: 날짜 | 제목 | 임금종류 | 금액 */
+.salaryTypeCol {
+  flex: 0 0 2.5em;
+  min-width: 2.5em;
+  text-align: center;
   white-space: nowrap;
-  gap: 8px;
-  min-width: 200px;
-  justify-content: flex-end;
+}
+
+.salaryDetailCol {
+  flex: 0 0 auto;
+  min-width: 70px;
+  text-align: right;
+  white-space: nowrap;
   padding-right: 15px;
 }
 
@@ -263,13 +268,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 0;
-}
-
-/* 구분선 수정 - 최상위 span 사이에만 구분선 적용 */
-.detailsContainer > span:not(:last-child)::after {
-  content: '|';
-  margin: 0 4px;
-  color: #ddd;
 }
 
 /* 모바일용 카드형 (채용정보 board_type 0) */
@@ -291,6 +289,15 @@
   padding: 10px 14px;
   background: #fff;
   min-height: 44px;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+
+.jobCardTop .partnerTag,
+.jobCardTop .urgentTag {
+  flex-shrink: 0;
 }
 
 .jobCardTitle {
@@ -303,6 +310,8 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
   word-break: break-word;
+  flex: 1;
+  min-width: 0;
 }
 
 .jobCardBottom {
@@ -468,10 +477,6 @@
     padding-right: 0;
   }
 
-  [data-board-type="4"] .jobContent .detailsContainer {
-    display: none;
-  }
-
   /* 기존 모바일 스타일 유지 (board_type 4 등) */
   .jobContent {
     display: flex;
@@ -508,21 +513,9 @@
   }
 
   /* 급여 정보가 없을 때 제목 영역 최대화 */
-  .jobContent.no-salary .title {
+  .jobItem.no-salary .jobContent .title {
     flex: 1 1 100%;
     max-width: 100%;
-  }
-
-  .jobContent.no-salary .detailsContainer {
-    display: none;
-  }
-
-  /* 모바일에서도 동일하게 최상위 span에만 구분선 적용 */
-  .detailsContainer > span:not(:last-child)::after {
-    content: '|';
-    margin: 0 4px;
-    color: #ddd;
-    display: inline;
   }
 
   /* 모바일에서 1차 지역정보 숨김 */
@@ -546,8 +539,9 @@
     min-width: 0;
   }
 
-  .jobContent .detailsContainer {
-    flex: 0 0 auto; /* Keep detailsContainer at its natural size */
+  .jobContent .salaryTypeCol,
+  .jobContent .salaryDetailCol {
+    flex: 0 0 auto;
   }
 
   .timeBookmarkContainer {
@@ -672,12 +666,8 @@
   color: #525252;
 }
 
-.jobContent.no-salary .title {
-  flex: 1 1 100%; /* Allow the title to take full width */
-}
-
-.jobContent.no-salary .detailsContainer {
-  display: none; /* Hide the detailsContainer */
+.jobItem.no-salary .jobContent .title {
+  flex: 1 1 100%; /* Allow the title to take full width when no salary */
 }
 
 .locationText {
