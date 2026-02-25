@@ -1,149 +1,302 @@
-.searchBar {
-  border: 1px solid #ccc;
-  background: #eee;
-  padding: 11px 14px;
-  overflow: hidden; /* clearfix 적용 */
+/* 필터 래퍼 - 구분선 아래 영역 */
+.filterWrapper {
+  background: var(--color-bg-input);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-
-
-.filterBar {
+/* 지역 섹션 */
+.regionSection {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 10px;
 }
 
-.selectBox {
-  margin: 0;
-  flex: 1 1 calc(50% - 5px);
-  min-width: 100px;
+.sectionLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-.selectBox select {
+.regionSelects {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* 트렌디 커스텀 드롭다운 */
+.regionDropdown {
+  position: relative;
+  min-width: 140px;
+}
+
+.regionTrigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   width: 100%;
-  height: 25px;
-  padding: 0 5px;
-  border: 1px solid #ccc;
-  background: #fff;
-}
-
-@media (min-width: 769px) {
-  .filterBar {
-    flex-wrap: nowrap;
-  }
-
-  .selectBox {
-    flex: 0 0 auto;
-  }
-}
-
-.searchForm {
-  display: inline-block; /* float 대신 inline-block 사용 */
-  vertical-align: top; /* 상단 정렬 */
-}
-
-.searchIpt {
-  width: 166px;
-  height: 23px;
-  line-height: 23px;
-  background: #fff;
-  border: 1px solid #ccc;
-  padding: 0 5px;
-  float: left;
-  margin: 0 -1px 0 0;
-}
-
-.searchBtn {
-  width: 50px;
-  height: 25px;
-  line-height: 25px;
-  float: left;
-  border: 1px solid #ccc;
-  background: #ddd;
-  text-align: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
-.searchBtn:hover {
-  background: #ccc;
+.regionTrigger:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.12);
 }
 
-/* 새로운 clearfix 클래스 추가 */
-.clearfix::after {
-  content: "";
-  display: table;
-  clear: both;
+.regionTriggerOpen {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
 }
 
-.toggleBox {
-  margin: 0;
-  flex: 0 0 auto;
+.regionTriggerDisabled {
+  background: var(--color-bg);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
-.toggleButton {
-  padding: 0 10px;
-  background: #fff;
-  border: 1px solid #ccc;
-  cursor: pointer;
-}
-
-.toggleButton:hover {
-  background: #f0f0f0;
-}
-
-.searchForm {
-  margin-top: 10px;
+.regionIcon {
   display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
+  align-items: center;
+  color: var(--color-primary);
+  font-size: 18px;
 }
 
-.searchType {
-  width: 100px;
-  height: 25px;
-  padding: 0 5px;
-  border: 1px solid #ccc;
-  background: #fff;
-}
-
-.searchInput {
+.regionTriggerText {
   flex: 1;
-  min-width: 150px;
-  height: 25px;
-  padding: 0 5px;
-  border: 1px solid #ccc;
-  background: #fff;
+  text-align: left;
 }
 
-.searchButton {
-  width: 50px;
-  height: 25px;
-  background: #ff3900;
+.regionChevron {
+  display: flex;
+  align-items: center;
+  color: var(--color-text-muted);
+  transition: transform 0.25s ease;
+}
+
+.regionTriggerOpen .regionChevron {
+  transform: rotate(180deg);
+  color: var(--color-primary);
+}
+
+.regionPanel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  min-width: 100%;
+  max-height: 280px;
+  overflow-y: auto;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(15, 23, 42, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06);
+  z-index: 50;
+  animation: regionPanelIn 0.2s ease-out;
+}
+
+@keyframes regionPanelIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.regionList {
+  padding: 6px;
+  margin: 0;
+  list-style: none;
+}
+
+.regionOption {
+  display: block;
+  width: 100%;
+  padding: 10px 14px;
   border: none;
-  color: white;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-text);
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
   cursor: pointer;
+  transition: all 0.15s ease;
 }
 
-.searchButton:hover {
-  background: #e63300;
+.regionOption:hover {
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
+}
+
+.regionOptionActive {
+  background: var(--color-primary);
+  color: white;
+}
+
+.regionOptionActive:hover {
+  background: var(--color-primary-dark);
+  color: white;
+}
+
+/* 분류 섹션 */
+.categorySection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.categoryChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.chip:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.chipActive {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white;
+}
+
+.chipActive:hover {
+  background: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
+  color: white;
+}
+
+.chipSmall {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+.subCategoryChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--color-border);
 }
 
 @media (max-width: 768px) {
-  .searchForm {
-    flex-wrap: nowrap;  /* 모바일에서는 한 줄로 표시 */
+  .filterWrapper {
+    padding: 10px 12px;
+    gap: 10px;
   }
-  
-  .searchType {
-    width: 90px;  /* 모바일에서는 더 작게 */
-    flex-shrink: 0;  /* 크기 고정 */
+
+  .regionSection {
+    gap: 6px;
   }
-  
-  .searchInput {
-    min-width: 0;  /* 모바일에서 최소 너비 제거 */
+
+  .sectionLabel {
+    font-size: 10px;
   }
-  
-  .searchButton {
-    width: 45px;  /* 모바일에서는 더 작게 */
-    flex-shrink: 0;  /* 크기 고정 */
+
+  /* 지역: 한 줄로 나란히 */
+  .regionSelects {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+
+  .regionDropdown {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .regionTrigger {
+    min-height: 36px;
+    padding: 0 12px;
+    font-size: 13px;
+  }
+
+  .regionIcon {
+    font-size: 16px;
+  }
+
+  .regionPanel {
+    max-height: 220px;
+  }
+
+  /* 분류: 한 줄, 가로 스크롤 */
+  .categorySection {
+    gap: 6px;
+  }
+
+  .categoryChips {
+    flex-wrap: nowrap;
+    gap: 6px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+
+  .categoryChips::-webkit-scrollbar {
+    display: none;
+  }
+
+  .chip {
+    padding: 6px 12px;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  .subCategoryChips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-top: 8px;
+    margin-top: 4px;
+    gap: 6px;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+
+  .subCategoryChips::-webkit-scrollbar {
+    display: none;
+  }
+
+  .chipSmall {
+    padding: 5px 10px;
+    font-size: 11px;
+    flex-shrink: 0;
   }
 }

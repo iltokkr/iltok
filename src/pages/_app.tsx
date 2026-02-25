@@ -12,6 +12,15 @@ const GA_MEASUREMENT_ID = 'G-RT5E0QKYVV';
 function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
 
+  // 개발 모드에서 서비스 워커 해제 (캐시된 에러 페이지 방지)
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development' && 'serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        registrations.forEach((r) => r.unregister());
+      });
+    }
+  }, []);
+
   // 브라우저 스크롤 복원 비활성화 (수동 관리)
   useEffect(() => {
     if ('scrollRestoration' in history) {

@@ -24,9 +24,9 @@
   }
   
   .pages a.current {
-    background-color: #ff5205;
+    background-color: var(--color-primary);
     color: white;
-    border-color: #ff5205;
+    border-color: var(--color-primary);
   }
   
   .pages a.next {

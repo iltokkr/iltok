@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { useRouter } from 'next/router';
 import style from '@/styles/WriteComponent.module.css';
 import { createClient } from '@supabase/supabase-js';
@@ -103,7 +103,89 @@ const workConditionOptions = [
   '주간', '야간', '주야교대', '일당', '주급', '장기', '단기', '평일', '주말', '기숙사'
 ];
 
-const WritePage: React.FC = () => {
+/* FormDropdown - 지역선택 드롭다운과 동일한 디자인 */
+interface FormDropdownProps {
+  name: string;
+  value: string;
+  options: { value: string; label: string }[];
+  placeholder?: string;
+  onSelect: (name: string, value: string) => void;
+  hasError?: boolean;
+}
+
+const FormDropdown: React.FC<FormDropdownProps> = ({
+  name,
+  value,
+  options,
+  placeholder = '선택',
+  onSelect,
+  hasError = false
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const displayLabel = value ? options.find((o) => o.value === value)?.label ?? placeholder : placeholder;
+  const isPlaceholder = !value;
+
+  return (
+    <div className={style.formDropdown} ref={ref}>
+      <button
+        type="button"
+        className={`${style.formDropdownTrigger} ${isOpen ? style.formDropdownTriggerOpen : ''} ${hasError ? style.formDropdownTriggerError : ''}`}
+        onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
+        aria-haspopup="listbox"
+      >
+        <span className={`${style.formDropdownTriggerText} ${isPlaceholder ? style.formDropdownTriggerTextPlaceholder : ''}`}>
+          {displayLabel}
+        </span>
+        <span className={style.formDropdownChevron}>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </span>
+      </button>
+      {isOpen && (
+        <div className={style.formDropdownPanel}>
+          <ul className={style.formDropdownList} role="listbox">
+            {options.map((opt) => (
+              <li key={opt.value || 'empty'}>
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={value === opt.value}
+                  className={`${style.formDropdownOption} ${value === opt.value ? style.formDropdownOptionActive : ''}`}
+                  onClick={() => {
+                    onSelect(name, opt.value);
+                    setIsOpen(false);
+                  }}
+                >
+                  {opt.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+};
+
+interface WritePageProps {
+  hideBoardTypeSelector?: boolean;
+}
+
+const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) => {
   const router = useRouter();
   const { id } = router.query;
   const [formData, setFormData] = useState<JobForm>({
@@ -654,6 +736,18 @@ const WritePage: React.FC = () => {
     }));
   };
 
+  const handleDropdownSelect = (name: string, value: string) => {
+    if (name === '1depth_region') {
+      setFormData(prev => ({ ...prev, [name]: value, '2depth_region': '' }));
+      return;
+    }
+    if (name === '1depth_category') {
+      setFormData(prev => ({ ...prev, [name]: value, '2depth_category': '' }));
+      return;
+    }
+    handleInputChange({ target: { name, value } } as React.ChangeEvent<HTMLSelectElement>);
+  };
+
   const locations: { [key: string]: string[] } = {
     서울: ["종로구", "중구", "용산구", "성동구", "광진구", "동대문구", "중랑구", "성북구", "강북구", "도봉구", "노원구", "은평구", "서대문구", "마포구", "양천구", "강서구", "구로구", "금천구", "영등포구", "동작구", "관악구", "서초구", "강남구", "송파구","강동구"],
     부산: ["중구", "서구", "동구", "영도구", "부산진구", "동래구", "남구", "북구", "해운대구", "사하구", "금정구", "강서구", "연제구", "수영구", "사상구", "기장군"],
@@ -793,10 +887,11 @@ const WritePage: React.FC = () => {
   return (
     <div className={style.layout}>
       <form onSubmit={handleSubmit}>
-        {/* 게시판 선택 */}
+        {/* 게시판 선택 - hideBoardTypeSelector 시 숨김 (무료공고등록 진입) */}
+        {!hideBoardTypeSelector && (
         <div className={style.subSection}>
           <div className={style.formRow}>
-            <div className={style.formLabel}>게시판 <span className={style.required}>*</span></div>
+            <div className={style.formLabel}><span className={style.required}>*</span> 게시판</div>
             <div className={style.boardTypeContainer}>
               <button
                 type="button"
@@ -822,11 +917,12 @@ const WritePage: React.FC = () => {
             </div>
           </div>
         </div>
+        )}
 
         {/* 제목 입력 */}
         <div className={style.subSection}>
           <div className={style.formRow}>
-            <div className={style.formLabel}>제목 <span className={style.required}>*</span></div>
+            <div className={style.formLabel}><span className={style.required}>*</span> 제목</div>
             <div className={style.titleFormInput}>
               <input
                 name="title"
@@ -856,37 +952,60 @@ const WritePage: React.FC = () => {
               <div className={style.formRow}>
                 <div className={style.formLabel}>조건</div>
                 <div className={style.conditionFormInput}>
-                  <select name="experience" value={formData.experience} onChange={handleInputChange} className={style.select}>
-                    <option value="무관">경력 무관</option>
-                    <option value="1년이상">1년 이상</option>
-                    <option value="3년이상">3년 이상</option>
-                    <option value="5년이상">5년 이상</option>
-                    <option value="10년이상">10년 이상</option>
-                  </select>
-                  <select name="gender" value={formData.gender} onChange={handleInputChange} className={style.select}>
-                    <option value="무관">성별 무관</option>
-                    <option value="남자">남자</option>
-                    <option value="여자">여자</option>
-                  </select>
-                  <select name="education" value={formData.education} onChange={handleInputChange} className={style.select}>
-                    <option value="무관">학력 무관</option>
-                    <option value="고졸이상">고졸이상</option>
-                    <option value="초대졸이상">초대졸이상</option>
-                    <option value="대졸이상">대졸이상</option>
-                  </select>
-                  <select name="age_limit" value={formData.age_limit} onChange={handleInputChange} className={style.select}>
-                    <option value="무관">나이 무관</option>
-                    <option value="55세이하">55세 이하</option>
-                    <option value="50세이하">50세 이하</option>
-                    <option value="45세이하">45세 이하</option>
-                    <option value="40세이하">40세 이하</option>
-                    <option value="35세이하">35세 이하</option>
-                  </select>
+                  <FormDropdown
+                    name="experience"
+                    value={formData.experience}
+                    options={[
+                      { value: '무관', label: '경력 무관' },
+                      { value: '1년이상', label: '1년 이상' },
+                      { value: '3년이상', label: '3년 이상' },
+                      { value: '5년이상', label: '5년 이상' },
+                      { value: '10년이상', label: '10년 이상' }
+                    ]}
+                    onSelect={handleDropdownSelect}
+                  />
+                  <FormDropdown
+                    name="gender"
+                    value={formData.gender}
+                    options={[
+                      { value: '무관', label: '성별 무관' },
+                      { value: '남자', label: '남자' },
+                      { value: '여자', label: '여자' }
+                    ]}
+                    onSelect={handleDropdownSelect}
+                  />
+                  <FormDropdown
+                    name="education"
+                    value={formData.education}
+                    options={[
+                      { value: '무관', label: '학력 무관' },
+                      { value: '고졸이상', label: '고졸이상' },
+                      { value: '초대졸이상', label: '초대졸이상' },
+                      { value: '대졸이상', label: '대졸이상' }
+                    ]}
+                    onSelect={handleDropdownSelect}
+                  />
+                  <FormDropdown
+                    name="age_limit"
+                    value={formData.age_limit}
+                    options={[
+                      { value: '무관', label: '나이 무관' },
+                      { value: '60세이하', label: '60세 이하' },
+                      { value: '55세이하', label: '55세 이하' },
+                      { value: '50세이하', label: '50세 이하' },
+                      { value: '45세이하', label: '45세 이하' },
+                      { value: '40세이하', label: '40세 이하' },
+                      { value: '35세이하', label: '35세 이하' },
+                      { value: '30세이하', label: '30세 이하' },
+                      { value: '25세이하', label: '25세 이하' }
+                    ]}
+                    onSelect={handleDropdownSelect}
+                  />
                 </div>
               </div>
               <div className={style.warningText}>
-                ⚠️ 성별 제한 시 남녀고용평등법 위반으로 500만 원 이하의 벌금이 부과될 수 있습니다.<br/>
-                ⚠️ 연령 제한 시 연령차별금지법 위반으로 500만 원 이하의 벌금이 부과될 수 있습니다.
+                ✓ 성별 제한 시 남녀고용평등법 위반으로 500만 원 이하의 벌금이 부과될 수 있습니다.<br/>
+                ✓ 연령 제한 시 연령차별금지법 위반으로 500만 원 이하의 벌금이 부과될 수 있습니다.
               </div>
             </div>
 
@@ -895,15 +1014,20 @@ const WritePage: React.FC = () => {
             <div className={style.subSection}>
               <div className={style.formGrid}>
                 <div className={style.formRow}>
-                  <div className={style.formLabel}>급여</div>
+                  <div className={style.formLabel}><span className={style.required}>*</span> 급여</div>
                   <div className={style.formInput}>
-                    <select name="salary_type" value={formData.salary_type} onChange={handleInputChange} className={style.select}>
-                      <option value="시급">시급</option>
-                      <option value="일급">일급</option>
-                      <option value="주급">주급</option>
-                      <option value="월급">월급</option>
-                      <option value="협의">협의</option>
-                    </select>
+                    <FormDropdown
+                      name="salary_type"
+                      value={formData.salary_type}
+                      options={[
+                        { value: '시급', label: '시급' },
+                        { value: '일급', label: '일급' },
+                        { value: '주급', label: '주급' },
+                        { value: '월급', label: '월급' },
+                        { value: '협의', label: '협의' }
+                      ]}
+                      onSelect={handleDropdownSelect}
+                    />
                     <input
                       type="text"
                       name="salary_detail"
@@ -915,7 +1039,7 @@ const WritePage: React.FC = () => {
                   </div>
                 </div>
                 <div className={style.formRow}>
-                  <div className={style.formLabel}>근무시간</div>
+                  <div className={style.formLabel}><span className={style.required}>*</span> 근무시간</div>
                   <div className={style.formInput}>
                     <div className={style.timeInputRow}>
                       <input type="time" name="work_start_time" value={formData.work_start_time} onChange={handleInputChange} className={style.timeInput} />
@@ -942,8 +1066,8 @@ const WritePage: React.FC = () => {
                 </div>
               </div>
               <div className={style.warningText}>
-                    ⚠️ 최저임금(10,320원)에 미달하는 급여는 법적 처벌 대상이 될 수 있습니다.<br/>
-                ⚠️ 최저임금법 위반 시 3년 이하의 징역 또는 2천만 원 이하의 벌금이 부과될 수 있습니다.
+                    ✓ 최저임금(10,320원)에 미달하는 급여는 법적 처벌 대상이 될 수 있습니다.<br/>
+                ✓ 최저임금법 위반 시 3년 이하의 징역 또는 2천만 원 이하의 벌금이 부과될 수 있습니다.
               </div>
             </div>
           </>
@@ -957,28 +1081,24 @@ const WritePage: React.FC = () => {
           <div className={style.formRow}>
                     <div className={style.formLabel}>직무 <span className={style.required}>*</span></div>
             <div className={style.formInput}>
-              <select 
-                name="1depth_category" 
-                value={formData['1depth_category']} 
-                onChange={handleInputChange} 
-                className={getInputClassName('1depth_category', style.select)}
-              >
-                <option value="">1차 분류</option>
-                {Object.keys(categories).map(category => (
-                  <option key={category} value={category}>{category}</option>
-                ))}
-              </select>
-              <select 
-                name="2depth_category" 
-                value={formData['2depth_category']} 
-                onChange={handleInputChange} 
-                className={getInputClassName('2depth_category', style.select)}
-              >
-                <option value="">2차 분류</option>
-                {formData['1depth_category'] && categories[formData['1depth_category']].map(subCategory => (
-                  <option key={subCategory} value={subCategory}>{subCategory}</option>
-                ))}
-              </select>
+              <FormDropdown
+                name="1depth_category"
+                value={formData['1depth_category']}
+                placeholder="1차 분류"
+                options={[{ value: '', label: '1차 분류' }, ...Object.keys(categories).map(c => ({ value: c, label: c }))]}
+                onSelect={handleDropdownSelect}
+                hasError={!!errors['1depth_category']}
+              />
+              <FormDropdown
+                name="2depth_category"
+                value={formData['2depth_category']}
+                placeholder="2차 분류"
+                options={formData['1depth_category'] 
+                  ? [{ value: '', label: '2차 분류' }, ...categories[formData['1depth_category']].map(c => ({ value: c, label: c }))]
+                  : [{ value: '', label: '2차 분류' }]}
+                onSelect={handleDropdownSelect}
+                hasError={!!errors['2depth_category']}
+              />
               {(errors['1depth_category'] || errors['2depth_category']) && 
                 <div className={style.errorText}>카테고리를 선택해주세요</div>}
             </div>
@@ -987,28 +1107,24 @@ const WritePage: React.FC = () => {
                     <div className={style.formLabel}>근무지 <span className={style.required}>*</span></div>
             <div className={style.formInput}>
               <div className={style.locationSelects}>
-                <select 
-                  name="1depth_region" 
-                  value={formData['1depth_region']} 
-                  onChange={handleInputChange} 
-                  className={getInputClassName('1depth_region', style.select)}
-                >
-                  <option value="">시/도</option>
-                  {Object.keys(locations).map(city => (
-                    <option key={city} value={city}>{city}</option>
-                  ))}
-                </select>
-                <select 
-                  name="2depth_region" 
-                  value={formData['2depth_region']} 
-                  onChange={handleInputChange} 
-                  className={getInputClassName('2depth_region', style.select)}
-                >
-                  <option value="">시/구/군</option>
-                  {formData['1depth_region'] && locations[formData['1depth_region']].map(district => (
-                    <option key={district} value={district}>{district}</option>
-                  ))}
-                </select>
+                <FormDropdown
+                  name="1depth_region"
+                  value={formData['1depth_region']}
+                  placeholder="시/도"
+                  options={[{ value: '', label: '시/도' }, ...Object.keys(locations).map(c => ({ value: c, label: c }))]}
+                  onSelect={handleDropdownSelect}
+                  hasError={!!errors['1depth_region']}
+                />
+                <FormDropdown
+                  name="2depth_region"
+                  value={formData['2depth_region']}
+                  placeholder="시/구/군"
+                  options={formData['1depth_region']
+                    ? [{ value: '', label: '시/구/군' }, ...locations[formData['1depth_region']].filter(Boolean).map(d => ({ value: d, label: d }))]
+                    : [{ value: '', label: '시/구/군' }]}
+                  onSelect={handleDropdownSelect}
+                  hasError={!!errors['2depth_region']}
+                />
               </div>
               <input
                 type="text"
@@ -1033,7 +1149,7 @@ const WritePage: React.FC = () => {
                 <div className={style.subSection}>
                   {/* 한글이름, 영문이름 */}
                   <div className={style.formRow}>
-                    <div className={style.formLabel}>한글 이름 <span className={style.required}>*</span></div>
+                    <div className={style.formLabel}><span className={style.required}>*</span> 한글 이름</div>
                     <div className={style.formInput}>
                       <input
                         type="text"
@@ -1046,7 +1162,7 @@ const WritePage: React.FC = () => {
                     </div>
                   </div>
                   <div className={style.formRow}>
-                    <div className={style.formLabel}>영문 이름</div>
+                    <div className={style.formLabel}><span className={style.required}>*</span> 영문 이름</div>
                     <div className={style.formInput}>
                       <input
                         type="text"
@@ -1061,7 +1177,7 @@ const WritePage: React.FC = () => {
 
                   {/* 성별 */}
                   <div className={style.formRow}>
-                    <div className={style.formLabel}>성별 <span className={style.required}>*</span></div>
+                    <div className={style.formLabel}><span className={style.required}>*</span> 성별</div>
                     <div className={style.formInput}>
                       <div className={style.genderButtonGroup}>
                         <button
@@ -1084,7 +1200,7 @@ const WritePage: React.FC = () => {
 
                   {/* 생년월일 */}
                   <div className={style.formRow}>
-                    <div className={style.formLabel}>생년월일 <span className={style.required}>*</span></div>
+                    <div className={style.formLabel}><span className={style.required}>*</span> 생년월일</div>
                     <div className={style.formInput}>
                       <div className={style.birthDateInputs}>
                         <input
@@ -1132,84 +1248,68 @@ const WritePage: React.FC = () => {
                 {/* 희망업무 (카테고리) */}
                 <div className={style.subSection}>
                   <div className={style.formRow}>
-                    <div className={style.formLabel}>희망업무 <span className={style.required}>*</span></div>
+                    <div className={style.formLabel}><span className={style.required}>*</span> 희망업무</div>
                     <div className={style.formInput}>
-                      <select 
-                        name="1depth_category" 
-                        value={formData['1depth_category']} 
-                        onChange={handleInputChange} 
-                        className={getInputClassName('1depth_category', style.select)}
-                      >
-                        <option value="">1차 분류</option>
-                        {Object.keys(categories).map(category => (
-                          <option key={category} value={category}>{category}</option>
-                        ))}
-                      </select>
-                      <select 
-                        name="2depth_category" 
-                        value={formData['2depth_category']} 
-                        onChange={handleInputChange} 
-                        className={getInputClassName('2depth_category', style.select)}
-                      >
-                        <option value="">2차 분류</option>
-                        {formData['1depth_category'] && categories[formData['1depth_category']].map(subCategory => (
-                          <option key={subCategory} value={subCategory}>{subCategory}</option>
-                        ))}
-                      </select>
+                      <FormDropdown
+                        name="1depth_category"
+                        value={formData['1depth_category']}
+                        placeholder="1차 분류"
+                        options={[{ value: '', label: '1차 분류' }, ...Object.keys(categories).map(c => ({ value: c, label: c }))]}
+                        onSelect={handleDropdownSelect}
+                        hasError={!!errors['1depth_category']}
+                      />
+                      <FormDropdown
+                        name="2depth_category"
+                        value={formData['2depth_category']}
+                        placeholder="2차 분류"
+                        options={formData['1depth_category']
+                          ? [{ value: '', label: '2차 분류' }, ...categories[formData['1depth_category']].map(c => ({ value: c, label: c }))]
+                          : [{ value: '', label: '2차 분류' }]}
+                        onSelect={handleDropdownSelect}
+                        hasError={!!errors['2depth_category']}
+                      />
                     </div>
                   </div>
 
                   {/* 국적 */}
                   <div className={style.formRow}>
-                    <div className={style.formLabel}>국적 <span className={style.required}>*</span></div>
+                    <div className={style.formLabel}><span className={style.required}>*</span> 국적</div>
                     <div className={style.formInput}>
-                      <select
+                      <FormDropdown
                         name="nationality"
                         value={formData.nationality}
-                        onChange={handleInputChange}
-                        className={style.select}
-                      >
-                        <option value="">선택</option>
-                        {nationalities.map(n => (
-                          <option key={n} value={n}>{n}</option>
-                        ))}
-                      </select>
+                        placeholder="선택"
+                        options={[{ value: '', label: '선택' }, ...nationalities.map(n => ({ value: n, label: n }))]}
+                        onSelect={handleDropdownSelect}
+                      />
                     </div>
                   </div>
 
                   {/* 체류자격 */}
                   <div className={style.formRow}>
-                    <div className={style.formLabel}>체류자격 <span className={style.required}>*</span></div>
+                    <div className={style.formLabel}><span className={style.required}>*</span> 체류자격</div>
                     <div className={style.formInput}>
-                      <select
+                      <FormDropdown
                         name="visa_status"
                         value={formData.visa_status}
-                        onChange={handleInputChange}
-                        className={style.select}
-                      >
-                        <option value="">선택</option>
-                        {visaStatuses.map(v => (
-                          <option key={v} value={v}>{v}</option>
-                        ))}
-                      </select>
+                        placeholder="선택"
+                        options={[{ value: '', label: '선택' }, ...visaStatuses.map(v => ({ value: v, label: v }))]}
+                        onSelect={handleDropdownSelect}
+                      />
                     </div>
                   </div>
 
                   {/* 한국어 능력 */}
                   <div className={style.formRow}>
-                    <div className={style.formLabel}>한국어 능력</div>
+                    <div className={style.formLabel}><span className={style.required}>*</span> 한국어 능력</div>
                     <div className={style.formInput}>
-                      <select
+                      <FormDropdown
                         name="korean_ability"
                         value={formData.korean_ability}
-                        onChange={handleInputChange}
-                        className={style.select}
-                      >
-                        <option value="">선택</option>
-                        {koreanAbilities.map(k => (
-                          <option key={k} value={k}>{k}</option>
-                        ))}
-                      </select>
+                        placeholder="선택"
+                        options={[{ value: '', label: '선택' }, ...koreanAbilities.map(k => ({ value: k, label: k }))]}
+                        onSelect={handleDropdownSelect}
+                      />
                     </div>
                   </div>
                 </div>
@@ -1218,7 +1318,7 @@ const WritePage: React.FC = () => {
                 <div className={style.subSection}>
                   <div className={style.formRow}>
                     <div className={style.formLabelRow}>
-                      <span className={style.formLabel}>희망 근무조건</span>
+                      <span className={style.formLabel}><span className={style.required}>*</span> 희망 근무조건</span>
                       <span className={style.subLabelRight}>(중복선택이 가능해요)</span>
                     </div>
                     <div className={style.formInput}>
@@ -1242,33 +1342,27 @@ const WritePage: React.FC = () => {
                 <div className={style.subSection}>
                   <div className={style.formRow}>
                     <div className={style.formLabelRow}>
-                      <span className={style.formLabel}>희망 지역 <span className={style.required}>*</span></span>
+                      <span className={style.formLabel}><span className={style.required}>*</span> 희망 지역</span>
                       <span className={style.subLabelRight}>(5곳 까지 입력할 수 있어요)</span>
                     </div>
                     <div className={style.formInput}>
                       <div className={style.locationSelects}>
-                        <select 
-                          name="1depth_region" 
-                          value={formData['1depth_region']} 
-                          onChange={handleInputChange} 
-                          className={style.select}
-                        >
-                          <option value="">시/도</option>
-                          {Object.keys(locations).map(city => (
-                            <option key={city} value={city}>{city}</option>
-                          ))}
-                        </select>
-                        <select 
-                          name="2depth_region" 
-                          value={formData['2depth_region']} 
-                          onChange={handleInputChange} 
-                          className={style.select}
-                        >
-                          <option value="">시/구/군</option>
-                          {formData['1depth_region'] && locations[formData['1depth_region']].map(district => (
-                            <option key={district} value={district}>{district}</option>
-                          ))}
-                        </select>
+                        <FormDropdown
+                          name="1depth_region"
+                          value={formData['1depth_region']}
+                          placeholder="시/도"
+                          options={[{ value: '', label: '시/도' }, ...Object.keys(locations).map(c => ({ value: c, label: c }))]}
+                          onSelect={handleDropdownSelect}
+                        />
+                        <FormDropdown
+                          name="2depth_region"
+                          value={formData['2depth_region']}
+                          placeholder="시/구/군"
+                          options={formData['1depth_region']
+                            ? [{ value: '', label: '시/구/군' }, ...locations[formData['1depth_region']].filter(Boolean).map(d => ({ value: d, label: d }))]
+                            : [{ value: '', label: '시/구/군' }]}
+                          onSelect={handleDropdownSelect}
+                        />
                         <button
                           type="button"
                           className={style.addRegionBtn}
@@ -1305,7 +1399,7 @@ const WritePage: React.FC = () => {
                 {/* 경력 */}
                 <div className={style.subSection}>
                   <div className={style.formRow}>
-                    <div className={style.formLabel}>경력사항</div>
+                    <div className={style.formLabel}><span className={style.required}>*</span> 경력사항</div>
                     <div className={style.formInput}>
                       {formData.career_history.map(career => (
                         <div key={career.id} className={style.careerCard}>
@@ -1350,8 +1444,7 @@ const WritePage: React.FC = () => {
 
         {/* 상세 내용 */}
         <h2 className={style.sectionTitle}>
-          상세 내용
-          {formData.board_type === '1' && <span className={style.required}> *</span>}
+          <span className={style.required}>*</span> 상세 내용
         </h2>
         <div className={style.subSection}>
           <textarea
@@ -1368,9 +1461,9 @@ const WritePage: React.FC = () => {
         {/* 법적 경고 문구 - 채용정보(board_type='0')에만 표시 */}
         {formData.board_type === '0' && (
         <div className={style.legalWarning}>
-            <p>⚠️ 성매매 알선 등 행위의 처벌에 관한 법률 제4조에 해당되는 내용이 포함된 채용 광고 관련 법령에 따라 성매매를 알선한 경우, 3년 이하의 징역형 또는 3천만 원 이하의 벌금에 처해질 수 있습니다.</p>
-          <p>⚠️ 노래방 종업원 및 BAR 종업원등 유흥업소에 대한 공고는 게시가 제한됩니다.</p>
-          <p>⚠️ 1개의 공고에 여러 회사의 공고를 업로드할 경우 게시가 제한됩니다.</p>
+            <p>✓ 성매매 알선 등 행위의 처벌에 관한 법률 제4조에 해당되는 내용이 포함된 채용 광고 관련 법령에 따라 성매매를 알선한 경우, 3년 이하의 징역형 또는 3천만 원 이하의 벌금에 처해질 수 있습니다.</p>
+          <p>✓ 노래방 종업원 및 BAR 종업원등 유흥업소에 대한 공고는 게시가 제한됩니다.</p>
+          <p>✓ 1개의 공고에 여러 회사의 공고를 업로드할 경우 게시가 제한됩니다.</p>
         </div>
         )}
 

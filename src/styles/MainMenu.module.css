@@ -1,51 +1,142 @@
 .mainMenu {
     width: 100%;
-    background: #ff5205;
-    height: 40px;
+    height: 48px;
     display: flex;
     align-items: center;
+    border-bottom: 1px solid var(--color-border);
   }
   .layout {
     width: 100%;
     max-width: 980px;
     margin: 0 auto;
+    padding: 0 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     text-align: center;
   }
 
+  .layout > .menuRight:only-child {
+    margin-left: auto;
+  }
+
+  .menuRight {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  .userTag {
+    display: inline-block;
+    padding: 2px 8px;
+    margin-right: 6px;
+    background: var(--color-primary-light);
+    color: var(--color-primary);
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .menuPlaceholder {
+    display: inline-block;
+    min-width: 72px;
+    height: 1em;
+  }
+
+  .menuItemsPlaceholder {
+    display: inline-block;
+    min-width: 120px;
+    height: 1em;
+  }
+
+  .menuLink {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .menuLink:hover {
+    color: var(--color-text);
+  }
+
+  .menuSep {
+    color: var(--color-border);
+    font-size: 15px;
+    user-select: none;
+  }
+
+  .ctaBtn {
+    padding: 4px 10px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: -5px;
+    color: #fff;
+    background: var(--color-gradient-cta-logo);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: "Noto Sans KR", sans-serif;
+  }
+
+  .ctaBtn:hover {
+    filter: brightness(1.08);
+    transform: scale(1.02);
+  }
+
   .mainMenu li {
-    width:100px;
+    width: auto;
     height: 100%;
+    display: flex;
+    align-items: center;
   }
   .mainMenu a {
-    font-size: 13px;
-    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    padding-bottom: 12px;
+    margin-bottom: -1px;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s ease, border-color 0.2s ease;
+  }
+  .mainMenu a:hover {
+    color: var(--color-text);
   }
   .mainMenu .focus {
-    font-weight: bold;
-    color: #fff;
+    font-weight: 600;
+    color: var(--color-text);
+    border-bottom-color: var(--color-text);
   }
   .externalLink {
-    color: #fff;
+    font-weight: 600;
+    color: var(--color-text-secondary);
     text-decoration: none;
-    transition: opacity 0.2s ease;
+    transition: color 0.2s ease, opacity 0.2s ease;
   }
   .externalLink:hover {
-    opacity: 0.8;
+    color: var(--color-text);
+    opacity: 1;
   }
 
   @media screen and (max-width: 768px) {
     .mainMenu {
       overflow-x: hidden;
       overflow-y: hidden;
+      height: 44px;
     }
     
     .layout {
-      padding: 0 20px;
+      padding: 0 16px;
       width: 100%;
       justify-content: center;
+    }
+
+    .menuRight {
+      display: none;
     }
     
     .mainMenu li {
@@ -54,25 +145,25 @@
     }
     
     .mainMenu a {
-      font-size: 13px;
+      font-size: 15px;
       white-space: nowrap;
     }
     
     .externalLink {
-      font-size: 13px;
+      font-size: 15px;
       white-space: nowrap;
     }
     
     .menuItems {
       width: 100%;
-      justify-content: space-between;
-      gap: 0;
+      justify-content: flex-start;
+      gap: 32px;
     }
   }
 
   .menuItems {
     display: flex;
-    gap: 20px;
+    gap: 40px;
     align-items: center;
   }
 

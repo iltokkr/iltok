@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { createClient } from '@supabase/supabase-js';
 import Header from '@/components/Header';
+import MainMenu from '@/components/MainMenu';
 import Footer from '@/components/Footer';
 import { AuthContext } from '@/contexts/AuthContext';
 import styles from '@/styles/ResumeDetail.module.css';
@@ -99,6 +100,7 @@ const ResumeDetailPage: React.FC = () => {
     return (
       <>
         <Header />
+        <MainMenu showMenuItems={false} />
         <div className={styles.loadingContainer}>
           <p>로딩 중...</p>
         </div>
@@ -126,6 +128,7 @@ const ResumeDetailPage: React.FC = () => {
         <meta name="description" content={`${profile.korean_name}님의 구직 이력서`} />
       </Head>
       <Header />
+      <MainMenu showMenuItems={false} />
       <main className={styles.main}>
         <div className={styles.container}>
           {/* 프로필 헤더 */}

@@ -1,6 +1,7 @@
 import React, { useContext, useState, useEffect } from 'react';
 import Head from 'next/head';
 import Header from '@/components/Header';
+import MainMenu from '@/components/MainMenu';
 import Footer from '@/components/Footer';
 import JobSeekerProfileForm from '@/components/JobSeekerProfileForm';
 import LoginPopup from '@/components/LoginPopup';
@@ -30,6 +31,7 @@ const ResumePage: React.FC = () => {
           <title>이력서 등록 - 일톡</title>
         </Head>
         <Header />
+        <MainMenu showMenuItems={false} />
         <div className={styles.loadingContainer}>
           <p>로딩 중...</p>
         </div>
@@ -45,6 +47,7 @@ const ResumePage: React.FC = () => {
         <meta name="description" content="구직자 이력서를 등록하고 관리하세요" />
       </Head>
       <Header />
+      <MainMenu showMenuItems={false} />
       <main className={styles.main}>
         {auth?.isLoggedIn ? (
           <JobSeekerProfileForm />

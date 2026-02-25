@@ -13,7 +13,7 @@
   position: fixed;
   bottom: 20px;
   right: 20px;
-  background-color: #ff4800;
+  background-color: var(--color-primary);
   color: white;
   padding: 12px 20px;
   border-radius: 50px;
@@ -68,7 +68,7 @@
   position: fixed;
   bottom: 160px;
   right: 20px;
-  background-color: #ff3900;
+  background-color: var(--color-primary);
   color: white;
   width: 40px;
   height: 40px;
@@ -84,7 +84,7 @@
 }
 
 .scrollToTop:hover {
-  background-color: #ff4800;
+  background-color: var(--color-primary);
 }
 
 /* PWA 설치 버튼이 있는 경우 위치 조정 */
@@ -140,7 +140,7 @@
 .writeButton:hover {
   transform: scale(1.05);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
-  background: #333;
+  background: var(--color-text);
 }
 
 .writeButton:active {
@@ -193,7 +193,7 @@
 }
 
 .modalContent a {
-  color: #3182ce;
+  color: var(--color-primary);
   text-decoration: underline;
 }
 
@@ -209,5 +209,5 @@
 }
 
 .modalCloseButton:hover {
-  background-color: #0056b3;
+  background-color: var(--color-primary-dark);
 }

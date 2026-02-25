@@ -3,35 +3,46 @@ import { useRouter } from 'next/router';
 import styles from '@/styles/Header.module.css';
 import LoginPopup from './LoginPopup';
 import { AuthContext } from '@/contexts/AuthContext';
-import { FaHome, FaUser, FaPen, FaSignOutAlt, FaTimes } from 'react-icons/fa';
+import { FaTimes, FaSearch } from 'react-icons/fa';
 
 const Header: React.FC = () => {
   const [showLoginPopup, setShowLoginPopup] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [searchKeyword, setSearchKeyword] = useState('');
   const auth = useContext(AuthContext);
   const router = useRouter();
 
   if (!auth) throw new Error("AuthContext not found");
 
-  const { isLoggedIn, logout } = auth;
+  const { isLoggedIn } = auth;
 
-  const handleAuthRequiredAction = (e: React.MouseEvent, action: string) => {
+  const handleFreeAdClick = (e: React.MouseEvent, closeMenu = false) => {
     e.preventDefault();
+    if (closeMenu) toggleMobileMenu();
     if (!isLoggedIn) {
       setShowLoginPopup(true);
     } else {
-      router.push(action === '글쓰기' ? '/write' : '/my');
+      router.push('/write');
     }
-  };
-
-  const handleLogout = () => {
-    logout();
-    router.push('/');
   };
 
   const toggleMobileMenu = () => {
     setShowMobileMenu(!showMobileMenu);
     document.body.style.overflow = !showMobileMenu ? 'hidden' : 'auto';
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setShowMobileSearch(false);
+    if (searchKeyword.trim()) {
+      router.push({
+        pathname: '/board',
+        query: { board_type: '0', keyword: searchKeyword.trim(), searchType: 'both' }
+      });
+    } else {
+      router.push({ pathname: '/board', query: { board_type: '0' } });
+    }
   };
 
   useEffect(() => {
@@ -45,12 +56,48 @@ const Header: React.FC = () => {
       <div className={styles.topbar}>
         <div className={styles.layout}>
           <div className={styles.path}>
-            <a className={styles.logoTxt} href="/board"><em>114</em>114KR.COM</a>
+            <a className={styles.logoTxt} href="/board">
+              <span className={styles.logoChar} style={{ animationDelay: '0ms' }}>1</span>
+              <span className={styles.logoChar} style={{ animationDelay: '50ms' }}>1</span>
+              <span className={styles.logoChar} style={{ animationDelay: '100ms' }}>4</span>
+              <span className={styles.logoChar} style={{ animationDelay: '150ms' }}>1</span>
+              <span className={styles.logoChar} style={{ animationDelay: '200ms' }}>1</span>
+              <span className={styles.logoChar} style={{ animationDelay: '250ms' }}>4</span>
+              <span className={styles.logoSuffix}>KR</span>
+              <span className={styles.logoDomain}>.com</span>
+            </a>
+            <span className={styles.tagline}>
+              <span className={styles.taglineText}>외국인 특화 채용 플랫폼</span>
+            </span>
+          </div>
+          <div className={styles.searchWrap}>
+            <form className={styles.searchForm} onSubmit={handleSearch}>
+              <input
+                type="text"
+                className={styles.searchInput}
+                placeholder="어떤 알바를 찾으세요?"
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
+              />
+              <button type="submit" className={styles.searchButton} aria-label="검색">
+                <FaSearch />
+              </button>
+            </form>
+            <button
+              type="button"
+              className={styles.mobileSearchToggle}
+              onClick={() => setShowMobileSearch(!showMobileSearch)}
+              aria-label="검색"
+              aria-expanded={showMobileSearch}
+            >
+              <FaSearch />
+            </button>
           </div>
           {!showMobileMenu && (
             <button 
               className={styles.mobileMenuButton} 
               onClick={toggleMobileMenu}
+              aria-label="메뉴"
             >
               ☰
             </button>
@@ -64,13 +111,30 @@ const Header: React.FC = () => {
                 <FaTimes />
               </button>
             )}
-            <li><a href="/my" onClick={(e) => handleAuthRequiredAction(e, '내가쓴글')}> 마이페이지</a></li>
-            <li><a className={styles.focus} href="/write"> 글쓰기</a></li>
-            {isLoggedIn && (
-              <li><a href="#" onClick={handleLogout}> 로그아웃</a></li>
-            )}
+            <li className={styles.mobileOnlyCta}>
+              <a href="/write" onClick={(e) => handleFreeAdClick(e, true)}>
+                무료 공고 등록
+              </a>
+            </li>
           </ul>
         </div>
+        {showMobileSearch && (
+          <div className={styles.mobileSearchBar}>
+            <form className={styles.mobileSearchForm} onSubmit={handleSearch}>
+              <input
+                type="text"
+                className={styles.mobileSearchInput}
+                placeholder="어떤 알바를 찾으세요?"
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
+                autoFocus
+              />
+              <button type="submit" className={styles.mobileSearchButton} aria-label="검색">
+                <FaSearch />
+              </button>
+            </form>
+          </div>
+        )}
       </div>
       <div 
         className={`${styles.overlay} ${showMobileMenu ? styles.showOverlay : ''}`}

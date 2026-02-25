@@ -40,6 +40,8 @@ const BusinessSignup = () => {
   const [bizFile, setBizFile] = useState<File | null>(null);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [userIdChecked, setUserIdChecked] = useState<boolean | null>(null);
+  const [userIdCheckLoading, setUserIdCheckLoading] = useState(false);
 
   const formatPhoneForApi = (value: string) => {
     const numbers = value.replace(/[^0-9]/g, '');
@@ -55,6 +57,35 @@ const BusinessSignup = () => {
   };
 
   const isValidBusinessNumber = (value: string) => /^\d{3}-\d{2}-\d{5}$/.test(value);
+
+  const checkUserIdDuplicate = async () => {
+    const id = userId.trim();
+    if (!id) {
+      setFormErrors((prev) => ({ ...prev, userId: '아이디를 입력해주세요.' }));
+      return;
+    }
+    setUserIdCheckLoading(true);
+    setFormErrors((prev) => ({ ...prev, userId: '' }));
+    setUserIdChecked(null);
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('id')
+        .eq('user_id', id)
+        .maybeSingle();
+      if (error) throw error;
+      if (data) {
+        setUserIdChecked(false);
+        setFormErrors((prev) => ({ ...prev, userId: '이미 사용 중인 아이디입니다.' }));
+      } else {
+        setUserIdChecked(true);
+      }
+    } catch (err) {
+      setFormErrors((prev) => ({ ...prev, userId: '중복 검사 중 오류가 발생했습니다.' }));
+    } finally {
+      setUserIdCheckLoading(false);
+    }
+  };
 
   const handleSendOtp = async () => {
     if (!phone.trim()) {
@@ -91,6 +122,27 @@ const BusinessSignup = () => {
       });
       if (error) throw error;
       if (data.user) {
+        const { data: existingUser } = await supabase
+          .from('users')
+          .select('id, user_type')
+          .eq('number', formatted)
+          .maybeSingle();
+        if (existingUser) {
+          if (existingUser.user_type === 'business') {
+            await supabase.auth.signOut();
+            setAuthError('이미 기업회원으로 가입된 번호입니다.');
+            return;
+          }
+          if (existingUser.user_type === 'both') {
+            await supabase.auth.signOut();
+            setAuthError('이미 기업·개인 회원으로 가입된 번호입니다.');
+            return;
+          }
+          if (existingUser.user_type === 'jobseeker') {
+            setIsVerified(true);
+            return;
+          }
+        }
         setIsVerified(true);
       }
     } catch (err) {
@@ -111,6 +163,7 @@ const BusinessSignup = () => {
     }
     const err: Record<string, string> = {};
     if (!userId.trim()) err.userId = '아이디를 입력해주세요.';
+    else if (userIdChecked !== true) err.userId = '아이디 중복 검사를 진행해주세요.';
     if (!password.trim()) err.password = '비밀번호를 입력해주세요.';
     else if (password.length < 6) err.password = '비밀번호는 6자 이상이어야 합니다.';
     if (!email.trim()) err.email = '이메일을 입력해주세요.';
@@ -153,16 +206,34 @@ const BusinessSignup = () => {
 
       const formattedPhone = formatPhoneForApi(phone);
 
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('user_type')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      const newUserType = existingUser?.user_type === 'jobseeker' ? 'both' : 'business';
+
+      // Supabase Auth에 이메일/비밀번호 추가 (아이디/비밀번호 로그인용)
+      const { error: authUpdateError } = await supabase.auth.updateUser({
+        email: email.trim(),
+        password: password,
+      });
+      if (authUpdateError) throw authUpdateError;
+
       const userData = {
         id: user.id,
         number: formattedPhone,
+        email: email.trim(),
+        user_id: userId.trim(),
         company_name: companyName,
         name: representativeName,
         business_number: businessNumber,
+        business_address: '',
         biz_file: urlData.publicUrl,
         policy_term: termsAgreed,
         auth_term: businessTermsAgreed,
-        user_type: 'business',
+        user_type: newUserType,
         is_accept: false,
       };
 
@@ -173,10 +244,25 @@ const BusinessSignup = () => {
       if (updateError) throw updateError;
 
       alert('회원가입이 완료되었습니다. 관리자 승인 후 이용 가능합니다.');
-      router.push('/board');
-    } catch (err) {
+      router.push('/my');
+    } catch (err: unknown) {
       console.error(err);
-      alert('회원가입 중 오류가 발생했습니다.');
+      const msg = err && typeof err === 'object' && 'message' in err
+        ? String((err as { message: string }).message)
+        : '';
+      const isEmailEmpty = msg.includes('"" is invalid') || msg.includes('" is invalid');
+      if (isEmailEmpty) {
+        setFormErrors((prev) => ({ ...prev, email: '이메일을 입력해주세요.' }));
+        alert('이메일을 입력해주세요.');
+      } else if (msg.includes('already registered') || msg.includes('already in use')) {
+        setFormErrors((prev) => ({ ...prev, email: '이미 사용 중인 이메일입니다.' }));
+        alert('이미 사용 중인 이메일입니다.');
+      } else if (msg.includes('different from the old password')) {
+        setFormErrors((prev) => ({ ...prev, password: '이전 비밀번호와 다른 비밀번호를 입력해주세요.' }));
+        alert('이전 비밀번호와 다른 비밀번호를 입력해주세요.');
+      } else {
+        alert(msg || '회원가입 중 오류가 발생했습니다.');
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -286,13 +372,28 @@ const BusinessSignup = () => {
               <div className={styles.form}>
                 <div className={styles.formGroup}>
                   <label>아이디 <span className={styles.required}>*</span></label>
-                  <input
-                    type="text"
-                    value={userId}
-                    onChange={(e) => setUserId(e.target.value)}
-                    placeholder="아이디를 입력하세요"
-                    className={styles.input}
-                  />
+                  <div className={styles.idInputRow}>
+                    <input
+                      type="text"
+                      value={userId}
+                      onChange={(e) => {
+                        setUserId(e.target.value);
+                        setUserIdChecked(null);
+                        setFormErrors((prev) => ({ ...prev, userId: '' }));
+                      }}
+                      placeholder="아이디를 입력하세요"
+                      className={styles.input}
+                    />
+                    <button
+                      type="button"
+                      className={styles.dupCheckBtn}
+                      onClick={checkUserIdDuplicate}
+                      disabled={userIdCheckLoading || !userId.trim()}
+                    >
+                      {userIdCheckLoading ? '확인 중...' : '중복 검사'}
+                    </button>
+                  </div>
+                  {userIdChecked === true && <span className={styles.fieldSuccess}>사용 가능한 아이디입니다.</span>}
                   {formErrors.userId && <span className={styles.fieldError}>{formErrors.userId}</span>}
                 </div>
                 <div className={styles.formGroup}>

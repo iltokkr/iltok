@@ -6,6 +6,7 @@ interface AuthContextType {
   isLoggedIn: boolean;
   isLoading: boolean;
   signIn: (phone: string) => Promise<void>;
+  signInWithPassword: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   verifyOtp: (phone: string, token: string) => Promise<void>;
   logout: () => Promise<void>;

@@ -57,8 +57,8 @@
 }
 
 .closeButton:hover {
-  background: #f5f5f5;
-  color: #333;
+  background: var(--color-bg-input);
+  color: var(--color-primary);
 }
 
 .modalBody {
@@ -66,8 +66,8 @@
 }
 
 .warningBox {
-  background: #fff8f5;
-  border: 1px solid #ffe0d5;
+  background: var(--color-bg-input);
+  border: 1px solid var(--color-border);
   border-radius: 10px;
   padding: 16px;
   margin-bottom: 24px;
@@ -82,7 +82,7 @@
 }
 
 .warningText strong {
-  color: #ff5722;
+  color: var(--color-primary);
 }
 
 .formGroup {
@@ -110,7 +110,7 @@
 }
 
 .formInput:focus {
-  border-color: #ff5722;
+  border-color: var(--color-primary);
 }
 
 .formInput::placeholder {
@@ -134,8 +134,8 @@
 }
 
 .fileInputLabel:hover {
-  border-color: #ff5722;
-  background: #fff8f5;
+  border-color: var(--color-primary);
+  background: var(--color-bg-input);
 }
 
 .fileInputButton {
@@ -212,30 +212,36 @@
 }
 
 .checkboxText a {
-  color: #ff5722;
+  color: var(--color-primary);
   text-decoration: underline;
+}
+
+.checkboxText a:hover {
+  color: var(--color-primary-dark);
 }
 
 .submitButton {
   width: 100%;
   padding: 16px;
-  background: #ff5722;
+  background: var(--color-gradient-cta);
   color: white;
   border: none;
   border-radius: 10px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: opacity 0.2s;
   margin-bottom: 20px;
 }
 
 .submitButton:hover {
-  background: #e64a19;
+  opacity: 0.92;
 }
 
 .submitButton:disabled {
-  background: #ccc;
+  background: var(--color-border);
+  color: var(--color-text-muted);
+  opacity: 1;
   cursor: not-allowed;
 }
 
@@ -309,7 +315,7 @@
 
 /* 필수 표시 */
 .required {
-  color: #ff5722;
+  color: var(--color-primary);
   margin-left: 2px;
 }
 
@@ -324,7 +330,7 @@
 
 .inputError {
   border-color: #e53935 !important;
-  background-color: #fff8f7;
+  background-color: var(--color-bg-input);
 }
 
 .inputError:focus {
@@ -334,12 +340,12 @@
 
 .fileError {
   border-color: #e53935 !important;
-  background-color: #fff8f7;
+  background-color: var(--color-bg-input);
 }
 
 .fileError .fileInputLabel {
   border-color: #e53935;
-  background-color: #fff8f7;
+  background-color: var(--color-bg-input);
 }
 
 .checkboxError {

@@ -6,7 +6,6 @@ import JobFilter from '@/components/JobFilter';
 import JobList from '@/components/JobList';
 import Pagination from '@/components/Pagination';
 import Footer from '@/components/Footer';
-import MainCarousel from '@/components/MainCarousel';
 import AdPopup from '@/components/AdPopup';
 import styles from '@/styles/Board.module.css';
 import { createClient } from '@supabase/supabase-js'
@@ -240,12 +239,8 @@ const BoardPage: React.FC = () => {
   const auth = useContext(AuthContext);
   const [bookmarkedJobs, setBookmarkedJobs] = useState<number[]>([]);
   const [showModal, setShowModal] = useState(true); // 모달 상태 추가
-  const [showAdPopup, setShowAdPopup] = useState(false); // 광고 팝업 상태
 
-  // AuthContext가 는 경우 에러 처리
-  if (!auth) throw new Error("AuthContext not found");
-  
-  const { user, isLoggedIn } = auth;
+  const { user, isLoggedIn } = auth || {};
 
   const handleFilterChange = useCallback((newFilters: FilterOptions) => {
     // city1이 변경되었는지 확인
@@ -781,25 +776,9 @@ const BoardPage: React.FC = () => {
 
       <Header/>
       <MainMenu currentBoardType={boardType} />
-      <MainCarousel  
-          images={[
-            { 
-              src: '/50.png', 
-              mobileSrc: '/50.png',
-              action: 'popup'
-            },
-            { 
-              src: '/job.png', 
-              mobileSrc: '/job.png',
-              action: 'navigate',
-              navigateTo: '/write?board_type=1'
-            }
-        ]}
-          onAdPopupOpen={() => setShowAdPopup(true)}
-      />
-      {showAdPopup && <AdPopup onClose={() => setShowAdPopup(false)} />}
       <div className={styles.layout} ref={contentRef}>
         <JobFilter
+          boardType={boardType}
           filters={filters}
           onFilterChange={handleFilterChange}
           city2Options={city2Options}

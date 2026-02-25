@@ -20,7 +20,7 @@
   }
   
   .topArea {
-    background-color: #fffcf5;
+    background-color: var(--color-bg-input);
     border-top: 1px solid #ccc;
     border-bottom: 1px solid #ccc;
     padding: 10px;
@@ -73,9 +73,9 @@
   }
   
   .pages .current {
-    background-color: #ff5205;
+    background-color: var(--color-primary);
     color: white;
-    border-color: #ff5205;
+    border-color: var(--color-primary);
   }
   
   .pages .next {
@@ -153,7 +153,7 @@
 
 .listWrap li .txt,
 .listWrap li .txt a {
-  color: #ff3900;
+  color: var(--color-primary);
 }
 
 .listWrap li .txt {
@@ -161,14 +161,14 @@
 }
 
 .listP {
-  background-color: #FFFCF5;
+  background-color: var(--color-bg-input);
   border-bottom: 1px solid #CCCCCC;
   border-top: 1px solid #CCCCCC;
   margin-top: 15px;
 }
 
 .listP font {
-  color: #FF3900;
+  color: var(--color-primary);
   padding-right: 10px;
 }
 
@@ -409,7 +409,7 @@
 .languageSelector button.activeLanguage {
   background: #ff4800;
   color: white;
-  border-color: #ff3900;
+  border-color: var(--color-primary);
 }
 
 .readPost {
@@ -441,7 +441,7 @@
 }
 
 .salaryType.weekly {
-  color: #2563eb; /* 주급 - 블루 */
+  color: var(--color-primary); /* 주급 - 블루 */
 }
 
 .salaryType.monthly {
@@ -475,7 +475,7 @@
 }
 
 .readPost .salaryType.weekly {
-  color: #2563eb;
+  color: var(--color-primary);
 }
 
 .readPost .salaryType.monthly {
@@ -540,7 +540,7 @@
 
 /* 북마크된 상태 */
 .filledBookmark {
-  color: #ff6b00;  /* 채워진 주황색 */
+  color: var(--color-primary);  /* 채워진 주황색 */
 }
 
 /* 호버 상태 */
@@ -621,7 +621,7 @@
   gap: 2px;
   font-size: 11px;
   font-weight: 700;
-  color: #2196F3;
+  color: var(--color-primary);
   margin-right: 6px;
   vertical-align: middle;
   white-space: nowrap;
@@ -634,7 +634,7 @@
 }
 
 .filledBookmark {
-  color: #ff6b00;
+  color: var(--color-primary);
 }
 
 .emptyBookmark {
@@ -729,7 +729,7 @@
 
 .hotListTag {
   background: #e8f4fd;
-  color: #4a90d9;
+  color: var(--color-primary);
   padding: 3px 8px;
   border-radius: 4px;
   font-size: 12px;
@@ -844,8 +844,8 @@
   gap: 12px;
   padding: 14px 20px;
   margin: 0 0 10px 0;
-  background: linear-gradient(135deg, #fff5f2 0%, #fff0eb 100%);
-  border: 1px solid #ffe0d6;
+  background: var(--color-bg-input);
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   position: relative;
 }
@@ -1006,7 +1006,7 @@
   display: inline-block;
   width: fit-content;
   background: #e8f4fd;
-  color: #4a90d9;
+  color: var(--color-primary);
   padding: 3px 8px;
   border-radius: 4px;
   font-size: 11px;
@@ -1194,7 +1194,7 @@
 
 .commentCount {
   margin-left: 5px;
-  color: #ff6b00;
+  color: var(--color-primary);
   font-size: 1em;
   font-weight: inherit;
   display: inline-flex;
@@ -1203,7 +1203,7 @@
 
 .hotTitle .commentCount {
   margin-left: 5px;
-  color: #ff6b00;
+  color: var(--color-primary);
   font-size: 1em;
   font-weight: inherit;
   display: inline-flex;
@@ -1256,7 +1256,7 @@
 
 .commentCount {
   margin-left: 5px;
-  color: #ff6b00;
+  color: var(--color-primary);
   font-size: 1em;
   font-weight: inherit;
   display: inline;
@@ -1310,7 +1310,7 @@
   display: inline-flex;
   align-items: center;
   gap: 1px;
-  color: #2196F3;
+  color: var(--color-primary);
   font-size: 0.85em;
   font-weight: inherit;
   margin-right: 4px;
@@ -1665,7 +1665,7 @@
 }
 
 .jobSeekerVisa {
-  color: #3b82f6;
+  color: var(--color-primary);
   font-weight: 500;
 }
 

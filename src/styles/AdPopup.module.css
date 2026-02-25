@@ -167,7 +167,7 @@
 
 .fileInput:hover {
   border-color: #ff4757;
-  background-color: #fff5f5;
+  background-color: var(--color-bg-input);
 }
 
 .submitBtn {

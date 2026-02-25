@@ -34,6 +34,7 @@ interface JobDetailType {
   gender: string;
   education: string;
   age_limit: string;
+  required_visa?: string | null;
   salary_type: string;
   salary_detail: string;
   '1depth_category': string;
@@ -76,8 +77,13 @@ interface PageProps {
 }
 
 // getServerSideProps 수정
-export async function getServerSideProps({ params }: { params: { id: string } }) {
+export async function getServerSideProps({ params }: { params?: { id?: string } }) {
   try {
+    const id = params?.id;
+    if (!id) {
+      return { notFound: true };
+    }
+
     // 채용 정보와 댓글을 병렬로 가져오기
     const [jobResponse, commentsResponse] = await Promise.all([
       supabase
@@ -86,7 +92,7 @@ export async function getServerSideProps({ params }: { params: { id: string } })
           *,
           uploader:users (company_name, name, number)
         `)
-        .eq('id', params.id)
+        .eq('id', id)
         .single(),
       
       supabase
@@ -98,7 +104,7 @@ export async function getServerSideProps({ params }: { params: { id: string } })
           user_id,
           jd_id
         `)
-        .eq('jd_id', params.id)
+        .eq('jd_id', id)
         .order('created_at', { ascending: false })
     ]);
 

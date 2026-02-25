@@ -2,8 +2,42 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * 114114KR 색상 팔레트
+ * 로고: 틸~인디고 그라데이션 유지
+ * 기능/UI: 블루 계열 적용
+ *
+ * Primary (블루): 메인 액센트, CTA 버튼, 링크
+ */
+:root {
+  /* Primary - 톤다운 블루 계열 (로고 제외 기능용) */
+  --color-primary: #4a6fa5;
+  --color-primary-dark: #3d5a80;
+  --color-primary-light: #e2e8f2;
+  --color-primary-bg: #f0f4f8;
+
+  /* Accent */
+  --color-accent-indigo: #6366f1;
+  --color-accent-violet: #8b5cf6;
+  /* CTA/버튼용 톤다운 블루 그라데이션 */
+  --color-gradient-primary: linear-gradient(135deg, #4a6fa5 0%, #3d5a80 100%);
+  --color-gradient-cta: linear-gradient(135deg, #4a6fa5 0%, #3d5a80 100%);
+  /* 무료공고등록 버튼용 - 블루톤 그라데이션 */
+  --color-gradient-cta-logo: linear-gradient(135deg, #5b9bd5 0%, #4a6fa5 50%, #3d5a80 100%);
+
+  /* Text */
+  --color-text: #0f172a;
+  --color-text-secondary: #64748b;
+  --color-text-muted: #94a3b8;
+
+  /* UI */
+  --color-border: #e2e8f0;
+  --color-bg: #f8fafc;
+  --color-bg-input: #f1f5f9;
+}
+
 body,html,h1,h2,h3,h4,h5,h6,p,ul,ol,li,dl,dt,dd,th,td,form,object,iframe,blockquote,pre,a,abbr,address,code,img,fieldset,form,label{margin:0;padding:0;}
-body,html,input,button,textarea{color:#333;font:13px/1.8 'Noto Sans KR',Gulim,Tahoma,Arial,Verdana,Helvetica,sans-serif;}
+body,html,input,button,textarea{color:var(--color-text);font:13px/1.8 'Noto Sans KR',Gulim,Tahoma,Arial,Verdana,Helvetica,sans-serif;}
 body,html{overflow-x:hidden;max-width:100vw;}
 article,aside,figcaption,figure,footer,header,hgroup,main,nav,section{display:block;}
 h1{font-size:18px;}
@@ -12,9 +46,9 @@ h3,h4,h5{font-size:14px;}
 img{border:none;vertical-align:middle;}
 li{list-style:none;}
 i,em{font-style:normal;}
-a{color:#333;text-decoration:none;}
+a{color:var(--color-text);text-decoration:none;}
 a:focus{outline:none;}
-a:hover{color:#333;text-decoration:underline;}
+a:hover{color:var(--color-text);text-decoration:underline;}
 
 .clearfix:after,
 .layout:after,

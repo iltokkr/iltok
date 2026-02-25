@@ -1,25 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { useRouter } from 'next/router';
 import styles from '@/styles/LoginPopup.module.css';
+import { AuthContext } from '@/contexts/AuthContext';
 
 // Supabase 클라이언트 초기화
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
 
 interface LoginPopupProps {
   onClose: () => void;
+  initialUserType?: 'business' | 'jobseeker';
 }
 
-const LoginPopup: React.FC<LoginPopupProps> = ({ onClose }) => {
+const LoginPopup: React.FC<LoginPopupProps> = ({ onClose, initialUserType = 'business' }) => {
   const router = useRouter();
+  const auth = useContext(AuthContext);
+  const [loginMode, setLoginMode] = useState<'phone' | 'password'>('password');
+  const [loginId, setLoginId] = useState('');
+  const [password, setPassword] = useState('');
   const [phone, setPhone] = useState('');
   const [authNum, setAuthNum] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isNewUser, setIsNewUser] = useState<boolean | null>(null);
-  const [userType, setUserType] = useState<'business' | 'jobseeker'>('business');
-  const [showResumePrompt, setShowResumePrompt] = useState(false);
-
+  const [userType, setUserType] = useState<'business' | 'jobseeker'>(initialUserType);
   const formatPhoneNumber = (phoneNumber: string) => {
     // 한국 번호 형식으로 변환 (예: 01012345678 -> +821012345678)
     if (phoneNumber.startsWith('0')) {
@@ -106,106 +110,127 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose }) => {
           .eq('id', data.user.id);
       }
 
-      // 구직자 선택 시 팝업 표시 여부 결정
-      if (userType === 'jobseeker' && data.user) {
-        // 이미 구직정보를 작성한 적이 있는지 확인
-        const hasJobSeekerPost = await checkHasJobSeekerPost(data.user.id);
-        
-        if (!hasJobSeekerPost) {
-          setShowResumePrompt(true);
-          setLoading(false);
-          return; // 팝업 표시 후 onClose 호출하지 않음
-        }
-      }
-
       onClose();
+      router.push('/my');
     } catch (error) {
       setError(error instanceof Error ? error.message : 'An unknown error occurred');
       setLoading(false);
     }
   };
 
-  const handleResumePromptClose = () => {
-    setShowResumePrompt(false);
-    onClose();
-  };
+  const handlePasswordLogin = async () => {
+    if (!loginId.trim() || !password.trim()) {
+      setError('아이디와 비밀번호를 입력해주세요.');
+      return;
+    }
+    if (!auth?.signInWithPassword) {
+      setError('로그인 기능을 사용할 수 없습니다.');
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const input = loginId.trim();
+      let emailToUse = input;
 
-  const handleWriteResume = () => {
-    setShowResumePrompt(false);
-    onClose();
-    router.push('/write?board_type=1');
-  };
+      // 아이디로 로그인: users 테이블에서 user_id로 조회 후 email 사용 (Supabase Auth는 email 기반)
+      if (!input.includes('@')) {
+        const { data: userData } = await supabase
+          .from('users')
+          .select('email')
+          .eq('user_id', input)
+          .maybeSingle();
+        if (userData?.email) {
+          emailToUse = userData.email;
+        }
+      }
 
-  // 이력서 작성 유도 팝업
-  if (showResumePrompt) {
-    return (
-      <div className={styles.popWrap}>
-        <div className={styles.resumePromptBox}>
-          <div className={styles.resumePromptImage}>
-            <img src="/images/resume-prompt-icon.png" alt="인증 완료" />
-          </div>
-          <h2 className={styles.resumePromptTitle}>
-            이력서 작성을 시작해보세요!
-          </h2>
-          <div className={styles.resumePromptContent}>
-            <p className={styles.resumePromptDesc}>
-              이력서가 있으면 <strong className={styles.highlight}>2배</strong> 많은 연락을 받아요!
-            </p>
-          </div>
-          <div className={styles.resumePromptButtons}>
-            <button 
-              className={styles.resumePromptCloseBtn}
-              onClick={handleResumePromptClose}
-            >
-              닫기
-            </button>
-            <button 
-              className={styles.resumePromptWriteBtn}
-              onClick={handleWriteResume}
-            >
-              이력서 작성하기
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+      await auth.signInWithPassword(emailToUse, password);
+      onClose();
+      router.push('/my');
+    } catch (err) {
+      setError('아이디 또는 비밀번호가 올바르지 않습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className={styles.popWrap}>
       <div className={styles.popbox}>
-        <input type="hidden" name="veri_num" id="veri_num" value="" />
         <div className={styles.title}>
-          <div className={styles.tit}>휴대폰 인증</div>
+          <div className={styles.tit}>로그인</div>
           <div className={styles.close}>
             <a href="#" onClick={onClose}>X</a>
           </div>
         </div>
 
-        {/* 회원 유형 선택 */}
+        {/* 로그인 방식 선택 */}
         <div className={styles.userTypeSelector}>
           <button
             type="button"
-            className={`${styles.userTypeBtn} ${userType === 'business' ? styles.userTypeActive : ''}`}
-            onClick={() => setUserType('business')}
+            className={`${styles.userTypeBtn} ${loginMode === 'password' ? styles.userTypeActive : ''}`}
+            onClick={() => { setLoginMode('password'); setError(null); }}
           >
-            기업회원
+            아이디/비밀번호
           </button>
           <button
             type="button"
-            className={`${styles.userTypeBtn} ${userType === 'jobseeker' ? styles.userTypeActive : ''}`}
-            onClick={() => setUserType('jobseeker')}
+            className={`${styles.userTypeBtn} ${loginMode === 'phone' ? styles.userTypeActive : ''}`}
+            onClick={() => { setLoginMode('phone'); setError(null); }}
           >
-            구직자
+            휴대폰 인증
           </button>
         </div>
 
-        <div className={styles.notice}>
-          <input
-            type="tel"
-            name="phone"
-            id="phone"
-            value={phone}
+        {loginMode === 'password' ? (
+          <>
+            <div className={styles.notice}>
+              <input
+                type="text"
+                value={loginId}
+                onChange={(e) => setLoginId(e.target.value)}
+                className={styles.inputAuth}
+                placeholder="아이디를 입력하세요"
+                autoComplete="username"
+              />
+            </div>
+            <div className={styles.notice}>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={styles.inputAuth}
+                placeholder="비밀번호를 입력하세요"
+              />
+            </div>
+            <button onClick={handlePasswordLogin} className={styles.btnAuthNum} disabled={loading} style={{ width: '100%', marginTop: '8px' }}>
+              {loading ? '로그인 중...' : '로그인'}
+            </button>
+          </>
+        ) : (
+          <>
+            <div className={styles.userTypeSelector} style={{ marginBottom: '10px' }}>
+              <button
+                type="button"
+                className={`${styles.userTypeBtn} ${userType === 'business' ? styles.userTypeActive : ''}`}
+                onClick={() => setUserType('business')}
+              >
+                기업회원
+              </button>
+              <button
+                type="button"
+                className={`${styles.userTypeBtn} ${userType === 'jobseeker' ? styles.userTypeActive : ''}`}
+                onClick={() => setUserType('jobseeker')}
+              >
+                구직자
+              </button>
+            </div>
+            <div className={styles.notice}>
+              <input
+                type="tel"
+                name="phone"
+                value={phone}
             onChange={(e) => setPhone(e.target.value)}
             className={styles.inputAuth}
             placeholder="전화번호를 입력해주세요"
@@ -215,13 +240,12 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose }) => {
             {loading ? '처리 중...' : '인증번호'}
           </button>
         </div>
-        <div className={styles.notice}>
-          <input
-            type="number"
-            name="auth_num"
-            id="auth_num"
-            value={authNum}
-            onChange={(e) => setAuthNum(e.target.value)}
+            <div className={styles.notice}>
+              <input
+                type="text"
+                name="auth_num"
+                value={authNum}
+                onChange={(e) => setAuthNum(e.target.value.replace(/\D/g, '').slice(0, 6))}
             className={styles.inputAuth}
             placeholder="인증번호를 입력해주세요"
             maxLength={6}
@@ -229,7 +253,9 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose }) => {
           <button onClick={handleAuthSubmit} className={styles.btnAuthNum} disabled={loading}>
             {loading ? '처리 중...' : '확인'}
           </button>
-        </div>
+            </div>
+          </>
+        )}
         {error && <div className={styles.error}>{error}</div>}
       </div>
     </div>

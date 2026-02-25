@@ -3,6 +3,7 @@ import React, { useEffect, useContext, useState } from 'react';
 import { createClient } from '@supabase/supabase-js'
 import { AuthContext } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
+import MainMenu from '@/components/MainMenu';
 import Footer from '@/components/Footer';
 import WritePage from '@/components/writeComponent';
 import styles from '@/styles/Write.module.css';
@@ -79,8 +80,9 @@ const Write: React.FC = () => {
         <meta name="twitter:image" content="https://114114KR.com/og-image.jpg" />
       </Head>
       <Header />
+      <MainMenu showMenuItems={true} currentBoardType="" />
       <main className={styles.layout}>
-        <WritePage />
+        <WritePage hideBoardTypeSelector />
         {showLoginPopup && <LoginPopup onClose={handleLoginPopupClose} />}
       </main>
       <Footer />

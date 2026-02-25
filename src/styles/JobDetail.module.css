@@ -121,7 +121,7 @@
 
 .txt {
   font-size: 12px;
-  color: #ff3900;
+  color: var(--color-primary);
   padding-top: 20px;
   padding: 10px 0 0;
 }
@@ -185,7 +185,7 @@
 .languageSelector button.activeLanguage {
   background: #ff4800;
   color: white;
-  border-color: #ff3900;
+  border-color: var(--color-primary);
 }
 
 .jobInfoSection {
@@ -293,7 +293,7 @@
 
 /* New styles for the apply button */
 .applyButton {
-  background-color: #ff3900; /* 주황색 배경 */
+  background-color: var(--color-primary); /* 주황색 배경 */
   color: white; /* 흰색 글씨 */
   border: none; /* 기본 테두리 제거 */
   padding: 3px 8px; /* 패딩 추가 */
@@ -325,7 +325,7 @@
 .infoCard h3 {
   font-size: 12px;
   font-weight: bold;
-  color: #ff3900;
+  color: var(--color-primary);
   margin-bottom: 8px;
   padding-bottom: 4px;
   border-bottom: 1px solid #eee;
@@ -351,7 +351,7 @@
 .contentTitle {
   font-size: 13px;
   font-weight: bold;
-  color: #ff3900;
+  color: var(--color-primary);
   margin-bottom: 12px;
   padding-bottom: 4px;
   border-bottom: 1px solid #eee;
@@ -395,13 +395,13 @@
 
 .phoneNumber {
   cursor: pointer;
-  color: #ff3900;
+  color: var(--color-primary);
   text-decoration: underline;
   font-weight: 500;
 }
 
 .phoneNumber:hover {
-  color: #e63300;
+  color: var(--color-primary-dark);
 }
 
 .buttonGroup {
@@ -410,10 +410,34 @@
   margin-bottom: 12px;
 }
 
+.smsButton {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  background-color: white;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.smsButton:hover {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(74, 111, 165, 0.25);
+}
+
 .applyButton {
   flex: 1;
   padding: 8px 16px;
-  background-color: #ff3900;
+  background-color: var(--color-primary);
   color: white;
   border: none;
   border-radius: 4px;
@@ -424,9 +448,21 @@
 }
 
 .applyButton:hover {
-  background-color: #e63300;
+  background-color: var(--color-primary-dark);
   transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(255, 57, 0, 0.2);
+  box-shadow: 0 2px 8px rgba(74, 111, 165, 0.25);
+}
+
+.applyButtonSupported {
+  background-color: white;
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+}
+
+.applyButtonSupported:hover {
+  background-color: var(--color-bg-input);
+  color: var(--color-text);
+  border-color: var(--color-text-muted);
 }
 
 .bookmarkButton {
@@ -452,9 +488,9 @@
 }
 
 .bookmarkButton.bookmarked {
-  color: #ff6b00;
-  border-color: #ff6b00;
-  background-color: #fff8f5;
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  background-color: var(--color-bg-input);
 }
 
 .bookmarkButton:hover {
@@ -476,10 +512,79 @@
   }
 
   .applyButton,
+  .smsButton,
   .bookmarkButton {
     width: 100%;
     padding: 8px 12px;
   }
+}
+
+/* 지원 완료 팝업 */
+.applySuccessOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.applySuccessPopup {
+  background: white;
+  border-radius: 12px;
+  padding: 32px 40px;
+  max-width: 320px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+.applySuccessIcon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 16px;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.applySuccessText {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 8px;
+}
+
+.applySuccessSubtext {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin: 0 0 24px;
+}
+
+.applySuccessBtn {
+  width: 100%;
+  padding: 12px 24px;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.applySuccessBtn:hover {
+  background: var(--color-primary-dark);
 }
 
 /* 최저임금 미달 팝업 */
@@ -545,7 +650,7 @@
 }
 
 .minWageHighlight {
-  color: #ff3900;
+  color: var(--color-primary);
   font-weight: bold;
 }
 
@@ -557,7 +662,7 @@
 
 .minWageDeadline {
   font-size: 12px;
-  color: #ff3900;
+  color: var(--color-primary);
   margin: 12px 0 0 0;
   font-weight: 500;
 }
@@ -647,7 +752,7 @@
 .seekerTag {
   display: inline-block;
   padding: 6px 14px;
-  background: #fff5f2;
+  background: var(--color-bg-input);
   color: #ff5722;
   border: 1px solid #ffccbc;
   border-radius: 4px;

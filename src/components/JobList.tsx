@@ -191,8 +191,8 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
     }
   };  
 
-  // 광고 작업은 첫 페이지에만 표시
-  const showAdJobs = currentPage === 1;
+  // 광고 작업은 첫 페이지에만 표시 (TOP광고 숨김)
+  const showAdJobs = false;
 
   const [showAdPopup, setShowAdPopup] = useState(false);
 
@@ -738,14 +738,6 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
             <span className={styles.totalCountLabel}>{boardType === '1' ? '최신 인재정보' : '전체'}</span>
             <span className={styles.totalCountNumber}>총 {totalCount.toLocaleString()} 건</span>
           </div>
-          {boardType === '1' && !hasJobSeekerPost && (
-            <div className={styles.resumeCtaWrap}>
-              <Link href="/write?board_type=1" className={styles.resumeCta}>
-                1분만에 이력서 작성하기
-              </Link>
-              <span className={styles.resumeCtaSub}>회사가 일자리를 직접 찾아줘요!</span>
-            </div>
-          )}
         </div>
       )}
 
@@ -758,22 +750,6 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
             </div>
             {adJobs.map(job => renderJobItem(job, true))}
           </ul>
-        )}
-
-        {boardType === '0' && currentPage === 1 && !hasJobSeekerPost && !hideResumeCta && (
-          <div className={styles.resumeCtaBanner}>
-            <button 
-              className={styles.resumeCtaClose}
-              onClick={handleCloseResumeCta}
-              aria-label="다시 보지 않기"
-            >
-              ✕
-            </button>
-            <Link href="/write?board_type=1" className={styles.resumeCtaBannerBtn}>
-              1분만에 이력서 작성하기
-            </Link>
-            <span className={styles.resumeCtaBannerSub}>회사가 일자리를 직접 찾아줘요!</span>
-          </div>
         )}
 
         <ul className={`${styles.listWrap} ${styles.listText} ${boardType === '4' ? styles.communityList : ''} ${boardType === '1' ? styles.jobSeekerList : ''}`}>

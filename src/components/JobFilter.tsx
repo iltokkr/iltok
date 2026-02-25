@@ -1,6 +1,8 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import styles from '@/styles/JobFilter.module.css';
 import { gtag } from '@/lib/gtag';
+import { HiLocationMarker } from 'react-icons/hi';
+import SelectDropdown from './SelectDropdown';
 
 interface FilterOptions {
   city1: string;
@@ -12,6 +14,7 @@ interface FilterOptions {
 }
 
 interface JobFilterProps {
+  boardType?: string;
   filters: FilterOptions;
   onFilterChange: (newFilters: FilterOptions) => void;
   city2Options: string[];
@@ -38,149 +41,207 @@ const locations: { [key: string]: string[] } = {
   제주: ["제주시", "서귀포시", "북제주군", "남제주군"]
 };
 
+// IT·디자인, 교육·강사 제외 (채용정보 필터용)
+const CATEGORY_OPTIONS = [
+  '생산·건설',
+  '서비스직·음식',
+  '사무직',
+  '판매·영업',
+  '운전'
+] as const;
+
+const categories: { [key: string]: string[] } = {
+  "교육·강사": ["학습지교사", "학원강사", "방과후교사", "전문강사"],
+  "사무직": ["일반사무", "경리", "회계", "인사"],
+  "판매·영업": ["매장관리", "판매", "영업", "텔레마케터"],
+  "생산·건설": ["생산직", "건설", "기술직", "노무직"],
+  "서비스직·음식": ["서빙", "요리", "미용", "숙박"],
+  "운전": ["택시", "버스", "화물", "배달"]
+};
+
+interface RegionDropdownProps {
+  placeholder: string;
+  value: string;
+  options: { value: string; label: string }[];
+  onSelect: (value: string) => void;
+  icon?: React.ReactNode;
+}
+
+const RegionDropdown: React.FC<RegionDropdownProps> = ({
+  placeholder,
+  value,
+  options,
+  onSelect,
+  icon
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const displayLabel = value ? options.find((o) => o.value === value)?.label ?? placeholder : placeholder;
+
+  return (
+    <div className={styles.regionDropdown} ref={ref}>
+      <button
+        type="button"
+        className={`${styles.regionTrigger} ${isOpen ? styles.regionTriggerOpen : ''}`}
+        onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
+        aria-haspopup="listbox"
+      >
+        {icon && <span className={styles.regionIcon}>{icon}</span>}
+        <span className={styles.regionTriggerText}>{displayLabel}</span>
+        <span className={styles.regionChevron}>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 4.5L6 7.5L9 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </span>
+      </button>
+      {isOpen && (
+        <div className={styles.regionPanel}>
+          <ul className={styles.regionList} role="listbox">
+            {options.map((opt) => (
+              <li key={opt.value || 'empty'}>
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={value === opt.value}
+                  className={`${styles.regionOption} ${value === opt.value ? styles.regionOptionActive : ''}`}
+                  onClick={() => {
+                    onSelect(opt.value);
+                    setIsOpen(false);
+                  }}
+                >
+                  {opt.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const JobFilter: React.FC<JobFilterProps> = ({ 
+  boardType = '0',
   filters, 
   onFilterChange, 
   city2Options, 
   cate2Options 
 }) => {
-  const [searchInput, setSearchInput] = useState({
-    keyword: filters.keyword || '',
-    searchType: filters.searchType || 'both'
-  });
+  // 채용정보(board_type 0)에만 새 필터 디자인 적용
+  if (boardType !== '0') {
+    return null;
+  }
 
-  useEffect(() => {
-    setSearchInput({
-      keyword: filters.keyword || '',
-      searchType: filters.searchType || 'both'
-    });
-  }, [filters.keyword, filters.searchType]);
-
-  const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const { name, value } = e.target;
+  const handleFilterChange = (name: string, value: string) => {
     gtag('event', 'filter_change', {
       event_category: 'filter',
       event_label: `${name}_change`,
       value: value
     });
-    onFilterChange({ ...filters, [name]: value });
+    const next = { ...filters, [name]: value };
+    if (name === 'city1') next.city2 = '';
+    if (name === 'cate1') next.cate2 = '';
+    onFilterChange(next);
   };
 
-  const handleSearchInputChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setSearchInput(prev => ({ ...prev, [name]: value }));
-  };
+  // 광고/공고 많은 지역 TOP5 (데이터 기준: 경기, 서울, 인천, 충남, 충북)
+const TOP_REGIONS = ['경기', '서울', '인천', '충남', '충북'];
 
-  const handleSearch = (e: React.MouseEvent) => {
-    e.preventDefault();
-    gtag('event', 'search_button_click', {
-      event_category: 'search',
-      event_label: searchInput.searchType,
-      value: searchInput.keyword
-    });
-    onFilterChange({
-      ...filters,
-      keyword: searchInput.keyword,
-      searchType: searchInput.searchType
-    });
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      gtag('event', 'search_button_click', {
-        event_category: 'search',
-        event_label: 'enter_key',
-        value: searchInput.keyword
-      });
-      onFilterChange({
-        ...filters,
-        keyword: searchInput.keyword,
-        searchType: searchInput.searchType
-      });
-    }
-  };
-
-  const city1Options = useMemo(() => Object.keys(locations), []);
+const city1Options = useMemo(() => {
+  const all = Object.keys(locations);
+  const top = TOP_REGIONS.filter((r) => all.includes(r));
+  const rest = all.filter((r) => !TOP_REGIONS.includes(r));
+  return [...top, ...rest];
+}, []);
 
   const currentCity2Options = useMemo(() => {
-    return filters.city1 ? locations[filters.city1] : [];
+    return filters.city1 ? locations[filters.city1].filter(Boolean) : [];
   }, [filters.city1]);
 
-  return (
-    <div className={styles.searchBar}>
-      <form name="search_form" id="search_form" action="/board" method="get" onSubmit={(e) => e.preventDefault()}>
-        <input name="bo_mode" type="hidden" id="bo_mode" value="list" />
-        <input name="bo_table" type="hidden" id="bo_table" value="job" />
-        
-        <ul className={styles.filterBar}>
-          <li className={styles.selectBox}>       
-            <select name="city1" id="city1" value={filters.city1} onChange={handleFilterChange}>
-              <option value="">전국</option>
-              {city1Options.map((city, index) => (
-                <option key={index} value={city}>{city}</option>
-              ))}
-            </select>
-          </li>
-          <li className={styles.selectBox}>
-            <select name="city2" id="city2" value={filters.city2} onChange={handleFilterChange}>
-              <option value="">시/구/군</option>
-              {currentCity2Options.map((city, index) => (
-                <option key={index} value={city}>{city}</option>
-              ))}
-            </select>
-          </li>
-          <li className={styles.selectBox}>
-            <select name="cate1" id="cate1" value={filters.cate1} onChange={handleFilterChange}>
-              <option value="">분류선택</option>
-              <option value="교육·강사">교육·강사</option>
-              <option value="사무직">사무직</option>
-              <option value="판매·영업">판매·영업</option>
-              <option value="생산·건설">생산·건설</option>
-              <option value="서비스직·음식">서비스직·음식</option>
-              <option value="IT·디자인">IT·디자인</option>
-              <option value="운전">운전</option>
-            </select>
-          </li>
-          <li className={styles.selectBox}>
-            <select name="cate2" id="cate2" value={filters.cate2} onChange={handleFilterChange}>
-              <option value="">소분류선택</option>
-              {cate2Options.map((option, index) => (
-                <option key={index} value={option}>{option}</option>
-              ))}
-            </select>
-          </li>
-        </ul>
+  const currentCate2Options = useMemo(() => {
+    return filters.cate1 && categories[filters.cate1] ? categories[filters.cate1] : [];
+  }, [filters.cate1]);
 
-        <div className={styles.searchForm}>
-          <select
-            name="searchType"
-            value={searchInput.searchType}
-            onChange={handleSearchInputChange}
-            className={styles.searchType}
-          >
-            <option value="both">제목+내용</option>
-            <option value="title">제목만</option>
-            <option value="contents">내용만</option>
-          </select>
-          <input 
-            className={styles.searchInput} 
-            type="text" 
-            name="keyword" 
-            value={searchInput.keyword}
-            onChange={handleSearchInputChange}
-            placeholder="검색어를 입력하세요"
-            onKeyPress={handleKeyPress}
+  return (
+    <div className={styles.filterWrapper}>
+      {/* 지역 필터 - 트렌디 커스텀 드롭다운 */}
+      <section className={styles.regionSection}>
+        <span className={styles.sectionLabel}>지역</span>
+        <div className={styles.regionSelects}>
+          <SelectDropdown
+            placeholder="전국"
+            value={filters.city1}
+            options={[{ value: '', label: '전국' }, ...city1Options.map((c) => ({ value: c, label: c }))]}
+            onSelect={(v) => handleFilterChange('city1', v)}
+            icon={<HiLocationMarker />}
           />
-          <button 
-            className={styles.searchButton} 
-            type="button" 
-            onClick={handleSearch}
-          >
-            검색
-          </button>
+          {filters.city1 && currentCity2Options.length > 0 && (
+            <SelectDropdown
+              placeholder="전체"
+              value={filters.city2}
+              options={[{ value: '', label: '전체' }, ...currentCity2Options.map((c) => ({ value: c, label: c }))]}
+              onSelect={(v) => handleFilterChange('city2', v)}
+            />
+          )}
         </div>
-      </form>
+      </section>
+
+      {/* 분류 필터 - 칩 버튼 */}
+      <section className={styles.categorySection}>
+        <span className={styles.sectionLabel}>분류</span>
+        <div className={styles.categoryChips}>
+          <button
+            type="button"
+            className={`${styles.chip} ${!filters.cate1 ? styles.chipActive : ''}`}
+            onClick={() => handleFilterChange('cate1', '')}
+          >
+            전체
+          </button>
+          {CATEGORY_OPTIONS.map((cate) => (
+            <button
+              key={cate}
+              type="button"
+              className={`${styles.chip} ${filters.cate1 === cate ? styles.chipActive : ''}`}
+              onClick={() => handleFilterChange('cate1', cate)}
+            >
+              {cate}
+            </button>
+          ))}
+        </div>
+        {filters.cate1 && currentCate2Options.length > 0 && (
+          <div className={styles.subCategoryChips}>
+            <button
+              type="button"
+              className={`${styles.chip} ${styles.chipSmall} ${!filters.cate2 ? styles.chipActive : ''}`}
+              onClick={() => handleFilterChange('cate2', '')}
+            >
+              전체
+            </button>
+            {currentCate2Options.map((sub) => (
+              <button
+                key={sub}
+                type="button"
+                className={`${styles.chip} ${styles.chipSmall} ${filters.cate2 === sub ? styles.chipActive : ''}`}
+                onClick={() => handleFilterChange('cate2', sub)}
+              >
+                {sub}
+              </button>
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 };

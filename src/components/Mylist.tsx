@@ -6,7 +6,6 @@ import { addHours, format, subHours } from 'date-fns';
 import { AuthContext } from '@/contexts/AuthContext';
 import BusinessVerificationModal from '@/components/BusinessVerificationModal';
 import { event } from '@/lib/gtag';
-import { BsBookmark, BsBookmarkFill } from 'react-icons/bs';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -27,12 +26,6 @@ interface MyPost {
   is_wage_violation?: boolean;
 }
 
-interface BookmarkedPost extends MyPost {
-  salary_type?: string;
-  salary_detail?: string;
-  bookmark_count?: number;
-}
-
 interface MylistProps {
   posts: MyPost[];
   isAccept: boolean;
@@ -44,6 +37,8 @@ interface MylistProps {
   phoneNumber: string | null;
   businessNumber: string | null;
   businessAddress: string | null;
+  activeSection?: 'ads' | 'info';
+  userType?: string | null;
 }
 
 const Mylist: React.FC<MylistProps> = ({ 
@@ -56,7 +51,9 @@ const Mylist: React.FC<MylistProps> = ({
   managerName,
   phoneNumber,
   businessNumber,
-  businessAddress
+  businessAddress,
+  activeSection = 'ads',
+  userType
 }) => {
   const [showModal, setShowModal] = useState(false);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
@@ -65,9 +62,27 @@ const Mylist: React.FC<MylistProps> = ({
   const [showHideSuccessModal, setShowHideSuccessModal] = useState(false);
   const [showUnhideSuccessModal, setShowUnhideSuccessModal] = useState(false);
   const [showWageViolationModal, setShowWageViolationModal] = useState(false);
-  const authContext = useContext(AuthContext);
-  const [bookmarkedPosts, setBookmarkedPosts] = useState<BookmarkedPost[]>([]);
   const [bookmarkCounts, setBookmarkCounts] = useState<Record<number, number>>({});
+  const authContext = useContext(AuthContext);
+
+  const regularPosts = posts.filter(post => !post.board_type || post.board_type !== '4');
+
+  useEffect(() => {
+    if (regularPosts.length === 0) {
+      setBookmarkCounts({});
+      return;
+    }
+    const fetchBookmarkCounts = async () => {
+      const ids = regularPosts.map((p) => p.id);
+      const { data } = await supabase.from('bookmark').select('jd_id').in('jd_id', ids);
+      const counts: Record<number, number> = {};
+      (data || []).forEach((b: { jd_id: number }) => {
+        counts[b.jd_id] = (counts[b.jd_id] || 0) + 1;
+      });
+      setBookmarkCounts(counts);
+    };
+    fetchBookmarkCounts();
+  }, [posts]);
 
   // 사업자 인증 상태: 미등록 / 심사중 / 인증완료
   const getBusinessStatus = () => {
@@ -85,54 +100,22 @@ const Mylist: React.FC<MylistProps> = ({
     const day = date.getDate().toString().padStart(2, '0');
     return `${month}-${day}`;
   };
+
+  const formatDateFull = (dateString: string) => {
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const hour = date.getHours().toString().padStart(2, '0');
+    const min = date.getMinutes().toString().padStart(2, '0');
+    return `${year}년 ${month}월 ${day}일 ${hour}시 ${min}분`;
+  };
   const now = new Date();
   const koreaTime = addHours(now, 9);
 
   const formatToday = (date: Date) => {
     return format(date, 'yyyy년 MM월 dd일');
   };
-
-  useEffect(() => {
-    const fetchBookmarkedPosts = async () => {
-      if (!authContext?.user?.id) return;
-
-      // First get all bookmarked post IDs
-      const { data: bookmarkData } = await supabase
-        .from('bookmark')
-        .select('jd_id')
-        .eq('users_id', authContext.user.id);
-
-      if (bookmarkData) {
-        // Then fetch the actual posts
-        const { data: postsData } = await supabase
-          .from('jd')
-          .select('*')
-          .in('id', bookmarkData.map(b => b.jd_id));
-
-        if (postsData) {
-          setBookmarkedPosts(postsData);
-        }
-      }
-    };
-
-    const fetchBookmarkCounts = async () => {
-      const { data } = await supabase
-        .from('bookmark')
-        .select('jd_id');
-
-      if (data) {
-        const counts = data.reduce((acc, item) => {
-          acc[item.jd_id] = (acc[item.jd_id] || 0) + 1;
-          return acc;
-        }, {} as Record<number, number>);
-        
-        setBookmarkCounts(counts);
-      }
-    };
-
-    fetchBookmarkedPosts();
-    fetchBookmarkCounts();
-  }, [authContext?.user?.id]);
 
   // 최저임금 위반 여부 확인 (시급이 10,320원 미만인 경우)
   const checkWageViolation = (post: MyPost): boolean => {
@@ -275,26 +258,6 @@ const Mylist: React.FC<MylistProps> = ({
     }
   };
 
-  const handleRemoveBookmark = async (postId: number) => {
-    try {
-      const { error } = await supabase
-        .from('bookmark')
-        .delete()
-        .eq('users_id', authContext?.user?.id)
-        .eq('jd_id', postId);
-
-      if (error) throw error;
-
-      setBookmarkedPosts(prev => prev.filter(post => post.id !== postId));
-      setBookmarkCounts(prev => ({
-        ...prev,
-        [postId]: (prev[postId] || 1) - 1
-      }));
-    } catch (error) {
-      console.error('북마크 삭제 실패:', error);
-    }
-  };
-
   // 게시글 숨기기
   const handleHide = async (postId: number) => {
     try {
@@ -338,22 +301,21 @@ const Mylist: React.FC<MylistProps> = ({
     }
   };
 
-  // Update the filter to compare with string '4' instead of number 4
-  const regularPosts = posts.filter(post => !post.board_type || post.board_type !== '4');
-  const communityPosts = posts.filter(post => post.board_type === '4');
-  
-  console.log('All posts:', posts);
-  console.log('Posts with board_type:', posts.map(p => ({ id: p.id, board_type: p.board_type })));
-  console.log('Community posts:', communityPosts);
-  console.log('Regular posts:', regularPosts);
+  const showInfoSection = activeSection === 'info' && userType === 'business';
 
   return (
     <div className={styles.layout}>
-      {/* 사업자 정보 카드 */}
+      {/* 사업자 정보 카드 - 회원정보 탭에서만 표시 */}
+      {showInfoSection && (
       <div className={styles.businessCard}>
         <div className={styles.businessCardHeader}>
           <div className={styles.companyInfo}>
-            <h2 className={styles.companyName}>{companyName || '업체명 미등록'}</h2>
+            <div className={styles.companyNameRow}>
+              <h2 className={styles.companyName}>{companyName || '업체명 미등록'}</h2>
+              <span className={`${styles.statusBadge} ${styles.statusBadgeOnCard} ${isVerified ? styles.badgeVerified : businessStatus === '심사중' ? styles.badgePending : styles.badgeNotRegistered}`}>
+                {businessStatus}
+              </span>
+            </div>
             <div className={styles.contactInfo}>
               <span className={styles.contactItem}>
                 <span className={styles.contactLabel}>사업자번호</span>
@@ -377,162 +339,108 @@ const Mylist: React.FC<MylistProps> = ({
             className={styles.editInfoButton}
             onClick={() => setShowVerificationModal(true)}
           >
-            {bizFile ? '수정하기' : '등록하기'} &gt;
+            {bizFile ? '사업자 정보 수정하기' : '등록하기'} &gt;
           </button>
         </div>
       </div>
+      )}
 
-      {/* 인증 및 이용 현황 */}
-      <div className={styles.statusCard}>
-        <div className={styles.statusRow}>
-          <span className={styles.statusLabel}>사업자 인증</span>
-          <span className={`${styles.statusBadge} ${isVerified ? styles.badgeVerified : businessStatus === '심사중' ? styles.badgePending : styles.badgeNotRegistered}`}>
-            {businessStatus}
-          </span>
+      {/* 회원정보 탭: 수정 버튼 표시 */}
+      {showInfoSection && (
+        <div className={styles.infoSection}>
+          <p className={styles.infoSectionDesc}>회원 정보를 수정하려면 아래 버튼을 클릭하세요.</p>
+          <Link href="/my/edit" className={styles.infoEditBtn}>
+            회원정보 수정하기 &gt;
+          </Link>
         </div>
-        <div className={styles.statusRow}>
-          <span className={styles.statusLabel}>오늘 공고 등록</span>
-          <span className={styles.statusValue}>
-            {isVerified ? (isUpload ? "완료 (1일 1회)" : "가능") : "인증 완료 후 이용"}
-          </span>
-        </div>
-        <div className={styles.statusRow}>
-          <span className={styles.statusLabel}>끌어올리기 횟수</span>
-          <span className={styles.statusValue}>
-            {isVerified ? `${reloadTimes}회 남음` : "인증 완료 후 이용"}
-          </span>
-        </div>
-      </div>
+      )}
 
-      {/* 안내 문구 */}
+      {/* 안내 문구 - 공고관리에서만 표시 */}
+      {!showInfoSection && (
       <div className={styles.guideCard}>
-        <div className={styles.guideItem}>
-          <img src="/icons/check-coral.svg" alt="안내" className={styles.guideIconImg} />
-          <span className={styles.guideText}><strong>이력서 및 자유게시판</strong>은 사업자 인증 없이 게시글 작성 가능합니다.</span>
+        <div className={`${styles.guideItem} ${styles.guideItemWithBtn}`}>
+          <span className={styles.guideCheck} aria-hidden>✓</span>
+          <span className={styles.guideText}>기업은 <strong>사업자 인증</strong>이 필요합니다. 인증 전 게시글은 비공개 상태입니다.</span>
+          {userType === 'business' && !isVerified && (
+            <button type="button" className={styles.guideVerifyBtn} onClick={() => setShowVerificationModal(true)}>
+              인증하기 &gt;
+            </button>
+          )}
         </div>
         <div className={styles.guideItem}>
-          <img src="/icons/check-coral.svg" alt="안내" className={styles.guideIconImg} />
+          <span className={styles.guideCheck} aria-hidden>✓</span>
           <span className={styles.guideText}><strong>끌어올리기</strong>를 하면 공고가 게시판 최상단으로 이동합니다.</span>
         </div>
         <div className={styles.guideItem}>
-          <img src="/icons/check-coral.svg" alt="안내" className={styles.guideIconImg} />
-          <span className={styles.guideText}>끌어올리기는 <strong>매일 00시, 06시, 12시, 18시</strong>에 1회씩 충전됩니다.</span>
-        </div>
-        <div className={styles.guideItem}>
-          <img src="/icons/check-coral.svg" alt="안내" className={styles.guideIconImg} />
-          <span className={styles.guideText}>[수정]은 횟수 제한 없이 가능하지만, 게시판 순서는 변경되지 않습니다.</span>
-        </div>
-        <div className={styles.guideItem}>
-          <img src="/icons/check-coral.svg" alt="안내" className={styles.guideIconImg} />
-          <span className={styles.guideText}><strong>[모니터링]</strong> 중복 게시글은 별도의 안내 없이 삭제됩니다.</span>
+          <span className={styles.guideCheck} aria-hidden>✓</span>
+          <span className={styles.guideText}><strong>끌어올리기</strong>는 매일 00시, 06시, 12시, 18시에 1회씩 충전됩니다.</span>
         </div>
       </div>
+      )}
 
-      {/* 공고 목록 헤더 */}
-      <div className={styles.listHead}>
-        내 공고 ({regularPosts.length}건)
-      </div>
-
-      <ul className={styles.listWrap}>
-        {regularPosts.map((post) => (
-          <li key={post.id} className={post.is_hidden ? styles.hiddenPost : ''}>
-            <div className={styles.postInfo}>
-              <div className={styles.postContent}>
-                <span className={styles.time}>{formatDate(post.updated_time)}</span>
-                {post.is_hidden && <span className={styles.hiddenBadge}>숨김</span>}
-                {(post.is_wage_violation || checkWageViolation(post)) && (
-                  <span className={styles.wageViolationBadge}>⚠️ 최저임금 위반</span>
+      {!showInfoSection && (
+      <div className={styles.tableWrap}>
+        <table className={styles.adsTable}>
+          <thead>
+            <tr>
+              <th>작성일</th>
+              <th className={styles.thAdManage}>
+                공고관리
+                {userType === 'business' && !isVerified && (
+                  <span className={styles.tableHeaderTag}>비공개 - 사업자 인증 필요</span>
                 )}
-                <Link href={`/jd/${post.id}`} scroll={false} className={styles.title}>
-                  {post.title}
-                </Link>
-                <em>({post['1depth_region']} {post['2depth_region']}) - {post['1depth_category']} {post['2depth_category']}</em>
-              </div>
-              <div className={styles.buttonGroup}>
-                <span className={styles.recall}>
-                  <a href={`/write?id=${post.id}`}>[수정]</a>
-                </span>
-                {!post.is_hidden && (
-                  <span className={styles.recall}>
-                    <a onClick={() => handleReload(post.id)}>[끌어올리기]</a>
-                  </span>
-                )}
-                {post.is_hidden ? (
-                  <span className={styles.recall}>
-                    <a onClick={() => handleUnhide(post.id)}>[숨김해제]</a>
-                  </span>
-                ) : (
-                  <span className={styles.recall}>
-                    <a onClick={() => handleHide(post.id)}>[숨김]</a>
-                  </span>
-                )}
-                <span className={styles.recall}>
-                  <a onClick={() => openDeleteModal(post)}>[삭제]</a>
-                </span>
-              </div>
-            </div>
-          </li>
-        ))}
-      </ul>
-
-      <div className={styles.listHead} style={{ marginTop: '40px' }}>
-        커뮤니티 게시글 ({communityPosts.length}개)
+              </th>
+              <th>지원자관리</th>
+              <th>관리</th>
+            </tr>
+          </thead>
+          <tbody>
+            {regularPosts.map((post) => (
+              <tr key={post.id} className={post.is_hidden ? styles.hiddenPost : ''}>
+                <td className={styles.colDate}>{formatDateFull(post.updated_time)}</td>
+                <td className={styles.colAd}>
+                  <div className={styles.adInfo}>
+                    <Link href={`/jd/${post.id}`} scroll={false} className={styles.postItemTitle}>
+                      {post.title}
+                    </Link>
+                    <span className={styles.adMeta}>
+                      {post['1depth_region']} {post['2depth_region']} | {post['1depth_category']} {post['2depth_category']}
+                    </span>
+                    {post.is_hidden && <span className={styles.hiddenBadge}>숨김</span>}
+                    {(post.is_wage_violation || checkWageViolation(post)) && (
+                      <span className={styles.wageViolationBadge}>⚠️ 최저임금 위반</span>
+                    )}
+                  </div>
+                </td>
+                <td className={styles.colApplicant}>
+                  <Link
+                    href={`/my/applicants/${post.id}`}
+                    className={styles.applicantBtn}
+                  >
+                    {bookmarkCounts[post.id] || 0}명
+                  </Link>
+                </td>
+                <td className={styles.colManage}>
+                  <div className={styles.manageBtns}>
+                    <a href={`/write?id=${post.id}`} className={styles.manageBtn}>수정</a>
+                    {!post.is_hidden && (
+                      <button type="button" className={styles.manageBtn} onClick={() => handleReload(post.id)}>끌어올리기</button>
+                    )}
+                    {post.is_hidden ? (
+                      <button type="button" className={styles.manageBtn} onClick={() => handleUnhide(post.id)}>숨김해제</button>
+                    ) : (
+                      <button type="button" className={styles.manageBtn} onClick={() => handleHide(post.id)}>숨김</button>
+                    )}
+                    <button type="button" className={styles.manageBtn} onClick={() => openDeleteModal(post)}>삭제</button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
+      )}
 
-      <ul className={styles.listWrap}>
-        {communityPosts.map((post) => (
-          <li key={post.id}>
-            <div className={styles.postInfo}>
-              <div className={styles.postContent}>
-                <span className={styles.time}>{formatDate(post.updated_time)}</span>
-                <Link href={`/jd/${post.id}`} scroll={false} className={styles.title}>
-                  {post.title}
-                </Link>
-              </div>
-              <div className={styles.buttonGroup}>
-                <span className={styles.recall}>
-                  <a href={`/write?id=${post.id}`}>[수정]</a>
-                </span>
-                <span className={styles.recall}>
-                  <a onClick={() => openDeleteModal(post)}>[삭제]</a>
-                </span>
-              </div>
-            </div>
-          </li>
-        ))}
-      </ul>
-
-      <div className={styles.listHead} style={{ marginTop: '40px' }}>
-        북마크한 공고 ({bookmarkedPosts.length}개)
-      </div>
-
-      <ul className={styles.listWrap}>
-        {bookmarkedPosts.map((post) => (
-          <li key={post.id}>
-            <div className={styles.postInfo}>
-              <div className={styles.postContent}>
-                <span className={styles.time}>{formatDate(post.updated_time)}</span>
-                <Link href={`/jd/${post.id}`} scroll={false} className={styles.title}>
-                  {post.title}
-                </Link>
-                <em>
-                  ({post['1depth_region']} {post['2depth_region']})
-                </em>
-              </div>
-              <div className={styles.buttonGroup}>
-                <span 
-                  className={styles.recall}
-                  onClick={() => handleRemoveBookmark(post.id)}
-                >
-                  <BsBookmarkFill /> {bookmarkCounts[post.id] || 0}
-                </span>
-              </div>
-            </div>
-          </li>
-        ))}
-      </ul>
-
-      
       
       {showModal && (
         <div className={styles.modal}>

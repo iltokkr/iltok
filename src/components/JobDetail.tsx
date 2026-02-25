@@ -5,7 +5,6 @@ import { parseISO, format, subHours } from 'date-fns';
 import { useLanguage } from '@/hooks/useLanguage';
 import { GA_TRACKING_ID } from '@/lib/gtag';
 import MainCarousel from '@/components/MainCarousel';
-import { BsHeart, BsHeartFill } from 'react-icons/bs';
 import { AuthContext } from '@/contexts/AuthContext';
 import { createClient } from '@supabase/supabase-js'
 import { toast } from 'react-hot-toast';
@@ -40,6 +39,7 @@ interface JobDetailProps {
     gender: string;
     education: string;
     age_limit: string;
+    required_visa?: string | null;
     salary_type: string;
     salary_detail: string;
     '1depth_category': string;
@@ -87,6 +87,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
   const [showLoginPopup, setShowLoginPopup] = useState(false);
   const [showMinWagePopup, setShowMinWagePopup] = useState(false);
   const [dontShowAgain, setDontShowAgain] = useState(false);
+  const [showApplySuccessPopup, setShowApplySuccessPopup] = useState(false);
 
   if (!auth) throw new Error("AuthContext not found");
   const { user, isLoggedIn } = auth;
@@ -156,18 +157,15 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
     return number;
   };
 
-  const handleApplyButtonClick = (number: string) => {
-    window.gtag('event', 'job_application', {
-      event_category: 'Job',
-      event_label: jobDetail.title,
-      job_id: jobDetail.id,
-      company_name: jobDetail.uploader.company_name
-    });
-
-    const currentUrl = `${window.location.origin}${router.asPath}`;
-    const message = `114114KR에서 "${jobDetail.title}" 공고 보고 연락드립니다.\n\n채용공고 링크: ${currentUrl}`;
-    const url = `sms:${number}?body=${encodeURIComponent(message)}`;
-    window.open(url);
+  const getSmsHref = (number: string) => {
+    const raw = number.replace(/\D/g, '');
+    if (raw.startsWith('82') && raw.length >= 11) {
+      return `sms:0${raw.slice(2)}`;
+    }
+    if (raw.startsWith('0')) {
+      return `sms:${raw}`;
+    }
+    return `sms:${raw || number}`;
   };
 
   // 만 나이 계산 함수
@@ -279,16 +277,14 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
     checkBookmarkStatus();
   }, [isLoggedIn, user, jobDetail.id]);
 
-  const handleBookmark = async () => {
+  const handleApply = async () => {
     if (!isLoggedIn || !user) {
-      // 로그인 팝업 표시
       setShowLoginPopup(true);
       return;
     }
 
     try {
       if (isBookmarked) {
-        // Remove bookmark
         const { error: deleteError } = await supabase
           .from('bookmark')
           .delete()
@@ -296,34 +292,20 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
           .eq('jd_id', jobDetail.id);
 
         if (deleteError) throw deleteError;
-        
         setIsBookmarked(false);
-        toast.success(currentLanguage === 'ko' 
-          ? '북마크가 해제되었습니다.' 
-          : 'Bookmark removed');
+        toast.success(currentLanguage === 'ko' ? '지원이 취소되었습니다.' : 'Application cancelled');
       } else {
-        // Add bookmark
         const { error: insertError } = await supabase
           .from('bookmark')
-          .insert([
-            {
-              users_id: user.id,
-              jd_id: jobDetail.id
-            }
-          ]);
+          .insert([{ users_id: user.id, jd_id: jobDetail.id }]);
 
         if (insertError) throw insertError;
-        
         setIsBookmarked(true);
-        toast.success(currentLanguage === 'ko' 
-          ? '북마크에 추가되었습니다.' 
-          : 'Bookmark added');
+        setShowApplySuccessPopup(true);
       }
     } catch (error) {
-      console.error('Error toggling bookmark:', error);
-      toast.error(currentLanguage === 'ko' 
-        ? '북마크 처리 중 오류가 발생했습니다.' 
-        : 'An error occurred while toggling bookmark.');
+      console.error('Error applying:', error);
+      toast.error(currentLanguage === 'ko' ? '지원 처리 중 오류가 발생했습니다.' : 'An error occurred.');
     }
   };
 
@@ -374,7 +356,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
         {jobDetail.board_type === '0' && (
           <div className={style.seekerInfoSection}>
             {/* 채용 조건 - is_ads(광고) 글에서는 숨김 */}
-            {!jobDetail.is_ads && (jobDetail.experience || jobDetail.gender || jobDetail.education || jobDetail.age_limit) && (
+            {!jobDetail.is_ads && (jobDetail.experience || jobDetail.gender || jobDetail.education || jobDetail.age_limit || jobDetail.required_visa) && (
               <div className={style.seekerInfoCard}>
                 <h3 className={style.seekerInfoTitle}>채용 조건</h3>
                 <div className={style.seekerBasicInfoList}>
@@ -402,6 +384,25 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
                       <span className={style.seekerBasicValue}>{jobDetail.age_limit}</span>
                     </div>
                   )}
+                  {jobDetail.required_visa && (() => {
+                    try {
+                      const visas = typeof jobDetail.required_visa === 'string'
+                        ? JSON.parse(jobDetail.required_visa)
+                        : jobDetail.required_visa;
+                      const visaArr = Array.isArray(visas) ? visas : [];
+                      if (visaArr.length > 0) {
+                        return (
+                          <div className={style.seekerBasicInfoItem}>
+                            <span className={style.seekerBasicLabel}>비자</span>
+                            <span className={style.seekerBasicValue}>{visaArr.join(', ')}</span>
+                          </div>
+                        );
+                      }
+                    } catch {
+                      return null;
+                    }
+                    return null;
+                  })()}
                 </div>
               </div>
             )}
@@ -664,18 +665,17 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
                   </div>
                 </div>
                 <div className={style.buttonGroup}>
-                  <button 
-                    className={style.applyButton} 
-                    onClick={() => handleApplyButtonClick(formatPhoneNumber(jobDetail.uploader.number))}
+                  <a
+                    href={getSmsHref(jobDetail.uploader.number, jobDetail.title, jobDetail.id)}
+                    className={style.smsButton}
                   >
-                    문자 보내기
-                  </button>
+                    문자보내기
+                  </a>
                   <button 
-                    className={`${style.bookmarkButton} ${isBookmarked ? style.bookmarked : ''}`}
-                    onClick={handleBookmark}
+                    className={isBookmarked ? `${style.applyButton} ${style.applyButtonSupported}` : style.applyButton}
+                    onClick={handleApply}
                   >
-                    {isBookmarked ? <BsHeartFill /> : <BsHeart />}
-                    <span>저장하기</span>
+                    {isBookmarked ? '지원 취소' : '지원하기'}
                   </button>
                 </div>
                 <div className={style.notice}>
@@ -723,6 +723,20 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
               />
               다시 보지 않기
             </label>
+          </div>
+        </div>
+      )}
+
+      {/* 지원 완료 팝업 */}
+      {showApplySuccessPopup && (
+        <div className={style.applySuccessOverlay} onClick={() => setShowApplySuccessPopup(false)}>
+          <div className={style.applySuccessPopup} onClick={(e) => e.stopPropagation()}>
+            <div className={style.applySuccessIcon}>✓</div>
+            <p className={style.applySuccessText}>지원이 완료되었습니다</p>
+            <p className={style.applySuccessSubtext}>기업에서 연락드릴 수 있습니다</p>
+            <button className={style.applySuccessBtn} onClick={() => setShowApplySuccessPopup(false)}>
+              확인
+            </button>
           </div>
         </div>
       )}

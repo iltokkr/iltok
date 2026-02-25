@@ -44,6 +44,11 @@ export const AuthProvider: React.FC<PropsWithChildren> = ({ children }) => {
     if (error) throw error;
   };
 
+  const signInWithPassword = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
     setUser(null);
@@ -59,6 +64,7 @@ export const AuthProvider: React.FC<PropsWithChildren> = ({ children }) => {
     isLoggedIn: !!user,
     isLoading,
     signIn,
+    signInWithPassword,
     signOut,
     verifyOtp,
     logout: signOut,

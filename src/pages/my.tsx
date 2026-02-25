@@ -3,8 +3,10 @@ import React, { useEffect, useState, useContext } from 'react';
 import { createClient, User } from '@supabase/supabase-js'
 import { useRouter } from 'next/router';
 import Header from '@/components/Header';
+import MainMenu from '@/components/MainMenu';
 import Footer from '@/components/Footer';
 import Mylist from '@/components/Mylist';
+import PersonalService from '@/components/PersonalService';
 import styles from '@/styles/My.module.css';
 import { AuthContext } from '@/contexts/AuthContext';
 
@@ -44,8 +46,11 @@ const My: React.FC = () => {
   const [showVerificationAlert, setShowVerificationAlert] = useState(false);
   const [showPendingAlert, setShowPendingAlert] = useState(false);
   const [showDuplicateNoticeAlert, setShowDuplicateNoticeAlert] = useState(false);
+  const [activeSection, setActiveSection] = useState<'ads' | 'info' | 'applications'>('ads');
   const authContext = useContext(AuthContext);
   const router = useRouter();
+  const isBusiness = userData?.user_type === 'business' || userData?.user_type === 'both';
+  const isJobseeker = userData?.user_type === 'jobseeker' || userData?.user_type === 'both';
 
   // URL 쿼리 파라미터로 팝업 표시 여부 확인
   useEffect(() => {
@@ -58,6 +63,28 @@ const My: React.FC = () => {
       router.replace('/my', undefined, { shallow: true });
     }
   }, [router.query.showVerificationAlert, router.query.showPendingAlert]);
+
+  // URL 쿼리 파라미터로 섹션 초기화 (공고관리/지원공고/회원정보)
+  useEffect(() => {
+    const section = router.query.section as string | undefined;
+    if (section === 'info') {
+      setActiveSection('info');
+    } else if (section === 'applications') {
+      setActiveSection('applications');
+    } else {
+      setActiveSection('ads');
+    }
+  }, [router.query.section]);
+
+  // 개인회원: /my 진입 시 section 없으면 지원공고로 리다이렉트
+  useEffect(() => {
+    if (!router.isReady || !userData) return;
+    const section = router.query.section as string | undefined;
+    const isJobseekerOnly = userData.user_type === 'jobseeker';
+    if (isJobseekerOnly && !section && router.pathname === '/my') {
+      router.replace('/my?section=applications', undefined, { shallow: true });
+    }
+  }, [router.isReady, router.pathname, router.query.section, userData?.user_type]);
 
   useEffect(() => {
     if (authContext?.user) {
@@ -123,8 +150,64 @@ const My: React.FC = () => {
       </Head>
 
       <Header />
+      <MainMenu showMenuItems={true} currentSection={isBusiness ? (activeSection === 'info' ? 'info' : 'ads') : isJobseeker ? (activeSection === 'info' ? 'info' : 'applications') : undefined} />
       <main className={styles.main}>
+        {(isBusiness || isJobseeker) && (
+          <div className={styles.sectionTabs}>
+            {isBusiness && (
+              <button
+                type="button"
+                className={`${styles.sectionTab} ${activeSection === 'ads' ? styles.sectionTabActive : ''}`}
+                onClick={() => setActiveSection('ads')}
+              >
+                공고관리
+              </button>
+            )}
+            {isJobseeker && (
+              <button
+                type="button"
+                className={`${styles.sectionTab} ${activeSection === 'applications' ? styles.sectionTabActive : ''}`}
+                onClick={() => setActiveSection('applications')}
+              >
+                지원 한 공고
+              </button>
+            )}
+            <button
+              type="button"
+              className={`${styles.sectionTab} ${activeSection === 'info' ? styles.sectionTabActive : ''}`}
+              onClick={() => setActiveSection('info')}
+            >
+              회원정보
+            </button>
+          </div>
+        )}
+        {activeSection === 'applications' && isJobseeker ? (
+          <PersonalService activeSection="applications" />
+        ) : activeSection === 'info' && isJobseeker && !isBusiness ? (
+          <PersonalService activeSection="info" />
+        ) : activeSection === 'info' ? (
+          <>
+            {isBusiness && (
+              <Mylist
+                activeSection="info"
+                posts={myPosts}
+                isAccept={userData?.is_accept || false}
+                isUpload={userData?.is_upload || false}
+                reloadTimes={userData?.reload_times || 0}
+                bizFile={userData?.biz_file || null}
+                companyName={userData?.company_name || null}
+                managerName={userData?.name || null}
+                phoneNumber={userData?.number || null}
+                businessNumber={userData?.business_number || null}
+                businessAddress={userData?.business_address || null}
+                userType={userData?.user_type || null}
+              />
+            )}
+            {isJobseeker && <PersonalService activeSection="info" />}
+          </>
+        ) : (
         <Mylist 
+          activeSection={isBusiness ? 'ads' : 'ads'}
           posts={myPosts} 
           isAccept={userData?.is_accept || false}
           isUpload={userData?.is_upload || false}
@@ -135,7 +218,9 @@ const My: React.FC = () => {
           phoneNumber={userData?.number || null}
           businessNumber={userData?.business_number || null}
           businessAddress={userData?.business_address || null}
+          userType={userData?.user_type || null}
         />
+        )}
       </main>
       <Footer />
 

@@ -1,12 +1,14 @@
 import React from 'react';
 import styles from '@/styles/PrivacyPolicy.module.css';
 import Header from '@/components/Header';
+import MainMenu from '@/components/MainMenu';
 import Footer from '@/components/Footer';
 
 const Privacy = () => {
   return (
     <div>
       <Header />
+      <MainMenu showMenuItems={false} />
       <div className={styles.container}>
         <h1>개인정보처리방침</h1>
 
