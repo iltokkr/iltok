@@ -355,7 +355,33 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
       <div className={style.articleDetail}>
         {jobDetail.board_type === '0' && (
           <div className={style.seekerInfoSection}>
-            {/* 채용 조건 - is_ads(광고) 글에서는 숨김 */}
+            {/* 급여·근무 - 최상단 강조 (is_ads 광고 글에서는 숨김) */}
+            {!jobDetail.is_ads && (jobDetail.salary_type || (jobDetail.work_start_time && jobDetail.work_end_time)) && (
+              <div className={style.salaryWorkHighlight}>
+                <div className={style.salaryWorkGrid}>
+                  {jobDetail.salary_type && jobDetail.salary_detail && (
+                    <div className={style.salaryWorkItem}>
+                      <span className={style.salaryWorkLabel}>{jobDetail.salary_type}</span>
+                      <span className={style.salaryWorkValue}>{Number(jobDetail.salary_detail).toLocaleString()}원</span>
+                    </div>
+                  )}
+                  {jobDetail.work_start_time && jobDetail.work_end_time && (
+                    <div className={style.salaryWorkItem}>
+                      <span className={style.salaryWorkLabel}>근무시간</span>
+                      <span className={style.salaryWorkValue}>
+                        {jobDetail.work_start_time} ~ {jobDetail.work_end_time}
+                        {jobDetail.is_two_shift && jobDetail.work_start_time2 && jobDetail.work_end_time2 && (
+                          <span className={style.salaryWorkSub}> / {jobDetail.work_start_time2}~{jobDetail.work_end_time2} (2교대)</span>
+                        )}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                <p className={style.minWageNote}>2026년 최저임금 10,320원</p>
+              </div>
+            )}
+
+            {/* 채용 조건 */}
             {!jobDetail.is_ads && (jobDetail.experience || jobDetail.gender || jobDetail.education || jobDetail.age_limit || jobDetail.required_visa) && (
               <div className={style.seekerInfoCard}>
                 <h3 className={style.seekerInfoTitle}>채용 조건</h3>
@@ -407,40 +433,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
               </div>
             )}
 
-            {/* 급여·근무 - is_ads(광고) 글에서는 숨김 */}
-            {!jobDetail.is_ads && (jobDetail.salary_type || (jobDetail.work_start_time && jobDetail.work_end_time)) && (
-              <div className={style.seekerInfoCard}>
-                <h3 className={style.seekerInfoTitle}>
-                  급여·근무
-                  <span style={{ fontSize: '0.85em', marginLeft: '10px', color: '#888', fontWeight: 'normal' }}>
-                    2026년 최저임금 10,320원
-                  </span>
-                </h3>
-                <div className={style.seekerBasicInfoList}>
-                  {jobDetail.salary_type && jobDetail.salary_detail && (
-                    <div className={style.seekerBasicInfoItem}>
-                      <span className={style.seekerBasicLabel}>{jobDetail.salary_type}</span>
-                      <span className={style.seekerBasicValue}>{Number(jobDetail.salary_detail).toLocaleString()}원</span>
-                    </div>
-                  )}
-                  {jobDetail.work_start_time && jobDetail.work_end_time && (
-                    <div className={style.seekerBasicInfoItem}>
-                      <span className={style.seekerBasicLabel}>근무시간</span>
-                      <span className={style.seekerBasicValue}>
-                        {jobDetail.work_start_time} ~ {jobDetail.work_end_time}
-                        {jobDetail.is_two_shift && jobDetail.work_start_time2 && jobDetail.work_end_time2 && (
-                          <span style={{ marginLeft: '12px', color: '#666' }}>
-                            / {jobDetail.work_start_time2} ~ {jobDetail.work_end_time2} (2교대)
-                          </span>
-                        )}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* 근무지 - is_ads(광고) 글에서는 숨김 */}
+            {/* 근무지 */}
             {!jobDetail.is_ads && (jobDetail['1depth_region'] || jobDetail.work_location_detail) && (
               <div className={style.seekerInfoCard}>
                 <h3 className={style.seekerInfoTitle}>근무지</h3>

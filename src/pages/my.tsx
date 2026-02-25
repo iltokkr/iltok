@@ -249,16 +249,20 @@ const My: React.FC = () => {
       {/* 사업자 심사중 팝업 */}
       {showPendingAlert && (
         <div className={styles.modalOverlay} onClick={() => setShowPendingAlert(false)}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <h2 className={styles.modalTitle}>사업자 심사중</h2>
-            <p className={styles.modalText}>
-              현재 사업자 정보를 확인하고있습니다.
+          <div className={styles.modalContentPending} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.pendingIconWrap}>
+              <span className={styles.pendingIcon}>✓</span>
+            </div>
+            <h2 className={styles.pendingTitle}>사업자 심사중</h2>
+            <p className={styles.pendingText}>
+              현재 사업자 정보를 확인하고 있습니다.
             </p>
-            <p className={styles.modalSubText}>
-              사업자 인증 소요 기간 : 당일 ~ 1일 후
-            </p>
+            <div className={styles.pendingInfo}>
+              <span className={styles.pendingInfoLabel}>인증 소요 기간</span>
+              <span className={styles.pendingInfoValue}>당일 ~ 1일</span>
+            </div>
             <button 
-              className={styles.modalButton}
+              className={styles.pendingButton}
               onClick={() => setShowPendingAlert(false)}
             >
               확인

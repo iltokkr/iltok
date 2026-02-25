@@ -1045,13 +1045,13 @@
 }
 
 .conditionTag:hover {
-  border-color: #ff5722;
+  border-color: var(--color-primary);
 }
 
 .conditionTagSelected {
-  background: #fff5f2;
-  border-color: #ff5722;
-  color: #ff5722;
+  background: var(--color-primary-light);
+  border-color: var(--color-primary);
+  color: var(--color-primary-dark);
 }
 
 /* 선택된 지역 태그 */

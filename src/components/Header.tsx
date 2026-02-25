@@ -45,11 +45,26 @@ const Header: React.FC = () => {
     }
   };
 
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchKeyword(value);
+    if (value === '' && router.pathname === '/board' && router.query.keyword) {
+      const { keyword, searchType, page, ...rest } = router.query;
+      router.push({ pathname: '/board', query: rest });
+    }
+  };
+
   useEffect(() => {
     return () => {
       document.body.style.overflow = 'auto';
     };
   }, []);
+
+  useEffect(() => {
+    if (router.pathname === '/board' && router.query.keyword) {
+      setSearchKeyword((router.query.keyword as string) || '');
+    }
+  }, [router.pathname, router.query.keyword]);
 
   return (
     <>
@@ -77,7 +92,7 @@ const Header: React.FC = () => {
                 className={styles.searchInput}
                 placeholder="어떤 알바를 찾으세요?"
                 value={searchKeyword}
-                onChange={(e) => setSearchKeyword(e.target.value)}
+                onChange={handleSearchChange}
               />
               <button type="submit" className={styles.searchButton} aria-label="검색">
                 <FaSearch />
@@ -126,7 +141,7 @@ const Header: React.FC = () => {
                 className={styles.mobileSearchInput}
                 placeholder="어떤 알바를 찾으세요?"
                 value={searchKeyword}
-                onChange={(e) => setSearchKeyword(e.target.value)}
+                onChange={handleSearchChange}
                 autoFocus
               />
               <button type="submit" className={styles.mobileSearchButton} aria-label="검색">

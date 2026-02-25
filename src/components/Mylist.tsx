@@ -1,5 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react';
 import Link from 'next/link';
+import { FaSearch } from 'react-icons/fa';
 import styles from '@/styles/Mylist.module.css';
 import { createClient } from '@supabase/supabase-js';
 import { addHours, format, subHours } from 'date-fns';
@@ -63,9 +64,13 @@ const Mylist: React.FC<MylistProps> = ({
   const [showUnhideSuccessModal, setShowUnhideSuccessModal] = useState(false);
   const [showWageViolationModal, setShowWageViolationModal] = useState(false);
   const [bookmarkCounts, setBookmarkCounts] = useState<Record<number, number>>({});
+  const [searchKeyword, setSearchKeyword] = useState('');
   const authContext = useContext(AuthContext);
 
   const regularPosts = posts.filter(post => !post.board_type || post.board_type !== '4');
+  const filteredPosts = searchKeyword.trim()
+    ? regularPosts.filter(post => post.title.toLowerCase().includes(searchKeyword.trim().toLowerCase()))
+    : regularPosts;
 
   useEffect(() => {
     if (regularPosts.length === 0) {
@@ -379,6 +384,21 @@ const Mylist: React.FC<MylistProps> = ({
       )}
 
       {!showInfoSection && (
+      <>
+      <div className={styles.searchWrap}>
+        <div className={styles.searchField}>
+          <input
+            type="text"
+            className={styles.searchInput}
+            placeholder="공고명으로 검색"
+            value={searchKeyword}
+            onChange={(e) => setSearchKeyword(e.target.value)}
+          />
+          <span className={styles.searchIcon} aria-hidden="true">
+            <FaSearch />
+          </span>
+        </div>
+      </div>
       <div className={styles.tableWrap}>
         <table className={styles.adsTable}>
           <thead>
@@ -395,7 +415,7 @@ const Mylist: React.FC<MylistProps> = ({
             </tr>
           </thead>
           <tbody>
-            {regularPosts.map((post) => (
+            {filteredPosts.map((post) => (
               <tr key={post.id} className={post.is_hidden ? styles.hiddenPost : ''}>
                 <td className={styles.colDate}>{formatDateFull(post.updated_time)}</td>
                 <td className={styles.colAd}>
@@ -439,6 +459,7 @@ const Mylist: React.FC<MylistProps> = ({
           </tbody>
         </table>
       </div>
+      </>
       )}
 
       

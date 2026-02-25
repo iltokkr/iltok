@@ -25,6 +25,7 @@ interface JobForm {
   gender: string;
   education: string;
   age_limit: string;
+  required_visa: string[];
   // 급여
   salary_type: string;
   salary_detail: string;
@@ -101,6 +102,11 @@ const koreanAbilities = [
 // 희망 근무조건
 const workConditionOptions = [
   '주간', '야간', '주야교대', '일당', '주급', '장기', '단기', '평일', '주말', '기숙사'
+];
+
+// 채용조건 - 희망 비자 (중복선택)
+const requiredVisaOptions = [
+  'E1-E7', 'H-2', 'F-2', 'F-4', 'F-5', 'F-6', '유학', 'D-10'
 ];
 
 /* FormDropdown - 지역선택 드롭다운과 동일한 디자인 */
@@ -196,6 +202,7 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
     gender: '무관',
     education: '무관',
     age_limit: '무관',
+    required_visa: [],
     salary_type: '시급',
     salary_detail: '10,320',
     is_day_pay: false,
@@ -394,9 +401,9 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
           jobData.birth_month = (birthDate.getMonth() + 1).toString();
           jobData.birth_day = birthDate.getDate().toString();
         } else {
-          jobData.birth_year = '';
-          jobData.birth_month = '';
-          jobData.birth_day = '';
+        jobData.birth_year = '';
+        jobData.birth_month = '';
+        jobData.birth_day = '';
         }
       } else {
         // 구직정보가 아닌 경우 기본값 설정
@@ -406,6 +413,21 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
         jobData.birth_year = '';
         jobData.birth_month = '';
         jobData.birth_day = '';
+      }
+
+      // 채용정보: required_visa 파싱
+      if (jobData.board_type === '0') {
+        if (jobData.required_visa) {
+          try {
+            jobData.required_visa = typeof jobData.required_visa === 'string'
+              ? JSON.parse(jobData.required_visa)
+              : jobData.required_visa;
+          } catch {
+            jobData.required_visa = [];
+          }
+        } else {
+          jobData.required_visa = [];
+        }
       }
 
       // 2교대 관련 필드 기본값 설정
@@ -614,6 +636,7 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
         // 구직정보인 경우 배열 데이터를 JSON 문자열로 변환
         work_conditions: formData.board_type === '1' ? JSON.stringify(formData.work_conditions) : null,
         desired_regions: formData.board_type === '1' ? JSON.stringify(formData.desired_regions) : null,
+        required_visa: formData.board_type === '0' && formData.required_visa?.length > 0 ? JSON.stringify(formData.required_visa) : null,
         career_history: formData.board_type === '1' ? JSON.stringify(formData.career_history) : null,
         birth_date: formData.board_type === '1' ? birthDateStr : null,
         // 구직정보의 경우 첫 번째 희망 지역을 1depth/2depth에 저장
@@ -798,6 +821,16 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
       age--;
     }
     return age;
+  };
+
+  // 희망 비자 토글 (채용조건)
+  const handleRequiredVisaToggle = (visa: string) => {
+    setFormData(prev => ({
+      ...prev,
+      required_visa: prev.required_visa.includes(visa)
+        ? prev.required_visa.filter(v => v !== visa)
+        : [...prev.required_visa, visa]
+    }));
   };
 
   // 희망 근무조건 토글
@@ -1001,6 +1034,23 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
                     ]}
                     onSelect={handleDropdownSelect}
                   />
+                </div>
+              </div>
+              <div className={style.formRow}>
+                <div className={style.formLabel}>비자</div>
+                <div className={style.formInput}>
+                  <div className={style.tagContainer}>
+                    {requiredVisaOptions.map(visa => (
+                      <button
+                        key={visa}
+                        type="button"
+                        className={`${style.conditionTag} ${formData.required_visa.includes(visa) ? style.conditionTagSelected : ''}`}
+                        onClick={() => handleRequiredVisaToggle(visa)}
+                      >
+                        {visa}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
               <div className={style.warningText}>

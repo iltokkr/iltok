@@ -139,6 +139,92 @@
   background: #e64a19;
 }
 
+/* 사업자 심사중 팝업 - 리디자인 */
+.modalContentPending {
+  background: #fff;
+  border-radius: 20px;
+  padding: 36px 32px;
+  max-width: 360px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  animation: modalFadeIn 0.3s ease-out;
+}
+
+.pendingIconWrap {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary-light);
+  border-radius: 50%;
+}
+
+.pendingIcon {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--color-primary);
+  line-height: 1;
+}
+
+.pendingTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 12px 0;
+  letter-spacing: -0.02em;
+}
+
+.pendingText {
+  font-size: 15px;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin: 0 0 20px 0;
+}
+
+.pendingInfo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 20px;
+  margin-bottom: 24px;
+  background: var(--color-bg-input);
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+}
+
+.pendingInfoLabel {
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.pendingInfoValue {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-primary-dark);
+}
+
+.pendingButton {
+  display: block;
+  width: 100%;
+  padding: 14px 24px;
+  background: var(--color-gradient-cta);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pendingButton:hover {
+  filter: brightness(1.08);
+}
+
 /* 중복 공고 경고 팝업 - 트렌디/깔끔 */
 .modalContentDuplicateNotice {
   background: #fff;

@@ -1,107 +1,170 @@
 .commentSection {
-  margin: 10px 15px;
-  background-color: #fff;
-  border-radius: 8px;
-  padding: 10px 0;
+  margin: 24px 20px 32px;
+  padding: 28px 24px;
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .commentTitle {
-  font-size: 16px;
-  color: #333;
-  margin-bottom: 15px;
-  padding-bottom: 5px;
-  border-bottom: 1px solid #eee;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 20px 0;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--color-border);
+  letter-spacing: -0.02em;
 }
 
 .commentForm {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   display: flex !important;
-  gap: 10px;
-  align-items: flex-start;
+  gap: 12px;
+  align-items: flex-end;
 }
 
 .commentInput {
   flex: 1 !important;
-  height: 40px !important;
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  min-height: 48px !important;
+  height: auto !important;
+  padding: 12px 16px !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 12px !important;
   resize: none !important;
   box-sizing: border-box !important;
-  line-height: 24px !important;
+  line-height: 1.6 !important;
   display: block !important;
+  font-size: 15px !important;
+  color: var(--color-text) !important;
+  background: var(--color-bg) !important;
+  transition: all 0.25s ease !important;
+}
+
+.commentInput:hover {
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 4px 12px rgba(74, 111, 165, 0.12) !important;
+}
+
+.commentInput:focus {
+  outline: none !important;
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 3px var(--color-primary-light) !important;
+}
+
+.commentInput::placeholder {
+  color: var(--color-text-muted) !important;
 }
 
 .submitButton {
-  height: 40px !important;
-  padding: 0 16px;
-  background-color: var(--color-primary);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  white-space: nowrap;
+  height: 48px !important;
+  min-width: 80px;
+  padding: 0 20px !important;
+  background: var(--color-gradient-cta) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 12px !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  white-space: nowrap !important;
+  transition: all 0.2s ease !important;
+}
+
+.submitButton:hover:not(:disabled) {
+  filter: brightness(1.08) !important;
 }
 
 .submitButton:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
+  background: var(--color-border) !important;
+  color: var(--color-text-muted) !important;
+  cursor: not-allowed !important;
 }
 
 .commentList {
-  margin-top: 20px;
+  margin-top: 0;
 }
 
 .commentItem {
-  padding: 15px 0;
-  border-bottom: 1px solid #eee;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.commentItem:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
 }
 
 .commentHeader {
   display: flex;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
+  gap: 8px;
 }
 
 .userName {
-  font-weight: 500;
-  color: #333;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--color-text);
 }
 
 .commentDate {
-  color: #888;
-  font-size: 0.9em;
+  color: var(--color-text-muted);
+  font-size: 13px;
   margin-left: auto;
 }
 
 .deleteButton {
   background: none;
   border: none;
-  color: #888;
+  color: var(--color-text-muted);
   cursor: pointer;
-  font-size: 0.8em;
-  margin-left: 8px;
-  padding: 2px 6px;
+  font-size: 14px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
 }
 
 .deleteButton:hover {
-  text-decoration: underline;
-  color: #ff4444;
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
 }
 
 .commentText {
-  color: #444;
-  line-height: 1.5;
+  font-size: 15px;
+  color: var(--color-text);
+  line-height: 1.7;
   white-space: pre-wrap;
+  margin: 0;
 }
 
 @media (max-width: 768px) {
   .commentSection {
-    margin: 10px 15px;
-    padding: 10px 0;
+    margin: 20px 16px 24px;
+    padding: 20px 16px;
   }
-  
+
+  .commentTitle {
+    font-size: 16px;
+    margin-bottom: 16px;
+  }
+
+  .commentForm {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
   .commentInput {
-    width: 90%;
+    min-height: 44px !important;
+  }
+
+  .submitButton {
+    height: 44px !important;
+    width: 100%;
+  }
+
+  .commentItem {
+    padding: 16px 0;
   }
 } 
