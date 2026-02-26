@@ -1,0 +1,26 @@
+{
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/board",
+      "permanent": false,
+      "has": [
+        {
+          "type": "host",
+          "value": "www.114114kr.com"
+        }
+      ]
+    },
+    {
+      "source": "/",
+      "destination": "/board",
+      "permanent": false,
+      "has": [
+        {
+          "type": "host",
+          "value": "114114kr.com"
+        }
+      ]
+    }
+  ]
+}
