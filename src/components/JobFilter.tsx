@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 import styles from '@/styles/JobFilter.module.css';
 import { gtag } from '@/lib/gtag';
 import { HiLocationMarker } from 'react-icons/hi';

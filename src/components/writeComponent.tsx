@@ -8,6 +8,7 @@ import { toZonedTime } from 'date-fns-tz';
 import Link from 'next/link';
 import BusinessVerificationModal from '@/components/BusinessVerificationModal';
 import { AuthContext } from '@/contexts/AuthContext';
+import { HiOutlineCheckCircle } from 'react-icons/hi';
 
 // Supabase 클라이언트 설정
 const supabase = createClient(

@@ -830,7 +830,7 @@ const BoardPage: React.FC = () => {
 
         <JobList 
           jobs={regularJobs}
-          adJobs={boardType === '0' ? [...partnerJobs, ...adJobs] : adJobs}
+          adJobs={boardType === '0' ? [...partnerJobs.map(j => ({ ...j, ad: true as const })), ...adJobs] : adJobs}
           currentPage={currentPage}
           totalPages={totalPages}
           totalCount={totalCount}
