@@ -180,18 +180,18 @@ const JobDetailPage: React.FC<PageProps> = ({ initialJobDetail, initialComments 
         <meta name="keywords" content={`채용정보, 구인구직, ${jobDetail?.title}, ${jobDetail?.uploader.company_name}, 114114KR`} />
         
         {/* Open Graph 태그 */}
-        <meta property="og:title" content={jobDetail ? `${jobDetail.title} - ${jobDetail.uploader.company_name} | 114114KR` : '채용 상세 | 114114KR'} />
-        <meta property="og:description" content={jobDetail ? `${jobDetail.contents.substring(0, 200)}...` : '114114KR에서 다양한 채용 정보를 확인하세요.'} />
+        <meta property="og:title" content={jobDetail ? `${jobDetail.title} - ${jobDetail.uploader.company_name} | 114114KR` : '[114114KR.com] 외국인 특화 채용 플랫폼'} />
+        <meta property="og:description" content={jobDetail ? `${jobDetail.contents.substring(0, 200)}...` : '외국인 채용, 가장 빠른 연결'} />
         <meta property="og:type" content="article" />
         <meta property="og:url" content={canonicalUrl} />
-        <meta property="og:image" content="https://114114kr.com/ogimage.png" />
+        <meta property="og:image" content="https://114114kr.com/og-image.png" />
         <meta property="og:site_name" content="114114KR" />
         
         {/* Twitter 카드 */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={jobDetail ? `${jobDetail.title} - ${jobDetail.uploader.company_name} | 114114KR` : '채용 상세 | 114114KR'} />
-        <meta name="twitter:description" content={jobDetail ? `${jobDetail.contents.substring(0, 200)}...` : '114114KR에서 다양한 채용 정보를 확인하세요.'} />
-        <meta name="twitter:image" content="https://114114kr.com/ogimage.png" />
+        <meta name="twitter:title" content={jobDetail ? `${jobDetail.title} - ${jobDetail.uploader.company_name} | 114114KR` : '[114114KR.com] 외국인 특화 채용 플랫폼'} />
+        <meta name="twitter:description" content={jobDetail ? `${jobDetail.contents.substring(0, 200)}...` : '외국인 채용, 가장 빠른 연결'} />
+        <meta name="twitter:image" content="https://114114kr.com/og-image.png" />
         
         <link rel="canonical" href={canonicalUrl} />
       </Head>

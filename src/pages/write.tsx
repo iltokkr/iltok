@@ -68,11 +68,11 @@ const Write: React.FC = () => {
         <title>채용 공고 작성 | 114114KR</title>
         <meta name="description" content="114114KR에서 새로운 채용 공고를 작성하세요. 효과적인 채용 공고로 최적의 인재를 찾을 수 있습니다." />
         <meta name="keywords" content="채용 공고 작성, 채용 공고, 인재 채용, 114114KR" />
-        <meta property="og:title" content="채용 공고 작성 | 114114KR" />
-        <meta property="og:description" content="114114KR에서 새로운 채용 공고를 작성하세요. 효과적인 채용 공고로 최적의 인재를 찾을 수 있습니다." />
+        <meta property="og:title" content="[114114KR.com] 외국인 특화 채용 플랫폼" />
+        <meta property="og:description" content="외국인 채용, 가장 빠른 연결" />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://114114KR.com/write" />
-        <meta property="og:image" content="https://114114KR.com/og-image.jpg" />
+        <meta property="og:image" content="https://114114kr.com/og-image.png" />
         <meta property="og:site_name" content="114114KR" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="채용 공고 작성 | 114114KR" />

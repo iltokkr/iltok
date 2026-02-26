@@ -19,10 +19,14 @@ export default function Home() {
         <meta name="Description" content="114114KR은 조선동포와 교포를 위한 구인구직 플랫폼입니다. 아르바이트부터 정규직까지 다양한 일자리 정보를 제공합니다." />
         <link rel="shortcut icon" href="/favicon.ico" />
         <meta name="naver-site-verification" content="2664c9542e7774437c1d026345f3ef09733c9ae5" />
-        <meta property="og:title" content="114114KR - 조선동포 및 교포 구인구직 서비스" />
-        <meta property="og:description" content="114114KR은 조선동포와 교포를 위한 구인구직 플랫폼입니다. 아르바이트부터 정규직까지 다양한 일자리 정보를 제공합니다." />
+        <meta property="og:title" content="[114114KR.com] 외국인 특화 채용 플랫폼" />
+        <meta property="og:description" content="외국인 채용, 가장 빠른 연결" />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://114114kr.com" />
+        <meta property="og:image" content="https://114114kr.com/og-image.png" />
+        <meta property="og:site_name" content="114114KR" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content="https://114114kr.com/og-image.png" />
       </Head>
 
       <Header />
