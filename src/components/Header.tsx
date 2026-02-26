@@ -5,13 +5,8 @@ import styles from '@/styles/Header.module.css';
 import LoginPopup from './LoginPopup';
 import SignupTypeModal from './SignupTypeModal';
 import { AuthContext } from '@/contexts/AuthContext';
+import { UserContext } from '@/contexts/UserContext';
 import { FaSearch, FaTimes, FaBars } from 'react-icons/fa';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 const Header: React.FC = () => {
   const [showLoginPopup, setShowLoginPopup] = useState(false);
@@ -19,41 +14,16 @@ const Header: React.FC = () => {
   const [showMobileSearch, setShowMobileSearch] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState('');
-  const [userType, setUserType] = useState<string | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const auth = useContext(AuthContext);
+  const userProfile = useContext(UserContext);
   const router = useRouter();
 
   useEffect(() => setMounted(true), []);
 
-  useEffect(() => {
-    if (auth?.user?.id) {
-      setUserType(null);
-      setUserId(null);
-      let cancelled = false;
-      supabase
-        .from('users')
-        .select('user_type, user_id, email, name')
-        .eq('id', auth.user.id)
-        .maybeSingle()
-        .then(({ data, error }) => {
-          if (cancelled) return;
-          if (error) {
-            console.error('Header users 조회 오류:', error);
-            setUserType('jobseeker');
-            setUserId(null);
-            return;
-          }
-          setUserType(data?.user_type || 'jobseeker');
-          setUserId(data?.user_type === 'jobseeker' ? (data?.name || data?.user_id || data?.email || null) : (data?.user_id || data?.email || null));
-        });
-      return () => { cancelled = true; };
-    } else {
-      setUserType(null);
-      setUserId(null);
-    }
-  }, [auth?.user?.id]);
+  const userType = userProfile?.userType ?? null;
+  const userId = userProfile?.userId ?? null;
+  const isUserLoading = userProfile?.isUserLoading ?? false;
 
   if (!auth) throw new Error("AuthContext not found");
 
@@ -223,7 +193,7 @@ const Header: React.FC = () => {
                   <Link href="/my?section=info" onClick={closeMobileMenu} className={styles.mobileMenuLink}>회원정보</Link>
                 </>
               )}
-              {(!isLoggedIn || userType === null) && showMenuItems && (
+              {(!isLoggedIn || (isUserLoading && !userType)) && showMenuItems && (
                 <Link href="/my?section=info" onClick={closeMobileMenu} className={styles.mobileMenuLink}>회원정보</Link>
               )}
               {userType !== 'jobseeker' && (
@@ -247,7 +217,7 @@ const Header: React.FC = () => {
             {isLoggedIn && userId && (userType === 'business' || userType === 'both' || userType === 'jobseeker') && (
               <span className={styles.mobileMenuUserTag}>{userId}님</span>
             )}
-            {isLoggedIn ? (
+            {isLoggedIn && userType ? (
               <>
                 <a
                   href={userType === 'jobseeker' ? '/my?section=applications' : (userType === 'both' && (currentSection === 'applications' || currentSection === 'info' || currentSection === 'resume' || currentSection !== 'ads') ? '/my?section=applications' : '/my')}

@@ -1,16 +1,11 @@
 import React, { useState, useContext, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { createClient } from '@supabase/supabase-js';
 import styles from '@/styles/MainMenu.module.css';
 import LoginPopup from './LoginPopup';
 import SignupTypeModal from './SignupTypeModal';
 import { AuthContext } from '@/contexts/AuthContext';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { UserContext } from '@/contexts/UserContext';
 
 interface MainMenuProps {
   currentBoardType?: string;
@@ -23,41 +18,16 @@ const MainMenu: React.FC<MainMenuProps> = ({ currentBoardType = '0', showMenuIte
   const [showLoginPopup, setShowLoginPopup] = useState(false);
   const [showSignupTypeModal, setShowSignupTypeModal] = useState(false);
   const [loginInitialUserType, setLoginInitialUserType] = useState<'business' | 'jobseeker' | undefined>(undefined);
-  const [userType, setUserType] = useState<string | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
   const auth = useContext(AuthContext);
+  const userProfile = useContext(UserContext);
   const router = useRouter();
 
   useEffect(() => setMounted(true), []);
 
-  useEffect(() => {
-    if (auth?.user?.id) {
-      setUserType(null);
-      setUserId(null);
-      let cancelled = false;
-      supabase
-        .from('users')
-        .select('user_type, user_id, email, name')
-        .eq('id', auth.user.id)
-        .maybeSingle()
-        .then(({ data, error }) => {
-          if (cancelled) return;
-          if (error) {
-            console.error('MainMenu users 조회 오류:', error);
-            setUserType('jobseeker');
-            setUserId(null);
-            return;
-          }
-          setUserType(data?.user_type || 'jobseeker');
-          setUserId(data?.user_type === 'jobseeker' ? (data?.name || data?.user_id || data?.email || null) : (data?.user_id || data?.email || null));
-        });
-      return () => { cancelled = true; };
-    } else {
-      setUserType(null);
-      setUserId(null);
-    }
-  }, [auth?.user?.id]);
+  const userType = userProfile?.userType ?? null;
+  const userId = userProfile?.userId ?? null;
+  const isUserLoading = userProfile?.isUserLoading ?? false;
 
   const handleSignupTypeSelect = (type: 'jobseeker' | 'business') => {
     setShowSignupTypeModal(false);
@@ -90,7 +60,7 @@ const MainMenu: React.FC<MainMenuProps> = ({ currentBoardType = '0', showMenuIte
           {showMenuItems ? (
               !mounted ? (
                 <span className={styles.menuItemsPlaceholder} aria-hidden="true" />
-              ) : auth?.isLoading || (auth?.isLoggedIn && userType === null) ? (
+              ) : auth?.isLoading || (isUserLoading && !userType) ? (
                 /* 로딩 중: 비로그인 메뉴 표시 */
                 <>
                   <li>
@@ -233,7 +203,7 @@ const MainMenu: React.FC<MainMenuProps> = ({ currentBoardType = '0', showMenuIte
           <div className={styles.menuRight}>
             {!mounted ? (
               <span className={styles.menuPlaceholder} aria-hidden="true" />
-            ) : auth?.isLoading || (auth?.isLoggedIn && userType === null) ? (
+            ) : auth?.isLoading || (isUserLoading && !userType) ? (
               <>
                 <a href="#" onClick={(e) => { e.preventDefault(); setShowLoginPopup(true); }} className={styles.menuLink}>로그인</a>
                 <span className={styles.menuSep}>|</span>

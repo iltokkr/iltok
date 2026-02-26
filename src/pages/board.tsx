@@ -351,11 +351,11 @@ const BoardPage: React.FC = () => {
         }
       }
 
-      // 북마크 수 가져오기
+      // 지원 수 가져오기 (job_application)
       let bookmarkCountsData: Record<number, number> = {};
       if (jobIds.length > 0) {
         const { data } = await supabase
-          .from('bookmark')
+          .from('job_application')
           .select('jd_id')
           .in('jd_id', jobIds);
         
@@ -758,12 +758,12 @@ const BoardPage: React.FC = () => {
     handleFilterChange(newFilters);
   }, [filters, handleFilterChange]);
 
-  // 북마크 데이터를 가져오는 함수 추가
+  // 지원(job_application) 데이터를 가져오는 함수
   const fetchBookmarks = useCallback(async () => {
     if (!isLoggedIn || !user) return;
     
     const { data, error } = await supabase
-      .from('bookmark')
+      .from('job_application')
       .select('jd_id')
       .eq('users_id', user.id);
       

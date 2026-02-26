@@ -138,11 +138,11 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
   }, [isLoggedIn, user]);
 
   useEffect(() => {
-    const fetchBookmarks = async () => {
+    const fetchApplications = async () => {
       if (!isLoggedIn || !user) return;
       
       const { data, error } = await supabase
-        .from('bookmark')
+        .from('job_application')
         .select('jd_id')
         .eq('users_id', user.id);
         
@@ -151,12 +151,12 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
       }
     };
 
-    fetchBookmarks();
+    fetchApplications();
   }, [isLoggedIn, user]);
 
   const fetchBookmarkCounts = async () => {
     const { data, error } = await supabase
-      .from('bookmark')
+      .from('job_application')
       .select('jd_id');
 
     if (data && !error) {
@@ -359,7 +359,7 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
     try {
       if (bookmarkedJobs.includes(jobId)) {
         const { error: deleteError } = await supabase
-          .from('bookmark')
+          .from('job_application')
           .delete()
           .eq('users_id', user.id)
           .eq('jd_id', jobId);
@@ -376,7 +376,7 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
           : 'Application cancelled');
       } else {
         const { data, error: insertError } = await supabase
-          .from('bookmark')
+          .from('job_application')
           .insert([{ users_id: user.id, jd_id: jobId }])
           .select();
 

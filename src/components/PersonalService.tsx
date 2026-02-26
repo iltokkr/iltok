@@ -47,6 +47,7 @@ interface AppliedJob {
   id: number;
   title: string;
   updated_time: string;
+  applied_at?: string;
   '1depth_region': string;
   '2depth_region': string;
   '1depth_category': string;
@@ -92,11 +93,13 @@ const PersonalService: React.FC<PersonalServiceProps> = ({ activeSection }) => {
 
   const fetchAppliedJobs = async () => {
     if (!auth?.user?.id) return;
-    const { data: bookmarks } = await supabase
-      .from('bookmark')
-      .select('jd_id')
-      .eq('users_id', auth.user.id);
-    const jdIds = (bookmarks || []).map((b: { jd_id: number }) => b.jd_id);
+    const { data: applications } = await supabase
+      .from('job_application')
+      .select('jd_id, created_at')
+      .eq('users_id', auth.user.id)
+      .order('created_at', { ascending: false });
+    const jdIds = (applications || []).map((a: { jd_id: number }) => a.jd_id);
+    const appMap = new Map((applications || []).map((a: { jd_id: number; created_at: string }) => [a.jd_id, a.created_at]));
     if (jdIds.length === 0) {
       setAppliedJobs([]);
       return;
@@ -106,7 +109,12 @@ const PersonalService: React.FC<PersonalServiceProps> = ({ activeSection }) => {
       .select('id, title, updated_time, 1depth_region, 2depth_region, 1depth_category, 2depth_category')
       .in('id', jdIds)
       .order('updated_time', { ascending: false });
-    setAppliedJobs(data || []);
+    const sorted = (data || []).sort((a, b) => {
+      const at = appMap.get(a.id) || '';
+      const bt = appMap.get(b.id) || '';
+      return bt.localeCompare(at);
+    });
+    setAppliedJobs(sorted.map((j) => ({ ...j, applied_at: appMap.get(j.id) })));
   };
 
   const fetchProfile = async () => {
@@ -150,7 +158,7 @@ const PersonalService: React.FC<PersonalServiceProps> = ({ activeSection }) => {
 
   const handleRemoveApplicationConfirm = async () => {
     if (!auth?.user?.id || !cancelConfirmTarget) return;
-    const { error } = await supabase.from('bookmark').delete().eq('users_id', auth.user.id).eq('jd_id', cancelConfirmTarget.jdId);
+    const { error } = await supabase.from('job_application').delete().eq('users_id', auth.user.id).eq('jd_id', cancelConfirmTarget.jdId);
     setCancelConfirmTarget(null);
     if (!error) {
       setShowCancelSuccessPopup(true);
@@ -242,7 +250,7 @@ const PersonalService: React.FC<PersonalServiceProps> = ({ activeSection }) => {
               ) : (
                 appliedJobs.map((job) => (
                   <tr key={job.id}>
-                    <td className={styles.colDate}>{formatDate(job.updated_time)}</td>
+                    <td className={styles.colDate}>{formatDate(job.applied_at || job.updated_time)}</td>
                     <td className={styles.colAd}>
                       <div className={styles.adInfo}>
                         <Link href={`/jd/${job.id}`} className={styles.postItemTitle}>

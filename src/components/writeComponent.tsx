@@ -44,6 +44,9 @@ interface JobForm {
   work_end_time2: string;
   // 상세내용
   contents: string;
+  // 채용담당자 (채용정보만, 미입력 시 업로더 정보 사용)
+  contact_name?: string;
+  contact_phone?: string;
   // 광고(is_ads) 글: 상세내용만 노출, 상세 위 이미지
   is_ads?: boolean;
   content_image?: string;
@@ -217,6 +220,8 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
     work_start_time2: '17:00',
     work_end_time2: '02:00',
     contents: '',
+    contact_name: '',
+    contact_phone: '',
     is_ads: false,
     content_image: '',
     // 구직정보 전용 필드 초기값
@@ -458,6 +463,8 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
       jobData.work_end_time2 = jobData.work_end_time2 || '02:00';
       jobData.is_ads = jobData.is_ads ?? false;
       jobData.content_image = jobData.content_image ?? '';
+      jobData.contact_name = jobData.contact_name ?? '';
+      jobData.contact_phone = jobData.contact_phone ?? '';
 
       setFormData(jobData);
       console.log('Form data set:', jobData);
@@ -654,6 +661,8 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
             ad: false,
         is_ads: formData.board_type === '0' ? (formData.is_ads ?? false) : false,
         content_image: formData.board_type === '0' && (formData.is_ads && formData.content_image) ? formData.content_image.trim() || null : null,
+        contact_name: formData.board_type === '0' ? (formData.contact_name?.trim() || null) : null,
+        contact_phone: formData.board_type === '0' ? (formData.contact_phone?.trim() || null) : null,
         // 구직정보인 경우 배열 데이터를 JSON 문자열로 변환
         work_conditions: formData.board_type === '1' ? JSON.stringify(formData.work_conditions) : null,
         desired_regions: formData.board_type === '1' ? JSON.stringify(formData.desired_regions) : null,
@@ -1549,6 +1558,38 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
             <p>✓ 성매매 알선 등 행위의 처벌에 관한 법률 제4조에 해당되는 내용이 포함된 채용 광고 관련 법령에 따라 성매매를 알선한 경우, 3년 이하의 징역형 또는 3천만 원 이하의 벌금에 처해질 수 있습니다.</p>
           <p>✓ 노래방 종업원 및 BAR 종업원등 유흥업소에 대한 공고는 게시가 제한됩니다.</p>
           <p>✓ 1개의 공고에 여러 회사의 공고를 업로드할 경우 게시가 제한됩니다.</p>
+        </div>
+        )}
+
+        {/* 채용담당자 - 채용정보(board_type='0')에만 표시 */}
+        {formData.board_type === '0' && (
+        <div className={style.subSection}>
+          <h2 className={style.sectionTitle}>채용담당자</h2>
+          <p style={{ fontSize: '13px', color: '#64748b', marginBottom: 12 }}>상세내용에 표시할 담당자 정보를 입력해주세요. (선택)</p>
+          <div className={style.formRow}>
+            <div className={style.formGroup}>
+              <label>담당자명</label>
+              <input
+                type="text"
+                name="contact_name"
+                className={style.input}
+                placeholder="담당자명을 입력해주세요"
+                value={formData.contact_name || ''}
+                onChange={handleInputChange}
+              />
+            </div>
+            <div className={style.formGroup}>
+              <label>전화번호</label>
+              <input
+                type="tel"
+                name="contact_phone"
+                className={style.input}
+                placeholder="전화번호를 입력해주세요"
+                value={formData.contact_phone || ''}
+                onChange={handleInputChange}
+              />
+            </div>
+          </div>
         </div>
         )}
 

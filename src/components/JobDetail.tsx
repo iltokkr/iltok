@@ -55,6 +55,8 @@ interface JobDetailProps {
     work_end_time2?: string;
     is_ads?: boolean;
     content_image?: string | null;
+    contact_name?: string | null;
+    contact_phone?: string | null;
     // 구직정보 전용 필드
     korean_name?: string;
     english_name?: string;
@@ -260,13 +262,13 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
     translateContent();
   }, [currentLanguage, jobDetail]);
 
-  // 북마크 상태 확인
+  // 지원 상태 확인 (job_application)
   useEffect(() => {
-    const checkBookmarkStatus = async () => {
+    const checkApplyStatus = async () => {
       if (!isLoggedIn || !user) return;
       
       const { data, error } = await supabase
-        .from('bookmark')
+        .from('job_application')
         .select('id')
         .eq('users_id', user.id)
         .eq('jd_id', jobDetail.id)
@@ -277,7 +279,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
       }
     };
 
-    checkBookmarkStatus();
+    checkApplyStatus();
   }, [isLoggedIn, user, jobDetail.id]);
 
   const handleApply = async () => {
@@ -291,7 +293,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
     try {
       if (isBookmarked) {
         const { error: deleteError } = await supabase
-          .from('bookmark')
+          .from('job_application')
           .delete()
           .eq('users_id', user.id)
           .eq('jd_id', jobDetail.id);
@@ -304,7 +306,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
         });
       } else {
         const { error: insertError } = await supabase
-          .from('bookmark')
+          .from('job_application')
           .insert([{ users_id: user.id, jd_id: jobDetail.id }]);
 
         if (insertError) throw insertError;
@@ -490,25 +492,46 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
               </div>
             )}
 
-            {/* 업체명·대표자명·전화번호·문자보내기·지원하기 - 상세내용 밑 */}
-            {jobDetail.uploader.number && (
-              <div className={style.actionArea}>
+            {/* 기업정보 - 업체명, 대표자명, 연락처 (문자보내기/지원하기 없음) */}
+            <div className={style.seekerInfoCard}>
+              <h3 className={style.seekerInfoTitle}>기업정보</h3>
+              <div className={style.companyInfo}>
+                <div className={style.infoRow}>
+                  <span className={style.infoLabel}>업체명</span>
+                  <span className={style.infoValue}>{jobDetail.uploader.company_name || "정보없음"}</span>
+                </div>
+                <div className={style.infoRow}>
+                  <span className={style.infoLabel}>대표자명</span>
+                  <span className={style.infoValue}>{jobDetail.uploader.name || "정보없음"}</span>
+                </div>
+                <div className={style.infoRow}>
+                  <span className={style.infoLabel}>전화번호</span>
+                  <span
+                    className={style.phoneNumber}
+                    onClick={() => handleCopyPhoneNumber(formatPhoneNumber(jobDetail.uploader.number || ''))}
+                  >
+                    {formatPhoneNumber(jobDetail.uploader.number || '')}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* 채용담당자 - 담당자명, 담당자 연락처, 문자보내기, 지원하기, 안내문 */}
+            {(jobDetail.contact_phone || jobDetail.uploader.number) && (
+              <div className={style.seekerInfoCard}>
+                <h3 className={style.seekerInfoTitle}>채용담당자</h3>
                 <div className={style.companyInfo}>
                   <div className={style.infoRow}>
-                    <span className={style.infoLabel}>업체명</span>
-                    <span className={style.infoValue}>{jobDetail.uploader.company_name || "정보없음"}</span>
+                    <span className={style.infoLabel}>담당자명</span>
+                    <span className={style.infoValue}>{jobDetail.contact_name || ''}</span>
                   </div>
                   <div className={style.infoRow}>
-                    <span className={style.infoLabel}>대표자명</span>
-                    <span className={style.infoValue}>{jobDetail.uploader.name || "정보없음"}</span>
-                  </div>
-                  <div className={style.infoRow}>
-                    <span className={style.infoLabel}>전화번호</span>
+                    <span className={style.infoLabel}>연락처</span>
                     <span
                       className={style.phoneNumber}
-                      onClick={() => handleCopyPhoneNumber(formatPhoneNumber(jobDetail.uploader.number))}
+                      onClick={() => handleCopyPhoneNumber(formatPhoneNumber(jobDetail.contact_phone || jobDetail.uploader.number || ''))}
                     >
-                      {formatPhoneNumber(jobDetail.uploader.number)}
+                      {formatPhoneNumber(jobDetail.contact_phone || jobDetail.uploader.number || '')}
                     </span>
                   </div>
                 </div>
@@ -524,7 +547,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
                   }}
                 >
                   <a
-                    href={getSmsHref(jobDetail.uploader.number)}
+                    href={getSmsHref(jobDetail.contact_phone || jobDetail.uploader.number || '')}
                     className={style.smsButton}
                   >
                     문자보내기

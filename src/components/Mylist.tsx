@@ -63,7 +63,7 @@ const Mylist: React.FC<MylistProps> = ({
   const [showHideSuccessModal, setShowHideSuccessModal] = useState(false);
   const [showUnhideSuccessModal, setShowUnhideSuccessModal] = useState(false);
   const [showWageViolationModal, setShowWageViolationModal] = useState(false);
-  const [bookmarkCounts, setBookmarkCounts] = useState<Record<number, number>>({});
+  const [applicationCounts, setApplicationCounts] = useState<Record<number, number>>({});
   const [searchKeyword, setSearchKeyword] = useState('');
   const authContext = useContext(AuthContext);
 
@@ -74,19 +74,19 @@ const Mylist: React.FC<MylistProps> = ({
 
   useEffect(() => {
     if (regularPosts.length === 0) {
-      setBookmarkCounts({});
+      setApplicationCounts({});
       return;
     }
-    const fetchBookmarkCounts = async () => {
+    const fetchApplicationCounts = async () => {
       const ids = regularPosts.map((p) => p.id);
-      const { data } = await supabase.from('bookmark').select('jd_id').in('jd_id', ids);
+      const { data } = await supabase.from('job_application').select('jd_id').in('jd_id', ids);
       const counts: Record<number, number> = {};
       (data || []).forEach((b: { jd_id: number }) => {
         counts[b.jd_id] = (counts[b.jd_id] || 0) + 1;
       });
-      setBookmarkCounts(counts);
+      setApplicationCounts(counts);
     };
-    fetchBookmarkCounts();
+    fetchApplicationCounts();
   }, [posts]);
 
   // 사업자 인증 상태: 미등록 / 심사중 / 인증완료
@@ -194,15 +194,7 @@ const Mylist: React.FC<MylistProps> = ({
     if (!deleteTargetPost) return;
     
     try {
-      // 먼저 해당 게시글의 북마크 삭제
-      const { error: bookmarkError } = await supabase
-        .from('bookmark')
-        .delete()
-        .eq('jd_id', deleteTargetPost.id);
-
-      if (bookmarkError) {
-        console.error('북마크 삭제 실패:', bookmarkError);
-      }
+      // 게시글 삭제 시 job_application은 jd CASCADE로 자동 삭제됨
 
       // 해당 게시글의 댓글 삭제
       const { error: commentError } = await supabase
@@ -405,7 +397,7 @@ const Mylist: React.FC<MylistProps> = ({
                   <span className={styles.tableHeaderTag}>비공개 - 사업자 인증 필요</span>
                 )}
               </th>
-              <th>지원자관리</th>
+              <th>지원자</th>
               <th>관리</th>
             </tr>
           </thead>
@@ -432,7 +424,7 @@ const Mylist: React.FC<MylistProps> = ({
                     href={`/my/applicants/${post.id}`}
                     className={styles.applicantBtn}
                   >
-                    {bookmarkCounts[post.id] || 0}명
+                    {applicationCounts[post.id] || 0}명
                   </Link>
                 </td>
                 <td className={styles.colManage}>

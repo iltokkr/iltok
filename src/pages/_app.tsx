@@ -1,6 +1,7 @@
 import '@/styles/globals.css'
 import type { AppProps } from 'next/app'
 import { AuthProvider } from '@/providers/AuthProvider'
+import { UserProvider } from '@/providers/UserProvider'
 import { Toaster } from 'react-hot-toast'
 import Head from 'next/head'
 import Script from 'next/script'
@@ -48,7 +49,8 @@ function MyApp({ Component, pageProps }: AppProps) {
   return (
     <TranslationProvider>
       <AuthProvider>
-        <Head>
+        <UserProvider>
+          <Head>
           <meta charSet="utf-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
           <meta httpEquiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
@@ -79,14 +81,14 @@ function MyApp({ Component, pageProps }: AppProps) {
           </Script>
 
           <meta name="google-adsense-account" content="ca-pub-5358954637109366"></meta>
-        </Head>
+          </Head>
 
-        {/* Google Analytics */}
-        <Script
-          src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
-          strategy="afterInteractive"
-        />
-        <Script id="google-analytics" strategy="afterInteractive">
+          {/* Google Analytics */}
+          <Script
+            src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+            strategy="afterInteractive"
+          />
+          <Script id="google-analytics" strategy="afterInteractive">
           {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
@@ -94,11 +96,11 @@ function MyApp({ Component, pageProps }: AppProps) {
 
             gtag('config', '${GA_MEASUREMENT_ID}');
           `}
-        </Script>
+          </Script>
 
-        {/* 네이버 애널리틱스 */}
-        <Script src="//wcs.naver.net/wcslog.js" strategy="afterInteractive" />
-        <Script id="naver-analytics" strategy="afterInteractive">
+          {/* 네이버 애널리틱스 */}
+          <Script src="//wcs.naver.net/wcslog.js" strategy="afterInteractive" />
+          <Script id="naver-analytics" strategy="afterInteractive">
           {`
             if(!wcs_add) var wcs_add = {};
             wcs_add["wa"] = "13f96843ef89820";
@@ -106,10 +108,11 @@ function MyApp({ Component, pageProps }: AppProps) {
               wcs_do();
             }
           `}
-        </Script>
+          </Script>
 
-        <Component {...pageProps} />
-        <Toaster position="top-center" toastOptions={{ duration: 3000 }} />
+          <Component {...pageProps} />
+          <Toaster position="top-center" toastOptions={{ duration: 3000 }} />
+        </UserProvider>
       </AuthProvider>
     </TranslationProvider>
   )

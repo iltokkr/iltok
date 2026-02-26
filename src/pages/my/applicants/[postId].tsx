@@ -19,6 +19,12 @@ interface Applicant {
   name?: string;
   korean_name?: string;
   profile_id?: string;
+  gender?: string;
+  age?: number | null;
+  nationality?: string;
+  visa_status?: string;
+  phone?: string;
+  preferred_regions?: string;
 }
 
 interface PostInfo {
@@ -72,12 +78,12 @@ const ApplicantsPage: React.FC = () => {
 
         setPost(postData);
 
-        const { data: bookmarkData } = await supabase
-          .from('bookmark')
+        const { data: applicationData } = await supabase
+          .from('job_application')
           .select('users_id')
           .eq('jd_id', postIdNum);
 
-        const userIds = (bookmarkData || []).map((b) => b.users_id);
+        const userIds = (applicationData || []).map((b) => b.users_id);
 
         if (userIds.length === 0) {
           setApplicants([]);
@@ -87,31 +93,83 @@ const ApplicantsPage: React.FC = () => {
 
         const { data: usersData } = await supabase
           .from('users')
-          .select('id, name')
+          .select('id, name, number')
           .in('id', userIds);
 
-        const userMap = new Map((usersData || []).map((u) => [u.id, u.name || '-']));
+        const userMap = new Map((usersData || []).map((u) => [u.id, { name: u.name || '-', number: u.number || '' }]));
 
-        let profileMap = new Map<string, { korean_name: string; id: string }>();
+        let profileMap = new Map<string, { korean_name: string; id: string; gender?: string; birth_year?: number; birth_month?: number; birth_day?: number; nationality?: string; visa_status?: string; preferred_regions?: string[] }>();
         try {
           const { data: profilesData } = await supabase
             .from('job_seeker_profiles')
-            .select('user_id, korean_name, id')
+            .select('user_id, korean_name, id, gender, birth_year, birth_month, birth_day, nationality, visa_status, preferred_regions')
             .in('user_id', userIds);
           profileMap = new Map(
-            (profilesData || []).map((p) => [p.user_id, { korean_name: p.korean_name || '', id: p.id }])
+            (profilesData || []).map((p) => {
+              let regions: string[] = [];
+              if (p.preferred_regions) {
+                try {
+                  regions = typeof p.preferred_regions === 'string' ? JSON.parse(p.preferred_regions) : (p.preferred_regions as string[]);
+                } catch {
+                  regions = [];
+                }
+              }
+              return [
+                p.user_id,
+                {
+                  korean_name: p.korean_name || '',
+                  id: p.id,
+                  gender: p.gender || '',
+                  birth_year: p.birth_year,
+                  birth_month: p.birth_month,
+                  birth_day: p.birth_day,
+                  nationality: p.nationality || '',
+                  visa_status: p.visa_status || '',
+                  preferred_regions: Array.isArray(regions) ? regions : [],
+                },
+              ];
+            })
           );
         } catch {
           // job_seeker_profiles 테이블이 없을 수 있음
         }
 
+        const calcAge = (y?: number, m?: number, d?: number): number | null => {
+          if (!y) return null;
+          const today = new Date();
+          const birth = new Date(y, (m || 1) - 1, d || 1);
+          let age = today.getFullYear() - birth.getFullYear();
+          const monthDiff = today.getMonth() - birth.getMonth();
+          if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) age--;
+          return age >= 0 ? age : null;
+        };
+
+        const formatPhone = (n?: string) => {
+          if (!n) return '-';
+          const cleaned = n.replace(/\D/g, '');
+          if (cleaned.startsWith('82') && cleaned.length >= 11) return `0${cleaned.slice(2)}`;
+          return n;
+        };
+
         setApplicants(
-          userIds.map((uid) => ({
-            users_id: uid,
-            name: userMap.get(uid),
-            korean_name: profileMap.get(uid)?.korean_name,
-            profile_id: profileMap.get(uid)?.id,
-          }))
+          userIds.map((uid) => {
+            const profile = profileMap.get(uid);
+            const user = userMap.get(uid);
+            const regions = profile?.preferred_regions;
+            const regionStr = Array.isArray(regions) && regions.length > 0 ? regions.join(', ') : '-';
+            return {
+              users_id: uid,
+              name: user?.name,
+              korean_name: profile?.korean_name,
+              profile_id: profile?.id,
+              gender: profile?.gender || '-',
+              age: calcAge(profile?.birth_year, profile?.birth_month, profile?.birth_day),
+              nationality: profile?.nationality || '-',
+              visa_status: profile?.visa_status || '-',
+              phone: formatPhone(user?.number),
+              preferred_regions: regionStr,
+            };
+          })
         );
       } catch (err) {
         console.error(err);
@@ -164,23 +222,44 @@ const ApplicantsPage: React.FC = () => {
                 </p>
               </div>
 
-              <div className={styles.listWrap}>
+              <div className={styles.tableWrap}>
                 {applicants.length === 0 ? (
                   <p className={styles.empty}>지원자가 없습니다.</p>
                 ) : (
-                  <ul className={styles.list}>
-                    {applicants.map((a) => (
-                      <li key={a.users_id} className={styles.item}>
-                        {a.profile_id ? (
-                          <Link href={`/resume/${a.profile_id}`} className={styles.itemLink}>
-                            {a.korean_name || a.name || '-'}
-                          </Link>
-                        ) : (
-                          <span className={styles.itemText}>{a.korean_name || a.name || '-'}</span>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
+                  <table className={styles.table}>
+                    <thead>
+                      <tr>
+                        <th>이름</th>
+                        <th>성별</th>
+                        <th>나이</th>
+                        <th>국적</th>
+                        <th>비자</th>
+                        <th>연락처</th>
+                        <th>거주지</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {applicants.map((a) => (
+                        <tr key={a.users_id}>
+                          <td>
+                            {a.profile_id ? (
+                              <Link href={`/resume/${a.profile_id}`} className={styles.itemLink}>
+                                {a.korean_name || a.name || '-'}
+                              </Link>
+                            ) : (
+                              <span className={styles.itemText}>{a.korean_name || a.name || '-'}</span>
+                            )}
+                          </td>
+                          <td>{a.gender || '-'}</td>
+                          <td>{a.age != null ? `${a.age}세` : '-'}</td>
+                          <td>{a.nationality || '-'}</td>
+                          <td>{a.visa_status || '-'}</td>
+                          <td>{a.phone || '-'}</td>
+                          <td>{a.preferred_regions || '-'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 )}
               </div>
             </>

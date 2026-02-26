@@ -852,10 +852,6 @@ a.manageBtn {
     font-size: 12px;
   }
 
-  .colDate {
-    white-space: normal;
-  }
-
   .manageBtns {
     gap: 4px;
   }
@@ -916,11 +912,11 @@ a.manageBtn {
     min-width: 36px;
   }
 
-  .postItemTitle {
-    max-width: 140px;
-    font-size: 14px;
-    flex: 1;
-  }
+.postItemTitle {
+  max-width: 140px;
+  font-size: 14px;
+  flex: 1;
+}
 
   .postInfo em {
     display: none;
