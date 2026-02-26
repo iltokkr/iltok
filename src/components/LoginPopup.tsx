@@ -170,15 +170,28 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose, initialUserType = 'bus
       const input = loginId.trim();
       let emailToUse = input;
 
-      // 아이디로 로그인: users 테이블에서 user_id로 조회 후 email 사용 (Supabase Auth는 email 기반)
+      // 아이디로 로그인: API로 user_id → email 조회 (RLS 때문에 직접 조회 불가)
       if (!input.includes('@')) {
-        const { data: userData } = await supabase
-          .from('users')
-          .select('email')
-          .eq('user_id', input)
-          .maybeSingle();
-        if (userData?.email) {
-          emailToUse = userData.email;
+        const res = await fetch('/api/login-email-lookup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user_id: input }),
+        });
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          const hint = json?.hint;
+          if (res.status === 404) {
+            setError(hint || '등록되지 않은 아이디입니다.');
+          } else {
+            setError(hint ? `오류: ${hint}` : '로그인 처리 중 오류가 발생했습니다.');
+          }
+          return;
+        }
+        if (json?.email) {
+          emailToUse = json.email;
+        } else {
+          setError('등록되지 않은 아이디입니다.');
+          return;
         }
       }
 
@@ -193,7 +206,12 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose, initialUserType = 'bus
       onClose();
       router.push('/my');
     } catch (err) {
-      setError('아이디 또는 비밀번호가 올바르지 않습니다.');
+      const msg = err instanceof Error ? err.message : '';
+      if (msg.includes('Invalid login credentials') || msg.includes('invalid') || msg.includes('credentials')) {
+        setError('아이디 또는 비밀번호가 올바르지 않습니다.');
+      } else {
+        setError(msg || '아이디 또는 비밀번호가 올바르지 않습니다.');
+      }
     } finally {
       setLoading(false);
     }
@@ -275,69 +293,8 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose, initialUserType = 'bus
               </div>
             </>
           ) : (
-            /* 기업회원: 휴대폰 인증 또는 아이디/비밀번호 선택 */
+            /* 기업회원: 휴대폰 인증만 (아이디/비밀번호 숨김) */
             <>
-              <div className={styles.loginModeSelector}>
-                <button
-                  type="button"
-                  className={`${styles.loginModeBtn} ${businessLoginMode === 'phone' ? styles.loginModeActive : ''}`}
-                  onClick={() => { setBusinessLoginMode('phone'); setError(null); }}
-                >
-                  휴대폰 인증
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.loginModeBtn} ${businessLoginMode === 'password' ? styles.loginModeActive : ''}`}
-                  onClick={() => { setBusinessLoginMode('password'); setError(null); }}
-                >
-                  아이디/비밀번호
-                </button>
-              </div>
-
-              {businessLoginMode === 'password' ? (
-                <>
-                  <div className={styles.fieldGroup}>
-                    <label className={styles.fieldLabel}>아이디</label>
-                    <div className={styles.inputWrap}>
-                      <HiOutlineUser className={styles.inputIcon} />
-                      <input
-                        type="text"
-                        value={loginId}
-                        onChange={(e) => setLoginId(e.target.value)}
-                        className={styles.inputAuth}
-                        placeholder="아이디를 입력하세요"
-                        autoComplete="username"
-                      />
-                    </div>
-                  </div>
-                  <div className={styles.fieldGroup}>
-                    <label className={styles.fieldLabel}>비밀번호</label>
-                    <div className={styles.inputWrap}>
-                      <HiOutlineLockClosed className={styles.inputIcon} />
-                      <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className={styles.inputAuth}
-                        placeholder="비밀번호를 입력하세요"
-                      />
-                    </div>
-                  </div>
-                  <div className={styles.checkboxRow}>
-                    <input
-                      type="checkbox"
-                      id="rememberId"
-                      checked={rememberId}
-                      onChange={(e) => setRememberId(e.target.checked)}
-                    />
-                    <label htmlFor="rememberId">아이디 저장</label>
-                  </div>
-                  <button onClick={handlePasswordLogin} className={styles.btnLogin} disabled={loading}>
-                    {loading ? '로그인 중...' : '로그인'}
-                  </button>
-                </>
-              ) : (
-                <>
                   <div className={styles.fieldGroup}>
                     <label className={styles.fieldLabel}>휴대폰 번호</label>
                     <div className={styles.inputRow}>
@@ -378,8 +335,6 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose, initialUserType = 'bus
                       </button>
                     </div>
                   </div>
-                </>
-              )}
             </>
           )}
           {error && <div className={styles.error}>{error}</div>}

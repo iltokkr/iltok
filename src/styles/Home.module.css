@@ -31,8 +31,11 @@
 }
 
 .indexLogo em {
-  color: var(--color-primary);
-  font-style: normal; 
+  background: var(--color-gradient-cta-logo);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-style: normal;
 }
 
 .indexPromote {
