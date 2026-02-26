@@ -492,30 +492,6 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
               </div>
             )}
 
-            {/* 기업정보 - 업체명, 대표자명, 연락처 (문자보내기/지원하기 없음) */}
-            <div className={style.seekerInfoCard}>
-              <h3 className={style.seekerInfoTitle}>기업정보</h3>
-              <div className={style.companyInfo}>
-                <div className={style.infoRow}>
-                  <span className={style.infoLabel}>업체명</span>
-                  <span className={style.infoValue}>{jobDetail.uploader.company_name || "정보없음"}</span>
-                </div>
-                <div className={style.infoRow}>
-                  <span className={style.infoLabel}>대표자명</span>
-                  <span className={style.infoValue}>{jobDetail.uploader.name || "정보없음"}</span>
-                </div>
-                <div className={style.infoRow}>
-                  <span className={style.infoLabel}>전화번호</span>
-                  <span
-                    className={style.phoneNumber}
-                    onClick={() => handleCopyPhoneNumber(formatPhoneNumber(jobDetail.uploader.number || ''))}
-                  >
-                    {formatPhoneNumber(jobDetail.uploader.number || '')}
-                  </span>
-                </div>
-              </div>
-            </div>
-
             {/* 채용담당자 - 담당자명, 담당자 연락처, 문자보내기, 지원하기, 안내문 */}
             {(jobDetail.contact_phone || jobDetail.uploader.number) && (
               <div className={style.seekerInfoCard}>
@@ -571,6 +547,30 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
                 </div>
               </div>
             )}
+
+            {/* 기업정보 - 업체명, 대표자명, 연락처 (문자보내기/지원하기 없음) */}
+            <div className={style.seekerInfoCard}>
+              <h3 className={style.seekerInfoTitle}>기업정보</h3>
+              <div className={style.companyInfo}>
+                <div className={style.infoRow}>
+                  <span className={style.infoLabel}>업체명</span>
+                  <span className={style.infoValue}>{jobDetail.uploader.company_name || "정보없음"}</span>
+                </div>
+                <div className={style.infoRow}>
+                  <span className={style.infoLabel}>대표자명</span>
+                  <span className={style.infoValue}>{jobDetail.uploader.name || "정보없음"}</span>
+                </div>
+                <div className={style.infoRow}>
+                  <span className={style.infoLabel}>전화번호</span>
+                  <span
+                    className={style.phoneNumber}
+                    onClick={() => handleCopyPhoneNumber(formatPhoneNumber(jobDetail.uploader.number || ''))}
+                  >
+                    {formatPhoneNumber(jobDetail.uploader.number || '')}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
