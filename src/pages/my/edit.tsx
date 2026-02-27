@@ -8,7 +8,6 @@ import MainMenu from '@/components/MainMenu';
 import Footer from '@/components/Footer';
 import { AuthContext } from '@/contexts/AuthContext';
 import styles from '@/styles/BusinessSignup.module.css';
-import myStyles from '@/styles/My.module.css';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -43,7 +42,6 @@ const BusinessEditPage = () => {
   const [userIdChecked, setUserIdChecked] = useState<boolean | null>(null);
   const [userIdCheckLoading, setUserIdCheckLoading] = useState(false);
   const [hasExistingUserId, setHasExistingUserId] = useState(false);
-  const [showSetupPopup, setShowSetupPopup] = useState(false);
 
   const formatPhoneDisplay = (value: string) => {
     const numbers = value.replace(/[^0-9]/g, '');
@@ -134,23 +132,10 @@ const BusinessEditPage = () => {
     fetchData();
   }, [auth?.user?.id, router]);
 
-  useEffect(() => {
-    if (router.isReady && router.query.setup === '1') {
-      setShowSetupPopup(true);
-      router.replace('/my/edit', undefined, { shallow: true });
-    }
-  }, [router.isReady, router.query.setup]);
-
   const validateForm = () => {
     const err: Record<string, string> = {};
-    const userIdEditable = !hasExistingUserId;
-    if (userIdEditable) {
-      if (!userId.trim()) err.userId = '아이디를 입력해주세요.';
-      else if (userIdChecked !== true) err.userId = '아이디 중복 검사를 진행해주세요.';
-    }
-    if (password.trim() && password.length < 6) err.password = '비밀번호는 6자 이상이어야 합니다.';
-    if (!email.trim()) err.email = '이메일을 입력해주세요.';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) err.email = '올바른 이메일 형식을 입력해주세요.';
+    if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) err.email = '올바른 이메일 형식을 입력해주세요.';
+    if (!businessTermsAgreed) err.businessTerms = '사업자등록정보 수집 및 이용 동의에 체크해주세요.';
     setFormErrors(err);
     return Object.keys(err).length === 0;
   };
@@ -162,23 +147,12 @@ const BusinessEditPage = () => {
     setIsSubmitting(true);
     try {
       const updateData: Record<string, unknown> = {
-        email: email.trim(),
+        email: email.trim() || null,
+        auth_term: businessTermsAgreed,
       };
 
-      if (!hasExistingUserId && userId.trim()) {
-        updateData.user_id = userId.trim();
-      }
-
-      if (password.trim()) {
-        const { error: authUpdateError } = await supabase.auth.updateUser({
-          email: email.trim(),
-          password: password,
-        });
-        if (authUpdateError) throw authUpdateError;
-      } else {
-        const { error: authUpdateError } = await supabase.auth.updateUser({
-          email: email.trim(),
-        });
+      if (email.trim()) {
+        const { error: authUpdateError } = await supabase.auth.updateUser({ email: email.trim() });
         if (authUpdateError) throw authUpdateError;
       }
 
@@ -199,9 +173,6 @@ const BusinessEditPage = () => {
       if (msg.includes('already registered') || msg.includes('already in use')) {
         setFormErrors((prev) => ({ ...prev, email: '이미 사용 중인 이메일입니다.' }));
         alert('이미 사용 중인 이메일입니다.');
-      } else if (msg.includes('different from the old password')) {
-        setFormErrors((prev) => ({ ...prev, password: '이전 비밀번호와 다른 비밀번호를 입력해주세요.' }));
-        alert('이전 비밀번호와 다른 비밀번호를 입력해주세요.');
       } else {
         alert(msg || '수정 중 오류가 발생했습니다.');
       }
@@ -219,8 +190,6 @@ const BusinessEditPage = () => {
       </div>
     );
   }
-
-  const userIdEditable = !hasExistingUserId;
 
   return (
     <>
@@ -245,8 +214,16 @@ const BusinessEditPage = () => {
                     내용 보기
                   </Link>
                 </label>
-                <label className={`${styles.checkboxLabel} ${styles.checkboxDisabled}`}>
-                  <input type="checkbox" checked={businessTermsAgreed} disabled />
+                <label className={`${styles.checkboxLabel} ${businessTermsAgreed ? styles.checkboxDisabled : ''}`}>
+                  <input
+                    type="checkbox"
+                    checked={businessTermsAgreed}
+                    disabled={businessTermsAgreed}
+                    onChange={(e) => {
+                    setBusinessTermsAgreed(e.target.checked);
+                    setFormErrors((prev) => ({ ...prev, businessTerms: '' }));
+                  }}
+                  />
                   <span>사업자등록정보 수집 및 이용 동의 <span className={styles.required}>*</span></span>
                   <button
                     type="button"
@@ -256,6 +233,7 @@ const BusinessEditPage = () => {
                     내용 보기
                   </button>
                 </label>
+                {formErrors.businessTerms && <span className={styles.fieldError}>{formErrors.businessTerms}</span>}
                 {showBusinessTerms && (
                   <div className={styles.termsContent}>{BUSINESS_TERMS_CONTENT}</div>
                 )}
@@ -275,6 +253,7 @@ const BusinessEditPage = () => {
                   />
                 </div>
                 <p className={styles.verified}>인증 완료</p>
+                <p className={styles.authNotice}>연락처(전화번호)가 아이디로 사용되며, 해당 번호로 로그인할 수 있습니다.</p>
               </div>
             </section>
 
@@ -283,49 +262,7 @@ const BusinessEditPage = () => {
               <h2 className={styles.sectionTitle}>회원정보</h2>
               <div className={styles.form}>
                 <div className={styles.formGroup}>
-                  <label>아이디 {userIdEditable ? <span className={styles.required}>*</span> : <span className={styles.disabledLabel}>(수정 불가)</span>}</label>
-                  <div className={styles.idInputRow}>
-                    <input
-                      type="text"
-                      value={userId}
-                      onChange={(e) => {
-                        setUserId(e.target.value);
-                        setUserIdChecked(null);
-                        setFormErrors((prev) => ({ ...prev, userId: '' }));
-                      }}
-                      placeholder="아이디를 입력하세요"
-                      className={`${styles.input} ${!userIdEditable ? styles.inputReadonly : ''}`}
-                      readOnly={!userIdEditable}
-                    />
-                    {userIdEditable && (
-                      <button
-                        type="button"
-                        className={styles.dupCheckBtn}
-                        onClick={checkUserIdDuplicate}
-                        disabled={userIdCheckLoading || !userId.trim()}
-                      >
-                        {userIdCheckLoading ? '확인 중...' : '중복 검사'}
-                      </button>
-                    )}
-                  </div>
-                  {userIdChecked === true && <span className={styles.fieldSuccess}>사용 가능한 아이디입니다.</span>}
-                  {formErrors.userId && <span className={styles.fieldError}>{formErrors.userId}</span>}
-                </div>
-
-                <div className={styles.formGroup}>
-                  <label>비밀번호 <span className={styles.optional}>(변경 시에만 입력)</span></label>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="변경할 비밀번호 (6자 이상, 미입력 시 유지)"
-                    className={styles.input}
-                  />
-                  {formErrors.password && <span className={styles.fieldError}>{formErrors.password}</span>}
-                </div>
-
-                <div className={styles.formGroup}>
-                  <label>이메일 <span className={styles.required}>*</span></label>
+                  <label>이메일 <span className={styles.optional}>(선택)</span></label>
                   <input
                     type="email"
                     value={email}
@@ -397,20 +334,6 @@ const BusinessEditPage = () => {
       </main>
 
       <Footer />
-
-      {showSetupPopup && (
-        <div className={myStyles.modalOverlay} onClick={() => setShowSetupPopup(false)}>
-          <div className={myStyles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <h2 className={myStyles.modalTitle}>아이디/비밀번호를 설정해주세요.</h2>
-            <p className={myStyles.modalSubText}>
-              PC에서도 편리하게 로그인할 수 있도록 아이디와 비밀번호를 설정해주세요.
-            </p>
-            <button className={myStyles.modalButton} onClick={() => setShowSetupPopup(false)}>
-              확인
-            </button>
-          </div>
-        </div>
-      )}
     </>
   );
 };

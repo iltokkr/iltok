@@ -67,7 +67,7 @@ const Mylist: React.FC<MylistProps> = ({
   const [searchKeyword, setSearchKeyword] = useState('');
   const authContext = useContext(AuthContext);
 
-  const regularPosts = posts.filter(post => !post.board_type || post.board_type !== '4');
+  const regularPosts = posts.filter(post => post.board_type === '0');
   const filteredPosts = searchKeyword.trim()
     ? regularPosts.filter(post => post.title.toLowerCase().includes(searchKeyword.trim().toLowerCase()))
     : regularPosts;
@@ -335,16 +335,6 @@ const Mylist: React.FC<MylistProps> = ({
           </button>
         </div>
       </div>
-      )}
-
-      {/* 회원정보 탭: 수정 버튼 표시 */}
-      {showInfoSection && (
-        <div className={styles.infoSection}>
-          <p className={styles.infoSectionDesc}>회원 정보를 수정하려면 아래 버튼을 클릭하세요.</p>
-          <Link href="/my/edit" className={styles.infoEditBtn}>
-            회원정보 수정하기 &gt;
-          </Link>
-        </div>
       )}
 
       {/* 안내 문구 - 공고관리에서만 표시 */}

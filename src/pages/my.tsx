@@ -7,6 +7,7 @@ import MainMenu from '@/components/MainMenu';
 import Footer from '@/components/Footer';
 import Mylist from '@/components/Mylist';
 import PersonalService from '@/components/PersonalService';
+import ResumeList from '@/components/ResumeList';
 import styles from '@/styles/My.module.css';
 import { AuthContext } from '@/contexts/AuthContext';
 
@@ -45,7 +46,7 @@ const My: React.FC = () => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [showVerificationAlert, setShowVerificationAlert] = useState(false);
   const [showPendingAlert, setShowPendingAlert] = useState(false);
-  const [activeSection, setActiveSection] = useState<'ads' | 'info' | 'applications'>('ads');
+  const [activeSection, setActiveSection] = useState<'ads' | 'info' | 'applications' | 'resume'>('ads');
   const authContext = useContext(AuthContext);
   const router = useRouter();
   const isBusiness = userData?.user_type === 'business' || userData?.user_type === 'both';
@@ -63,13 +64,15 @@ const My: React.FC = () => {
     }
   }, [router.query.showVerificationAlert, router.query.showPendingAlert]);
 
-  // URL 쿼리 파라미터로 섹션 초기화 (공고관리/지원공고/회원정보)
+  // URL 쿼리 파라미터로 섹션 초기화 (공고관리/지원공고/이력서/회원정보)
   useEffect(() => {
     const section = router.query.section as string | undefined;
     if (section === 'info') {
       setActiveSection('info');
     } else if (section === 'applications') {
       setActiveSection('applications');
+    } else if (section === 'resume') {
+      setActiveSection('resume');
     } else {
       setActiveSection('ads');
     }
@@ -91,6 +94,15 @@ const My: React.FC = () => {
       fetchUserData();
     }
   }, [authContext?.user]);
+
+  // 로그인 직후 redirect 시 user_type 갱신 반영 (refresh=1)
+  useEffect(() => {
+    if (router.query.refresh === '1' && authContext?.user) {
+      fetchUserData();
+      const section = router.query.section;
+      router.replace(section ? `/my?section=${section}` : '/my', undefined, { shallow: true });
+    }
+  }, [router.query.refresh, router.query.section, authContext?.user]);
 
   const fetchMyPosts = async () => {
     const { data, error } = await supabase
@@ -139,7 +151,7 @@ const My: React.FC = () => {
       </Head>
 
       <Header />
-      <MainMenu showMenuItems={true} currentSection={isBusiness ? (activeSection === 'info' ? 'info' : 'ads') : isJobseeker ? (activeSection === 'info' ? 'info' : 'applications') : undefined} />
+      <MainMenu showMenuItems={true} currentSection={isBusiness ? (activeSection === 'info' ? 'info' : 'ads') : isJobseeker ? (activeSection === 'info' ? 'info' : activeSection === 'resume' ? 'resume' : 'applications') : undefined} />
       <main className={styles.main}>
         {(isBusiness || isJobseeker) && (
           <div className={styles.sectionTabs}>
@@ -157,16 +169,23 @@ const My: React.FC = () => {
                 <button
                   type="button"
                   className={`${styles.sectionTab} ${activeSection === 'applications' ? styles.sectionTabActive : ''}`}
-                  onClick={() => setActiveSection('applications')}
+                  onClick={() => {
+                    setActiveSection('applications');
+                    router.replace('/my?section=applications', undefined, { shallow: true });
+                  }}
                 >
                   지원 한 공고
                 </button>
-                <a
-                  href="/write?board_type=1"
-                  className={`${styles.sectionTab} ${router.pathname === '/write' && router.query.board_type === '1' ? styles.sectionTabActive : ''}`}
+                <button
+                  type="button"
+                  className={`${styles.sectionTab} ${activeSection === 'resume' ? styles.sectionTabActive : ''}`}
+                  onClick={() => {
+                    setActiveSection('resume');
+                    router.replace('/my?section=resume', undefined, { shallow: true });
+                  }}
                 >
                   이력서(회원정보 통합)
-                </a>
+                </button>
               </>
             )}
             {isBusiness && (
@@ -182,6 +201,8 @@ const My: React.FC = () => {
         )}
         {activeSection === 'applications' && isJobseeker ? (
           <PersonalService activeSection="applications" />
+        ) : activeSection === 'resume' && isJobseeker ? (
+          <ResumeList />
         ) : activeSection === 'info' && isJobseeker && !isBusiness ? (
           <PersonalService activeSection="info" />
         ) : activeSection === 'info' ? (

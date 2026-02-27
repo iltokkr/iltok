@@ -30,7 +30,7 @@ const Header: React.FC = () => {
   const { isLoggedIn } = auth;
 
   const currentBoardType = (router.pathname === '/board' ? (router.query.board_type as string) : null) || '0';
-  const currentSection = (router.pathname === '/my' ? (router.query.section as string) : router.pathname === '/write' && router.query.board_type === '1' ? 'resume' : undefined) as 'ads' | 'info' | 'applications' | 'resume' | undefined;
+  const currentSection = (router.pathname === '/my' ? (router.query.section as string) : undefined) as 'ads' | 'info' | 'applications' | 'resume' | undefined;
   const showMenuItems = !['/signup/business', '/signup/personal', '/privacy', '/privacy-policy'].includes(router.pathname) && !router.pathname.startsWith('/resume');
 
   const handleFreeAdClick = (e: React.MouseEvent) => {
@@ -187,9 +187,16 @@ const Header: React.FC = () => {
                   <Link href="/my?section=info" onClick={closeMobileMenu} className={styles.mobileMenuLink}>회원정보</Link>
                 </>
               )}
+              {userType === 'both' && isLoggedIn && (
+                <>
+                  <Link href="/my?section=applications" onClick={closeMobileMenu} className={styles.mobileMenuLink}>지원공고</Link>
+                  <Link href="/my?section=resume" onClick={closeMobileMenu} className={styles.mobileMenuCta}>이력서 작성</Link>
+                </>
+              )}
               {userType === 'jobseeker' && isLoggedIn && (
                 <>
                   <Link href="/my?section=applications" onClick={closeMobileMenu} className={styles.mobileMenuLink}>지원공고</Link>
+                  <Link href="/my?section=resume" onClick={closeMobileMenu} className={styles.mobileMenuCta}>이력서 작성</Link>
                   <Link href="/my?section=info" onClick={closeMobileMenu} className={styles.mobileMenuLink}>회원정보</Link>
                 </>
               )}

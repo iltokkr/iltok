@@ -491,7 +491,7 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
       setErrors(newErrors);
       return !newErrors.title && !newErrors.contents;
     } else if (formData.board_type === '1') {
-      // 구직정보: 구직자 전용 필드 검증
+      // 구직정보: 구직자 전용 필드 검증 (영문이름, 경력사항, 상세내용은 선택)
       const newErrors = {
         title: formData.title.trim() === '',
         '1depth_category': formData['1depth_category'] === '',
@@ -499,7 +499,7 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
         '1depth_region': formData.desired_regions.length === 0,
         '2depth_region': false,
         work_location_detail: false,
-        contents: formData.contents.trim() === ''
+        contents: false // 상세내용 선택
       };
       setErrors(newErrors);
 
@@ -534,13 +534,8 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
         setIsModalOpen(true);
         return false;
       }
-      if (!formData.contents.trim()) {
-        setErrorMessage('상세내용을 입력해주세요.');
-        setIsModalOpen(true);
-        return false;
-      }
 
-      return !newErrors.title && !newErrors['1depth_category'] && !newErrors.contents;
+      return !newErrors.title && !newErrors['1depth_category'];
     } else {
       // 채용정보: 기존 검증
     const newErrors = {
@@ -662,8 +657,6 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
             ad: false,
         is_ads: formData.board_type === '0' ? (formData.is_ads ?? false) : false,
         content_image: formData.board_type === '0' && (formData.is_ads && formData.content_image) ? formData.content_image.trim() || null : null,
-        contact_name: formData.board_type === '0' ? (formData.contact_name?.trim() || null) : null,
-        contact_phone: formData.board_type === '0' ? (formData.contact_phone?.trim() || null) : null,
         // 구직정보인 경우 배열 데이터를 JSON 문자열로 변환
         work_conditions: formData.board_type === '1' ? JSON.stringify(formData.work_conditions) : null,
         desired_regions: formData.board_type === '1' ? JSON.stringify(formData.desired_regions) : null,
@@ -683,6 +676,15 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
       delete (submissionData as any).birth_year;
       delete (submissionData as any).birth_month;
       delete (submissionData as any).birth_day;
+
+      // contact_name, contact_phone은 채용정보(board_type=0) 전용 - 구직/자유게시판에서는 제외
+      if (formData.board_type !== '0') {
+        delete (submissionData as any).contact_name;
+        delete (submissionData as any).contact_phone;
+      } else {
+        (submissionData as any).contact_name = formData.contact_name?.trim() || null;
+        (submissionData as any).contact_phone = formData.contact_phone?.trim() || null;
+      }
 
       let response;
       if (isEditing) {
@@ -1257,7 +1259,7 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
                     </div>
                   </div>
                   <div className={style.formRow}>
-                    <div className={style.formLabel}><span className={style.required}>*</span> 영문 이름</div>
+                    <div className={style.formLabel}>영문 이름</div>
                     <div className={style.formInput}>
                       <input
                         type="text"
@@ -1396,7 +1398,7 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
 
                   {/* 한국어 능력 */}
                   <div className={style.formRow}>
-                    <div className={style.formLabel}><span className={style.required}>*</span> 한국어 능력</div>
+                    <div className={style.formLabel}>한국어 능력</div>
                     <div className={style.formInput}>
                       <FormDropdown
                         name="korean_ability"
@@ -1414,7 +1416,6 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
                   <div className={style.formRow}>
                     <div className={style.formLabelRow}>
                       <span className={style.formLabel}><span className={style.required}>*</span> 희망 근무조건</span>
-                      <span className={style.subLabelRight}>(중복선택이 가능해요)</span>
                     </div>
                     <div className={style.formInput}>
                       <div className={style.tagContainer}>
@@ -1438,7 +1439,6 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
                   <div className={style.formRow}>
                     <div className={style.formLabelRow}>
                       <span className={style.formLabel}><span className={style.required}>*</span> 희망 지역</span>
-                      <span className={style.subLabelRight}>(5곳 까지 입력할 수 있어요)</span>
                     </div>
                     <div className={style.formInput}>
                       <div className={style.locationSelects}>
@@ -1494,7 +1494,7 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
                 {/* 경력 */}
                 <div className={style.subSection}>
                   <div className={style.formRow}>
-                    <div className={style.formLabel}><span className={style.required}>*</span> 경력사항</div>
+                    <div className={style.formLabel}>경력사항</div>
                     <div className={style.formInput}>
                       {formData.career_history.map(career => (
                         <div key={career.id} className={style.careerCard}>
@@ -1539,7 +1539,7 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
 
         {/* 상세 내용 */}
         <h2 className={style.sectionTitle}>
-          <span className={style.required}>*</span> 상세 내용
+          {formData.board_type !== '1' && <span className={style.required}>*</span>} 상세 내용
         </h2>
         <div className={style.subSection}>
           <textarea
@@ -1549,7 +1549,7 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
             value={formData.contents}
             onChange={handleInputChange}
           ></textarea>
-          {errors.contents && <div className={style.errorText}>상세 내용을 입력해주세요</div>}
+          {errors.contents && formData.board_type !== '1' && <div className={style.errorText}>상세 내용을 입력해주세요</div>}
           {contentsUrlError && <div className={style.errorText}>상세내용에 URL(http, www, .com 등)을 포함할 수 없습니다.</div>}
         </div>
 

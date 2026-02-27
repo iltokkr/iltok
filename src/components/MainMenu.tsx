@@ -142,8 +142,8 @@ const MainMenu: React.FC<MainMenuProps> = ({ currentBoardType = '0', showMenuIte
                     </Link>
                   </li>
                   <li>
-                    <Link href={{ pathname: '/write', query: { board_type: '1' } }} className={currentSection === 'resume' || (router.pathname === '/write' && router.query.board_type === '1') ? styles.focus : styles.menuLink}>
-                      이력서
+                    <Link href="/my?section=resume" className={`${styles.menuCtaLink} ${currentSection === 'resume' ? styles.focus : ''}`}>
+                      이력서 작성
                     </Link>
                   </li>
                   <li>

@@ -391,6 +391,13 @@
   margin: 8px 0 0 0;
 }
 
+.authNotice {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin: 12px 0 0 0;
+  line-height: 1.5;
+}
+
 @media (max-width: 480px) {
   .main {
     padding: 24px 16px 40px;

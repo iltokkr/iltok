@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import { HiOutlineUser, HiOutlineLockClosed, HiOutlineDeviceMobile } from 'react-icons/hi';
 import styles from '@/styles/LoginPopup.module.css';
 import { AuthContext } from '@/contexts/AuthContext';
+import { UserContext } from '@/contexts/UserContext';
 
 // Supabase 클라이언트 초기화
 const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
@@ -18,6 +19,7 @@ const SAVED_BUSINESS_ID_KEY = 'iltok_saved_business_id';
 const LoginPopup: React.FC<LoginPopupProps> = ({ onClose, initialUserType = 'business' }) => {
   const router = useRouter();
   const auth = useContext(AuthContext);
+  const userProfile = useContext(UserContext);
   const [userType, setUserType] = useState<'business' | 'jobseeker'>(initialUserType);
   const [businessLoginMode, setBusinessLoginMode] = useState<'phone' | 'password'>('phone');
   const [loginId, setLoginId] = useState(() => {
@@ -130,22 +132,23 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose, initialUserType = 'bus
         }
       }
 
-      // 기존 회원: both면 기업회원 화면으로, 기업+아이디/비밀번호 미설정이면 설정창으로
+      // UserProvider가 user_type 갱신 전에 조회할 수 있으므로, 업데이트 후 강제 리프레시
+      userProfile?.refreshUser?.();
+
+      // 기존 회원: both면 기업회원 화면으로
       let redirectPath = '/my';
       if (data.user && !isNewUser) {
         const { data: userData } = await supabase
           .from('users')
-          .select('user_type, user_id, email')
+          .select('user_type')
           .eq('id', data.user.id)
           .maybeSingle();
-        const isBusiness = userData?.user_type === 'business' || userData?.user_type === 'both';
-        const needsSetup = !userData?.user_id?.trim() || !userData?.email?.trim();
-        if (isBusiness && needsSetup) {
-          redirectPath = '/my/edit?setup=1';
-        } else if (userData?.user_type === 'both') {
+        if (userData?.user_type === 'both') {
           redirectPath = '/my?section=ads';
         }
       }
+      // user_type 갱신 반영을 위해 refresh 쿼리 추가 (my 페이지에서 재조회 트리거)
+      redirectPath += redirectPath.includes('?') ? '&refresh=1' : '?refresh=1';
 
       onClose();
       router.push(redirectPath);

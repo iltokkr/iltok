@@ -117,6 +117,33 @@
   color: #bbb;
 }
 
+.inputReadonly {
+  background: var(--color-bg-input);
+  color: var(--color-text-secondary);
+  cursor: not-allowed;
+}
+
+.disabledLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  margin-left: 4px;
+}
+
+.verified {
+  font-size: 13px;
+  color: var(--color-primary);
+  font-weight: 600;
+  margin: 8px 0 0 0;
+}
+
+.authNotice {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin: 12px 0 0 0;
+  line-height: 1.5;
+}
+
 .fileInputWrapper {
   position: relative;
 }

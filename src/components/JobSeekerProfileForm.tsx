@@ -699,7 +699,7 @@ const JobSeekerProfileForm: React.FC = () => {
         {/* 희망근무조건 */}
         <div className={styles.formGroup}>
           <label className={styles.label}>
-            희망근무조건 <span className={styles.hint}>(중복선택이 가능해요)</span>
+            희망근무조건
           </label>
           
           <div className={styles.conditionRow}>
@@ -806,7 +806,7 @@ const JobSeekerProfileForm: React.FC = () => {
         {/* 근무 희망 지역 */}
         <div className={styles.formGroup}>
           <label className={styles.label}>
-            근무 희망 지역 <span className={styles.hint}>(5곳 까지 입력할 수 있어요)</span>
+            근무 희망 지역
           </label>
           <div className={styles.regionSelectRow}>
             <select

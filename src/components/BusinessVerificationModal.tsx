@@ -13,6 +13,7 @@ interface BusinessVerificationModalProps {
 }
 
 const BusinessVerificationModal: React.FC<BusinessVerificationModalProps> = ({ onClose }) => {
+  const [phone, setPhone] = useState('');
   const [companyName, setCompanyName] = useState('');
   const [representativeName, setRepresentativeName] = useState('');
   const [businessNumber, setBusinessNumber] = useState('');
@@ -39,13 +40,14 @@ const BusinessVerificationModal: React.FC<BusinessVerificationModalProps> = ({ o
       try {
         const { data, error } = await supabase
           .from('users')
-          .select('company_name, name, business_number, business_address, policy_term, auth_term, biz_file')
+          .select('number, company_name, name, business_number, business_address, policy_term, auth_term, biz_file')
           .eq('id', user.id)
           .single();
 
         if (error) throw error;
 
         if (data) {
+          setPhone(data.number || '');
           setCompanyName(data.company_name || '');
           setRepresentativeName(data.name || '');
           setBusinessNumber(data.business_number || '');
@@ -63,6 +65,18 @@ const BusinessVerificationModal: React.FC<BusinessVerificationModalProps> = ({ o
 
     fetchUserData();
   }, [user]);
+
+  const formatPhoneDisplay = (value: string) => {
+    const numbers = value.replace(/[^0-9]/g, '');
+    if (numbers.startsWith('82') && numbers.length >= 10) {
+      const rest = numbers.slice(2);
+      return `0${rest.slice(0, 3)}-${rest.slice(3, 7)}-${rest.slice(7)}`;
+    }
+    if (numbers.length >= 10) {
+      return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7)}`;
+    }
+    return value;
+  };
 
   // 사업자등록번호 포맷팅 (000-00-00000)
   const formatBusinessNumber = (value: string) => {
@@ -233,6 +247,21 @@ const BusinessVerificationModal: React.FC<BusinessVerificationModalProps> = ({ o
           </div>
 
           <form onSubmit={handleSubmit}>
+            {/* 본인인증 */}
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>본인인증 <span className={styles.disabledLabel}>(수정 불가)</span></label>
+              <input
+                type="tel"
+                value={formatPhoneDisplay(phone)}
+                readOnly
+                disabled
+                className={`${styles.formInput} ${styles.inputReadonly}`}
+                placeholder="회원가입 시 인증한 번호"
+              />
+              <p className={styles.verified}>인증 완료</p>
+              <p className={styles.authNotice}>연락처(전화번호)가 아이디로 사용되며, 해당 번호로 로그인할 수 있습니다.</p>
+            </div>
+
             {/* 업체명 */}
             <div className={styles.formGroup}>
               <label className={styles.formLabel}>업체명 <span className={styles.required}>*</span></label>

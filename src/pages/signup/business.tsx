@@ -162,10 +162,6 @@ const BusinessSignup = () => {
       return false;
     }
     const err: Record<string, string> = {};
-    if (!userId.trim()) err.userId = '아이디를 입력해주세요.';
-    else if (userIdChecked !== true) err.userId = '아이디 중복 검사를 진행해주세요.';
-    if (!password.trim()) err.password = '비밀번호를 입력해주세요.';
-    else if (password.length < 6) err.password = '비밀번호는 6자 이상이어야 합니다.';
     if (!email.trim()) err.email = '이메일을 입력해주세요.';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) err.email = '올바른 이메일 형식을 입력해주세요.';
     if (!businessNumber.trim()) err.businessNumber = '사업자등록번호를 입력해주세요.';
@@ -214,18 +210,16 @@ const BusinessSignup = () => {
 
       const newUserType = existingUser?.user_type === 'jobseeker' ? 'both' : 'business';
 
-      // Supabase Auth에 이메일/비밀번호 추가 (아이디/비밀번호 로그인용)
-      const { error: authUpdateError } = await supabase.auth.updateUser({
-        email: email.trim(),
-        password: password,
-      });
-      if (authUpdateError) throw authUpdateError;
+      if (email.trim()) {
+        const { error: authUpdateError } = await supabase.auth.updateUser({ email: email.trim() });
+        if (authUpdateError) throw authUpdateError;
+      }
 
       const userData = {
         id: user.id,
         number: formattedPhone,
         email: email.trim(),
-        user_id: userId.trim(),
+        user_id: formattedPhone,
         company_name: companyName,
         name: representativeName,
         business_number: businessNumber,
@@ -257,9 +251,6 @@ const BusinessSignup = () => {
       } else if (msg.includes('already registered') || msg.includes('already in use')) {
         setFormErrors((prev) => ({ ...prev, email: '이미 사용 중인 이메일입니다.' }));
         alert('이미 사용 중인 이메일입니다.');
-      } else if (msg.includes('different from the old password')) {
-        setFormErrors((prev) => ({ ...prev, password: '이전 비밀번호와 다른 비밀번호를 입력해주세요.' }));
-        alert('이전 비밀번호와 다른 비밀번호를 입력해주세요.');
       } else {
         alert(msg || '회원가입 중 오류가 발생했습니다.');
       }
@@ -363,6 +354,7 @@ const BusinessSignup = () => {
                 )}
                 {isVerified && <p className={styles.verified}>인증 완료</p>}
                 {authError && <p className={styles.error}>{authError}</p>}
+                <p className={styles.authNotice}>연락처(전화번호)가 아이디로 사용되며, 해당 번호로 로그인할 수 있습니다.</p>
               </div>
             </section>
 
@@ -370,43 +362,6 @@ const BusinessSignup = () => {
             <section className={styles.section}>
               <h2 className={styles.sectionTitle}>회원정보 <span className={styles.required}>*</span></h2>
               <div className={styles.form}>
-                <div className={styles.formGroup}>
-                  <label>아이디 <span className={styles.required}>*</span></label>
-                  <div className={styles.idInputRow}>
-                    <input
-                      type="text"
-                      value={userId}
-                      onChange={(e) => {
-                        setUserId(e.target.value);
-                        setUserIdChecked(null);
-                        setFormErrors((prev) => ({ ...prev, userId: '' }));
-                      }}
-                      placeholder="아이디를 입력하세요"
-                      className={styles.input}
-                    />
-                    <button
-                      type="button"
-                      className={styles.dupCheckBtn}
-                      onClick={checkUserIdDuplicate}
-                      disabled={userIdCheckLoading || !userId.trim()}
-                    >
-                      {userIdCheckLoading ? '확인 중...' : '중복 검사'}
-                    </button>
-                  </div>
-                  {userIdChecked === true && <span className={styles.fieldSuccess}>사용 가능한 아이디입니다.</span>}
-                  {formErrors.userId && <span className={styles.fieldError}>{formErrors.userId}</span>}
-                </div>
-                <div className={styles.formGroup}>
-                  <label>비밀번호 <span className={styles.required}>*</span></label>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="비밀번호를 입력하세요 (6자 이상)"
-                    className={styles.input}
-                  />
-                  {formErrors.password && <span className={styles.fieldError}>{formErrors.password}</span>}
-                </div>
                 <div className={styles.formGroup}>
                   <label>이메일 <span className={styles.required}>*</span></label>
                   <input
