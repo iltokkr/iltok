@@ -1,0 +1,21 @@
+-- 사업자 승인 취소 (안전한 방법)
+-- Supabase SQL Editor에서 실행하세요.
+--
+-- ⚠️ 주의: user_type은 절대 변경하지 마세요.
+--         승인 취소와 회원 유형(기업/개인)은 별개입니다.
+--         user_type을 변경하면 로그인 화면이 개인회원으로 바뀌는 버그가 발생합니다.
+
+-- 특정 사용자 승인 취소 (id를 실제 UUID로 교체)
+-- UPDATE users
+-- SET
+--   is_accept = false,
+--   biz_file = NULL,
+--   company_name = NULL,
+--   name = NULL,
+--   business_number = NULL,
+--   business_address = NULL
+-- WHERE id = '사용자-UUID';
+
+-- ❌ 하지 말 것:
+-- - user_type 컬럼 수정
+-- - users 행 삭제 (DELETE FROM users ...)

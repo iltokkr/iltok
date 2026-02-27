@@ -68,9 +68,9 @@ const BusinessVerificationModal: React.FC<BusinessVerificationModalProps> = ({ o
 
   const formatPhoneDisplay = (value: string) => {
     const numbers = value.replace(/[^0-9]/g, '');
-    if (numbers.startsWith('82') && numbers.length >= 10) {
-      const rest = numbers.slice(2);
-      return `0${rest.slice(0, 3)}-${rest.slice(3, 7)}-${rest.slice(7)}`;
+    if (numbers.startsWith('82') && numbers.length >= 11) {
+      const local = '0' + numbers.slice(2);
+      return `${local.slice(0, 3)}-${local.slice(3, 7)}-${local.slice(7)}`;
     }
     if (numbers.length >= 10) {
       return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7)}`;

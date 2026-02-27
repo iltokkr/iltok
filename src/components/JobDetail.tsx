@@ -92,9 +92,35 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
   const [dontShowAgain, setDontShowAgain] = useState(false);
   const [showApplySuccessPopup, setShowApplySuccessPopup] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
+  const [viewerSeekerInfo, setViewerSeekerInfo] = useState<{
+    korean_name?: string;
+    english_name?: string;
+    seeker_gender?: string;
+    birth_date?: string;
+    nationality?: string;
+    visa_status?: string;
+  } | null>(null);
 
   if (!auth) throw new Error("AuthContext not found");
   const { user, isLoggedIn } = auth;
+
+  // 채용공고에서 문자보내기 시 지원자 정보 (로그인한 구직자 프로필)
+  useEffect(() => {
+    if (jobDetail.board_type === '0' && isLoggedIn && user?.id) {
+      supabase
+        .from('jd')
+        .select('korean_name, english_name, seeker_gender, birth_date, nationality, visa_status')
+        .eq('uploader_id', user.id)
+        .eq('board_type', '1')
+        .order('updated_time', { ascending: false })
+        .limit(1)
+        .single()
+        .then(({ data }) => {
+          if (data) setViewerSeekerInfo(data);
+        })
+        .catch(() => {});
+    }
+  }, [jobDetail.board_type, isLoggedIn, user?.id]);
 
   // 최저임금 미달 팝업 체크
   useEffect(() => {
@@ -161,15 +187,64 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
     return number;
   };
 
-  const getSmsHref = (number: string) => {
+  const getSmsBody = (): string => {
+    const baseUrl = 'https://114114kr.com';
+    const jobUrl = `${baseUrl}/jd/${jobDetail.id}`;
+    const title = jobDetail.title || '공고';
+    let body = `[114114kr.com]에서 "${title}"공고 보고 연락드립니다.\n\n채용공고 링크:\n${jobUrl}`;
+
+    // 지원자 정보 (이름이 있으면 추가)
+    let seekerInfo: { name?: string; gender?: string; age?: number | null; nationality?: string; visa?: string } | null = null;
+    if (jobDetail.board_type === '0') {
+      // 채용공고: 로그인한 구직자(뷰어) 정보
+      if (viewerSeekerInfo?.korean_name || viewerSeekerInfo?.english_name) {
+        seekerInfo = {
+          name: [viewerSeekerInfo.korean_name, viewerSeekerInfo.english_name].filter(Boolean).join(' '),
+          gender: viewerSeekerInfo.seeker_gender || undefined,
+          age: viewerSeekerInfo.birth_date ? calculateAge(viewerSeekerInfo.birth_date) : null,
+          nationality: viewerSeekerInfo.nationality || undefined,
+          visa: viewerSeekerInfo.visa_status || undefined,
+        };
+      }
+    } else if (jobDetail.board_type === '1') {
+      // 구직정보: 해당 구직자 정보
+      if (jobDetail.korean_name || jobDetail.english_name) {
+        seekerInfo = {
+          name: [jobDetail.korean_name, jobDetail.english_name].filter(Boolean).join(' '),
+          gender: jobDetail.seeker_gender || undefined,
+          age: jobDetail.birth_date ? calculateAge(jobDetail.birth_date) : null,
+          nationality: jobDetail.nationality || undefined,
+          visa: jobDetail.visa_status || undefined,
+        };
+      }
+    }
+
+    if (seekerInfo?.name) {
+      const parts = [seekerInfo.name];
+      if (seekerInfo.gender) parts.push(seekerInfo.gender);
+      if (seekerInfo.age != null) parts.push(`만 ${seekerInfo.age}세`);
+      if (seekerInfo.nationality) parts.push(seekerInfo.nationality);
+      if (seekerInfo.visa) parts.push(seekerInfo.visa);
+      body += `\n\n지원자 정보: ${parts.join(', ')}`;
+    }
+
+    return body;
+  };
+
+  const getSmsHref = (number: string, body?: string) => {
     const raw = number.replace(/\D/g, '');
+    let href: string;
     if (raw.startsWith('82') && raw.length >= 11) {
-      return `sms:0${raw.slice(2)}`;
+      href = `sms:0${raw.slice(2)}`;
+    } else if (raw.startsWith('0')) {
+      href = `sms:${raw}`;
+    } else {
+      href = `sms:${raw || number}`;
     }
-    if (raw.startsWith('0')) {
-      return `sms:${raw}`;
+    if (body) {
+      href += `?body=${encodeURIComponent(body)}`;
     }
-    return `sms:${raw || number}`;
+    return href;
   };
 
   // 만 나이 계산 함수
@@ -523,7 +598,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
                   }}
                 >
                   <a
-                    href={getSmsHref(jobDetail.contact_phone || jobDetail.uploader.number || '')}
+                    href={getSmsHref(jobDetail.contact_phone || jobDetail.uploader.number || '', getSmsBody())}
                     className={style.smsButton}
                   >
                     문자보내기
@@ -730,7 +805,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
                 </div>
                 <div className={style.buttonGroup}>
                   <a
-                    href={getSmsHref(jobDetail.uploader.number)}
+                    href={getSmsHref(jobDetail.uploader.number, getSmsBody())}
                     className={style.smsButton}
                   >
                     문자보내기

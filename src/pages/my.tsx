@@ -159,7 +159,10 @@ const My: React.FC = () => {
               <button
                 type="button"
                 className={`${styles.sectionTab} ${activeSection === 'ads' ? styles.sectionTabActive : ''}`}
-                onClick={() => setActiveSection('ads')}
+                onClick={() => {
+                  setActiveSection('ads');
+                  router.replace('/my', undefined, { shallow: true });
+                }}
               >
                 공고관리
               </button>
@@ -192,7 +195,10 @@ const My: React.FC = () => {
               <button
                 type="button"
                 className={`${styles.sectionTab} ${activeSection === 'info' ? styles.sectionTabActive : ''}`}
-                onClick={() => setActiveSection('info')}
+                onClick={() => {
+                  setActiveSection('info');
+                  router.replace('/my?section=info', undefined, { shallow: true });
+                }}
               >
                 회원정보
               </button>

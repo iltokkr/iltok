@@ -1563,9 +1563,9 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
 
         {/* 채용담당자 - 채용정보(board_type='0')에만 표시 */}
         {formData.board_type === '0' && (
-        <div className={style.subSection}>
+        <div className={`${style.subSection} ${style.contactSection}`}>
           <h2 className={style.sectionTitle}>채용담당자</h2>
-          <p style={{ fontSize: '13px', color: '#64748b', marginBottom: 12 }}>상세내용에 표시할 담당자 정보를 입력해주세요. (선택)</p>
+          <p className={style.contactDesc}>상세내용에 표시할 담당자 정보를 입력해주세요. (선택)</p>
           <div className={style.formRow}>
             <div className={style.formGroup}>
               <label>담당자명</label>

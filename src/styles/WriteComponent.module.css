@@ -36,6 +36,17 @@
   border-radius: 0;
 }
 
+/* 채용담당자 섹션 - 제목·설명과 입력 필드 간격 */
+.contactSection .sectionTitle {
+  margin-bottom: 20px;
+}
+
+.contactDesc {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin: 0 0 20px 0;
+}
+
 /* 폼 행 */
 .formRow {
   display: flex;
@@ -809,6 +820,14 @@
 .formGroup {
   margin: 0;
   padding: 0;
+}
+
+.formGroup label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 8px;
 }
 
 .chooseType,
