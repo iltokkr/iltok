@@ -45,11 +45,7 @@ const MainMenu: React.FC<MainMenuProps> = ({ currentBoardType = '0', showMenuIte
 
   const handleFreeAdClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (!auth?.isLoggedIn) {
-      setShowLoginPopup(true);
-    } else {
-      router.push('/write');
-    }
+    router.push('/write');
   };
 
   return (

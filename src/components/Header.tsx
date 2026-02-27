@@ -36,11 +36,7 @@ const Header: React.FC = () => {
   const handleFreeAdClick = (e: React.MouseEvent) => {
     e.preventDefault();
     setShowMobileMenu(false);
-    if (!isLoggedIn) {
-      setShowLoginPopup(true);
-    } else {
-      router.push('/write');
-    }
+    router.push('/write');
   };
 
   const handleSignupTypeSelect = (type: 'jobseeker' | 'business') => {
