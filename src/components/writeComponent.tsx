@@ -677,14 +677,10 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
       delete (submissionData as any).birth_month;
       delete (submissionData as any).birth_day;
 
-      // contact_name, contact_phone은 채용정보(board_type=0) 전용 - 구직/자유게시판에서는 제외
-      if (formData.board_type !== '0') {
-        delete (submissionData as any).contact_name;
-        delete (submissionData as any).contact_phone;
-      } else {
-        (submissionData as any).contact_name = formData.contact_name?.trim() || null;
-        (submissionData as any).contact_phone = formData.contact_phone?.trim() || null;
-      }
+      // contact_name, contact_phone은 jd 테이블에 컬럼이 있을 때만 사용 (add_contact_fields.sql 마이그레이션 필요)
+      // 컬럼 미존재 시 에러 방지를 위해 항상 제외
+      delete (submissionData as any).contact_name;
+      delete (submissionData as any).contact_phone;
 
       let response;
       if (isEditing) {
@@ -735,9 +731,12 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
         }
       }
 
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error submitting form:', error);
-      setErrorMessage('게시글 등록에 실패했습니다. 다시 시도해주세요.');
+      const errMsg = error && typeof error === 'object' && 'message' in error
+        ? String((error as { message?: string }).message)
+        : '게시글 등록에 실패했습니다. 다시 시도해주세요.';
+      setErrorMessage(errMsg);
       setIsModalOpen(true);
     }
   };
