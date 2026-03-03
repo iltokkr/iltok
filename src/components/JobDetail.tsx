@@ -107,7 +107,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
   // 채용공고에서 문자보내기 시 지원자 정보 (로그인한 구직자 프로필)
   useEffect(() => {
     if (jobDetail.board_type === '0' && isLoggedIn && user?.id) {
-      supabase
+      void supabase
         .from('jd')
         .select('korean_name, english_name, seeker_gender, birth_date, nationality, visa_status')
         .eq('uploader_id', user.id)
@@ -117,8 +117,7 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
         .single()
         .then(({ data }) => {
           if (data) setViewerSeekerInfo(data);
-        })
-        .catch(() => {});
+        });
     }
   }, [jobDetail.board_type, isLoggedIn, user?.id]);
 
