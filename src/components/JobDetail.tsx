@@ -230,20 +230,23 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
     return body;
   };
 
-  const getSmsHref = (number: string, body?: string) => {
+  const handleSmsClick = (number: string, body?: string) => {
     const raw = number.replace(/\D/g, '');
-    let href: string;
+    let phone: string;
     if (raw.startsWith('82') && raw.length >= 11) {
-      href = `sms:0${raw.slice(2)}`;
+      phone = `0${raw.slice(2)}`;
     } else if (raw.startsWith('0')) {
-      href = `sms:${raw}`;
+      phone = raw;
     } else {
-      href = `sms:${raw || number}`;
+      phone = raw || number;
     }
     if (body) {
-      href += `?body=${encodeURIComponent(body)}`;
+      const isIOS = /iP(hone|od|ad)/.test(navigator.userAgent);
+      const separator = isIOS ? '&' : '?';
+      window.location.href = `sms:${phone}${separator}body=${encodeURIComponent(body)}`;
+    } else {
+      window.location.href = `sms:${phone}`;
     }
-    return href;
   };
 
   // 만 나이 계산 함수
@@ -605,12 +608,12 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
                     }
                   }}
                 >
-                  <a
-                    href={getSmsHref(jobDetail.contact_phone || jobDetail.uploader.number || '', getSmsBody())}
+                  <button
+                    onClick={() => handleSmsClick(jobDetail.contact_phone || jobDetail.uploader.number || '', getSmsBody())}
                     className={style.smsButton}
                   >
                     문자보내기
-                  </a>
+                  </button>
                   <div
                     role="button"
                     tabIndex={0}
@@ -812,12 +815,12 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
                   </div>
                 </div>
                 <div className={style.buttonGroup}>
-                  <a
-                    href={getSmsHref(jobDetail.uploader.number, getSmsBody())}
+                  <button
+                    onClick={() => handleSmsClick(jobDetail.uploader.number, getSmsBody())}
                     className={style.smsButton}
                   >
                     문자보내기
-                  </a>
+                  </button>
                 </div>
                 <div className={style.notice}>
                   ※ 공고에 대한 오류 및 이로인한 책임은 114114KR에서 책임지지 않습니다.
