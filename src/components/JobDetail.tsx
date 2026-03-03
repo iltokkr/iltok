@@ -471,10 +471,19 @@ const JobDetail: React.FC<JobDetailProps> = ({ jobDetail, initialComments }) => 
             )}
 
             {/* 채용 조건 */}
-            {!jobDetail.is_ads && (jobDetail.experience || jobDetail.gender || jobDetail.education || jobDetail.age_limit || jobDetail.required_visa) && (
+            {!jobDetail.is_ads && (jobDetail['1depth_category'] || jobDetail.experience || jobDetail.gender || jobDetail.education || jobDetail.age_limit || jobDetail.required_visa) && (
               <div className={style.seekerInfoCard}>
                 <h3 className={style.seekerInfoTitle}>채용 조건</h3>
                 <div className={style.seekerBasicInfoList}>
+                  {jobDetail['1depth_category'] && (
+                    <div className={style.seekerBasicInfoItem}>
+                      <span className={style.seekerBasicLabel}>직종</span>
+                      <span className={style.seekerBasicValue}>
+                        {jobDetail['1depth_category']}
+                        {jobDetail['2depth_category'] && ` > ${jobDetail['2depth_category']}`}
+                      </span>
+                    </div>
+                  )}
                   {jobDetail.experience && (
                     <div className={style.seekerBasicInfoItem}>
                       <span className={style.seekerBasicLabel}>경력</span>
