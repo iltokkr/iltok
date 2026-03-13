@@ -7,6 +7,7 @@ import Header from '@/components/Header';
 import MainMenu from '@/components/MainMenu';
 import Footer from '@/components/Footer';
 import styles from '@/styles/BusinessSignup.module.css';
+import { compressImage } from '@/lib/imageCompress';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -188,11 +189,12 @@ const BusinessSignup = () => {
 
     setIsSubmitting(true);
     try {
-      const fileExt = bizFile!.name.split('.').pop();
+      const compressed = await compressImage(bizFile!, 1200, 0.8);
+      const fileExt = compressed.name.split('.').pop();
       const fileName = `${user.id}-${Date.now()}.${fileExt}`;
       const { error: uploadError } = await supabase.storage
         .from('auth_file')
-        .upload(fileName, bizFile!);
+        .upload(fileName, compressed);
 
       if (uploadError) throw uploadError;
 

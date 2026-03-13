@@ -2,6 +2,7 @@ import React, { useState, useContext, useEffect } from 'react';
 import styles from '@/styles/BusinessVerificationModal.module.css';
 import { createClient } from '@supabase/supabase-js';
 import { AuthContext } from '@/contexts/AuthContext';
+import { compressImage } from '@/lib/imageCompress';
 
 const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -160,11 +161,13 @@ const BusinessVerificationModal: React.FC<BusinessVerificationModalProps> = ({ o
       let fileUrl = null;
 
       if (file) {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+        const compressed = await compressImage(file, 1200, 0.8);
+        const fileExt = compressed.name.split('.').pop();
+        const safeName = companyName.trim().replace(/[\\/:*?"<>|]/g, '_');
+        const fileName = `${safeName}-${Date.now()}.${fileExt}`;
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('auth_file')
-          .upload(fileName, file);
+          .upload(fileName, compressed);
 
         if (uploadError) throw uploadError;
 

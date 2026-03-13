@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import { AuthContext } from '@/contexts/AuthContext';
 import styles from '@/styles/JobSeekerProfileForm.module.css';
 import Modal from '@/components/Modal';
+import { compressImage } from '@/lib/imageCompress';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -381,13 +382,14 @@ const JobSeekerProfileForm: React.FC = () => {
 
     // Supabase Storage에 업로드
     try {
-      const fileExt = file.name.split('.').pop();
+      const compressed = await compressImage(file, 800, 0.75);
+      const fileExt = compressed.name.split('.').pop();
       const fileName = `${auth?.user?.id}-${Date.now()}.${fileExt}`;
       const filePath = `profile-images/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('profile-images')
-        .upload(filePath, file);
+        .upload(filePath, compressed);
 
       if (uploadError) {
         console.error('Upload error:', uploadError);
