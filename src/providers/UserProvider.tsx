@@ -11,7 +11,7 @@ const supabase = createClient(
 const fetchUserProfile = async (userId: string) => {
   const { data, error } = await supabase
     .from('users')
-    .select('user_type, user_id, email, name')
+    .select('user_type, user_id, email, name, company_name')
     .eq('id', userId)
     .maybeSingle();
   if (error) {
@@ -22,7 +22,7 @@ const fetchUserProfile = async (userId: string) => {
     userType: data?.user_type || 'jobseeker',
     userId: data?.user_type === 'jobseeker'
       ? (data?.name || data?.user_id || data?.email || null)
-      : (data?.user_id || data?.email || null),
+      : (data?.company_name || data?.user_id || data?.email || null),
   };
 };
 

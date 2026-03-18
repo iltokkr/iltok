@@ -28,8 +28,28 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px;
+  padding: 18px 20px;
   border-bottom: 1px solid var(--color-border);
+}
+
+.backBtn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg-input);
+  border: none;
+  border-radius: 10px;
+  font-size: 18px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.backBtn:hover {
+  background: var(--color-border);
+  color: var(--color-text);
 }
 
 .tit {
@@ -279,25 +299,288 @@
   cursor: not-allowed;
 }
 
-/* 아이디 저장 */
+/* 아이디 저장 + 비밀번호 찾기 행 */
 .checkboxRow {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 16px 0;
+  margin: 14px 0 20px;
 }
 
 .checkboxRow input {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   accent-color: var(--color-primary);
   cursor: pointer;
 }
 
 .checkboxRow label {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--color-text-secondary);
   cursor: pointer;
+  flex: 1;
+}
+
+.forgotLink {
+  background: none;
+  border: none;
+  font-size: 13px;
+  color: var(--color-primary);
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: opacity 0.2s;
+}
+
+.forgotLink:hover {
+  opacity: 0.7;
+}
+
+/* 구분선 */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+/* 휴대폰 인증으로 시작 링크 버튼 */
+.phoneLoginLink {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 20px;
+  border: 1.5px dashed var(--color-border);
+  border-radius: 12px;
+  background: var(--color-bg);
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.phoneLoginLink:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.phoneLoginLink svg {
+  font-size: 18px;
+}
+
+/* 안내 박스 (휴대폰 인증 모드 상단) */
+.infoBox {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.infoIcon {
+  font-size: 20px;
+  flex-shrink: 0;
+  line-height: 1.4;
+}
+
+.infoBox p {
+  font-size: 13px;
+  color: #1d4ed8;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* 비밀번호 찾기 설명 텍스트 */
+.forgotDesc {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  background: var(--color-bg);
+  border-radius: 10px;
+}
+
+/* 성공 박스 */
+.successBox {
+  text-align: center;
+  padding: 8px 0;
+}
+
+.successIcon {
+  width: 56px;
+  height: 56px;
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 auto 16px;
+}
+
+.successTitle {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 10px;
+}
+
+.successDesc {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+}
+
+/* setup 단계 - 인증 완료 배너 */
+.setupInfoBox {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border: 1px solid #93c5fd;
+  border-radius: 14px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.setupInfoTop {
+  padding: 12px 16px 10px;
+}
+
+.setupStep {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #1d4ed8;
+  background: rgba(29, 78, 216, 0.1);
+  padding: 3px 10px;
+  border-radius: 100px;
+  margin-bottom: 6px;
+}
+
+.setupInfoBox p {
+  font-size: 13px;
+  color: #1e40af;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* 휴대폰 번호 표시 필드 */
+.setupPhoneWrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: rgba(29, 78, 216, 0.08);
+  border-top: 1px solid #bfdbfe;
+}
+
+.setupPhoneIcon {
+  color: #2563eb;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.setupPhoneInput {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1d4ed8;
+  outline: none;
+  cursor: default;
+  letter-spacing: 0.03em;
+}
+
+/* 비밀번호 체크리스트 */
+.pwChecklist {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pwCheckOk {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-success);
+}
+
+.pwCheckNo {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+/* 필수 표시 */
+.required {
+  color: var(--color-error);
+  margin-left: 2px;
+}
+
+/* 눈 아이콘 버튼 (비밀번호 표시/숨김) */
+.eyeToggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 0 4px;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+  flex-shrink: 0;
+}
+
+.eyeToggle:hover {
+  color: var(--color-text-secondary);
+}
+
+/* inputWrap 상태 */
+.inputWrapError {
+  border-color: var(--color-error) !important;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.08) !important;
+}
+
+.inputWrapOk {
+  border-color: var(--color-success) !important;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.08) !important;
+}
+
+/* 인라인 힌트 */
+.hintError {
+  font-size: 12px;
+  color: var(--color-error);
+  margin-top: 5px;
+}
+
+.hintOk {
+  font-size: 12px;
+  color: var(--color-success);
+  margin-top: 5px;
 }
 
 /* 에러 메시지 */

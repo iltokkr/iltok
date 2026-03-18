@@ -262,6 +262,51 @@ const BusinessEditPage = () => {
               <h2 className={styles.sectionTitle}>회원정보</h2>
               <div className={styles.form}>
                 <div className={styles.formGroup}>
+                  <label>아이디 <span className={styles.disabledLabel}>(수정 불가)</span></label>
+                  <input
+                    type="text"
+                    value={userId || '미설정'}
+                    readOnly
+                    className={`${styles.input} ${styles.inputReadonly}`}
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label>비밀번호</label>
+                  <div className={styles.inputRow}>
+                    <input
+                      type="password"
+                      value="••••••••"
+                      readOnly
+                      className={`${styles.input} ${styles.inputReadonly}`}
+                    />
+                    <button
+                      type="button"
+                      className={styles.changePasswordBtn}
+                      onClick={async () => {
+                        if (!email.trim()) {
+                          alert('등록된 이메일이 없습니다. 이메일을 먼저 저장해주세요.');
+                          return;
+                        }
+                        const res = await fetch('/api/send-password-reset', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ email: email.trim() }),
+                        });
+                        if (res.ok) {
+                          alert('비밀번호 재설정 링크를 이메일로 발송했습니다.');
+                        } else {
+                          alert('발송 중 오류가 발생했습니다.');
+                        }
+                      }}
+                    >
+                      변경
+                    </button>
+                  </div>
+                  <p className={styles.fieldHint}>등록된 이메일로 비밀번호 재설정 링크를 보내드립니다.</p>
+                </div>
+
+                <div className={styles.formGroup}>
                   <label>이메일 <span className={styles.optional}>(선택)</span></label>
                   <input
                     type="email"

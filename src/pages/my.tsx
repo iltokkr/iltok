@@ -39,6 +39,8 @@ interface UserData {
   business_number: string | null;
   business_address: string | null;
   user_type: string | null;
+  user_id: string | null;
+  email: string | null;
 }
 
 const My: React.FC = () => {
@@ -121,7 +123,7 @@ const My: React.FC = () => {
   const fetchUserData = async () => {
     const { data, error } = await supabase
       .from('users')
-      .select('id, is_accept, is_upload, reload_times, biz_file, company_name, name, number, business_number, business_address, user_type')
+      .select('id, is_accept, is_upload, reload_times, biz_file, company_name, name, number, business_number, business_address, user_type, user_id, email')
       .eq('id', authContext?.user?.id)
       .single();
 
@@ -227,6 +229,8 @@ const My: React.FC = () => {
                 businessNumber={userData?.business_number || null}
                 businessAddress={userData?.business_address || null}
                 userType={userData?.user_type || null}
+                userId={userData?.user_id || null}
+                email={userData?.email || null}
               />
             )}
             {isJobseeker && <PersonalService activeSection="info" />}

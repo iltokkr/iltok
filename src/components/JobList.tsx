@@ -564,7 +564,12 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
             {boardType === '4' && job.community_tag !== '공지' && job.community_tag !== '인기' && (
               <span className={`${styles.communityTag} ${styles.freeTag}`}>자유</span>
             )}
-            <span className={styles.communityTitleText}>{job.title}</span>
+            <span className={styles.communityTitleText}>
+              {job.title}
+              {job.comment_count !== undefined && job.comment_count > 0 && (
+                <span className={styles.commentCount}>[{job.comment_count}]</span>
+              )}
+            </span>
           </h3>
           <p className={styles.communityPreview}>{getContentPreview(job.contents)}</p>
           <div className={styles.communityMeta}>
@@ -618,6 +623,9 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
                   <span className={styles.partnerTag}>제휴</span>
                 )}
                 {job.title}
+                {job.comment_count !== undefined && job.comment_count > 0 && (
+                  <span className={styles.commentCount}>[{job.comment_count}]</span>
+                )}
                 <span className={styles.locationText}>
                   {` (${region})`}
                 </span>

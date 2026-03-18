@@ -40,6 +40,8 @@ interface MylistProps {
   businessAddress: string | null;
   activeSection?: 'ads' | 'info';
   userType?: string | null;
+  userId?: string | null;
+  email?: string | null;
 }
 
 const Mylist: React.FC<MylistProps> = ({ 
@@ -54,7 +56,9 @@ const Mylist: React.FC<MylistProps> = ({
   businessNumber,
   businessAddress,
   activeSection = 'ads',
-  userType
+  userType,
+  userId,
+  email,
 }) => {
   const [showModal, setShowModal] = useState(false);
   const [showVerificationModal, setShowVerificationModal] = useState(false);
@@ -300,39 +304,53 @@ const Mylist: React.FC<MylistProps> = ({
       {/* 사업자 정보 카드 - 회원정보 탭에서만 표시 */}
       {showInfoSection && (
       <div className={styles.businessCard}>
-        <div className={styles.businessCardHeader}>
-          <div className={styles.companyInfo}>
-            <div className={styles.companyNameRow}>
-              <h2 className={styles.companyName}>{companyName || '업체명 미등록'}</h2>
-              <span className={`${styles.statusBadge} ${styles.statusBadgeOnCard} ${isVerified ? styles.badgeVerified : businessStatus === '심사중' ? styles.badgePending : styles.badgeNotRegistered}`}>
-                {businessStatus}
-              </span>
-            </div>
-            <div className={styles.contactInfo}>
-              <span className={styles.contactItem}>
-                <span className={styles.contactLabel}>사업자번호</span>
-                <span className={styles.contactValue}>{businessNumber || '-'}</span>
-              </span>
-              <span className={styles.contactItem}>
-                <span className={styles.contactLabel}>소재지</span>
-                <span className={styles.contactValue}>{businessAddress || '-'}</span>
-              </span>
-              <span className={styles.contactItem}>
-                <span className={styles.contactLabel}>대표자</span>
-                <span className={styles.contactValue}>{managerName || '-'}</span>
-              </span>
-              <span className={styles.contactItem}>
-                <span className={styles.contactLabel}>연락처</span>
-                <span className={styles.contactValue}>{phoneNumber || '-'}</span>
-              </span>
-            </div>
-          </div>
-          <button 
+        {/* 상단: 인사말 + 상태 */}
+        <div className={styles.cardGreetingRow}>
+          <p className={styles.cardGreeting}>{companyName || '업체명 미등록'}님</p>
+          <span className={`${styles.statusBadge} ${styles.statusBadgeOnCard} ${isVerified ? styles.badgeVerified : businessStatus === '심사중' ? styles.badgePending : styles.badgeNotRegistered}`}>
+            {businessStatus}
+          </span>
+        </div>
+
+        {/* 정보 그리드 */}
+        <div className={styles.contactInfo}>
+          <span className={styles.contactItem}>
+            <span className={styles.contactLabel}>사업자번호</span>
+            <span className={styles.contactValue}>{businessNumber || '-'}</span>
+          </span>
+          <span className={styles.contactItem}>
+            <span className={styles.contactLabel}>소재지</span>
+            <span className={styles.contactValue}>{businessAddress || '-'}</span>
+          </span>
+          <span className={styles.contactItem}>
+            <span className={styles.contactLabel}>대표자</span>
+            <span className={styles.contactValue}>{managerName || '-'}</span>
+          </span>
+          <span className={styles.contactItem}>
+            <span className={styles.contactLabel}>연락처</span>
+            <span className={styles.contactValue}>{phoneNumber || '-'}</span>
+          </span>
+          <span className={styles.contactItem}>
+            <span className={styles.contactLabel}>아이디</span>
+            <span className={styles.contactValue}>{userId || '미설정'}</span>
+          </span>
+          <span className={styles.contactItem}>
+            <span className={styles.contactLabel}>이메일</span>
+            <span className={styles.contactValue}>{email || '미설정'}</span>
+          </span>
+        </div>
+
+        {/* 하단 버튼 */}
+        <div className={styles.cardButtonRow}>
+          <button
             className={styles.editInfoButton}
             onClick={() => setShowVerificationModal(true)}
           >
             {bizFile ? '사업자 정보 수정하기' : '등록하기'} &gt;
           </button>
+          <Link href="/my/edit" className={styles.editInfoButton}>
+            로그인 정보 수정 &gt;
+          </Link>
         </div>
       </div>
       )}

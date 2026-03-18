@@ -22,6 +22,31 @@
   gap: 16px;
 }
 
+/* 인사말 행 */
+.cardGreetingRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.cardGreeting {
+  font-size: 22px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.02em;
+  margin: 0 0 2px;
+}
+
+
+/* 하단 버튼 행 */
+.cardButtonRow {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
 .companyInfo {
   flex: 1;
   min-width: 0;
@@ -91,6 +116,7 @@
   opacity: 0.98;
   font-weight: 500;
 }
+
 
 .editInfoButton {
   background: rgba(255, 255, 255, 0.25);
