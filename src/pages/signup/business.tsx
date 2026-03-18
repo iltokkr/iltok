@@ -34,6 +34,9 @@ const BusinessSignup = () => {
   // 회원정보
   const [userId, setUserId] = useState('');
   const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [showPw, setShowPw] = useState(false);
+  const [showPwConfirm, setShowPwConfirm] = useState(false);
   const [email, setEmail] = useState('');
   const [businessNumber, setBusinessNumber] = useState('');
   const [companyName, setCompanyName] = useState('');
@@ -163,6 +166,11 @@ const BusinessSignup = () => {
       return false;
     }
     const err: Record<string, string> = {};
+    if (!userId.trim() || userId.trim().length < 4) err.userId = '아이디는 4자리 이상으로 입력해주세요.';
+    else if (userIdChecked === false) err.userId = '이미 사용 중인 아이디입니다.';
+    else if (userIdChecked === null) err.userId = '아이디 중복확인을 해주세요.';
+    if (!password || password.length < 8) err.password = '비밀번호는 8자리 이상으로 입력해주세요.';
+    else if (password !== passwordConfirm) err.password = '비밀번호가 일치하지 않습니다.';
     if (!email.trim()) err.email = '이메일을 입력해주세요.';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) err.email = '올바른 이메일 형식을 입력해주세요.';
     if (!businessNumber.trim()) err.businessNumber = '사업자등록번호를 입력해주세요.';
@@ -212,16 +220,25 @@ const BusinessSignup = () => {
 
       const newUserType = existingUser?.user_type === 'jobseeker' ? 'both' : 'business';
 
-      if (email.trim()) {
-        const { error: authUpdateError } = await supabase.auth.updateUser({ email: email.trim() });
-        if (authUpdateError) throw authUpdateError;
-      }
+      // 아이디/이메일/비밀번호 설정 (service role로 이메일 확인 없이)
+      const setupRes = await fetch('/api/setup-business-account', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          auth_user_id: user.id,
+          user_id: userId.trim(),
+          email: email.trim(),
+          password,
+        }),
+      });
+      const setupJson = await setupRes.json().catch(() => ({}));
+      if (!setupRes.ok) throw new Error(setupJson.error || '계정 설정에 실패했습니다.');
 
       const userData = {
         id: user.id,
         number: formattedPhone,
         email: email.trim(),
-        user_id: formattedPhone,
+        user_id: userId.trim(),
         company_name: companyName,
         name: representativeName,
         business_number: businessNumber,
@@ -356,21 +373,95 @@ const BusinessSignup = () => {
                 )}
                 {isVerified && <p className={styles.verified}>인증 완료</p>}
                 {authError && <p className={styles.error}>{authError}</p>}
-                <p className={styles.authNotice}>연락처(전화번호)가 아이디로 사용되며, 해당 번호로 로그인할 수 있습니다.</p>
               </div>
             </section>
 
             {/* 회원정보 */}
             <section className={styles.section}>
-              <h2 className={styles.sectionTitle}>회원정보 <span className={styles.required}>*</span></h2>
+              <h2 className={styles.sectionTitle}>로그인 정보 <span className={styles.required}>*</span></h2>
               <div className={styles.form}>
+                {/* 아이디 */}
+                <div className={styles.formGroup}>
+                  <label>아이디 <span className={styles.required}>*</span></label>
+                  <div className={styles.inputRow}>
+                    <input
+                      type="text"
+                      value={userId}
+                      onChange={(e) => { setUserId(e.target.value.replace(/\s/g, '')); setUserIdChecked(null); }}
+                      placeholder="영문, 숫자 4자 이상"
+                      maxLength={30}
+                      className={styles.input}
+                    />
+                    <button
+                      type="button"
+                      className={styles.authBtn}
+                      onClick={checkUserIdDuplicate}
+                      disabled={userIdCheckLoading}
+                    >
+                      {userIdCheckLoading ? '확인 중...' : '중복확인'}
+                    </button>
+                  </div>
+                  {userIdChecked === true && <span className={styles.verified}>사용 가능한 아이디입니다.</span>}
+                  {formErrors.userId && <span className={styles.fieldError}>{formErrors.userId}</span>}
+                </div>
+
+                {/* 비밀번호 */}
+                <div className={styles.formGroup}>
+                  <label>비밀번호 <span className={styles.required}>*</span></label>
+                  <div className={styles.inputRow}>
+                    <input
+                      type={showPw ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="8자리 이상"
+                      maxLength={50}
+                      className={styles.input}
+                    />
+                    <button type="button" className={styles.eyeBtn} onClick={() => setShowPw(!showPw)} tabIndex={-1}>
+                      {showPw ? '숨김' : '표시'}
+                    </button>
+                  </div>
+                  {password && (
+                    <ul className={styles.pwChecklist}>
+                      <li className={password.length >= 8 && /[a-zA-Z]/.test(password) && /[0-9]/.test(password) ? styles.pwCheckOk : styles.pwCheckNo}>
+                        {password.length >= 8 && /[a-zA-Z]/.test(password) && /[0-9]/.test(password) ? '✓' : '✗'} 영문+숫자 조합 8자 이상
+                      </li>
+                      <li className={/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(password) ? styles.pwCheckOk : styles.pwCheckNo}>
+                        {/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?`~]/.test(password) ? '✓' : '✗'} 특수문자 포함
+                      </li>
+                    </ul>
+                  )}
+                  {formErrors.password && <span className={styles.fieldError}>{formErrors.password}</span>}
+                </div>
+
+                {/* 비밀번호 확인 */}
+                <div className={styles.formGroup}>
+                  <label>비밀번호 확인 <span className={styles.required}>*</span></label>
+                  <div className={styles.inputRow}>
+                    <input
+                      type={showPwConfirm ? 'text' : 'password'}
+                      value={passwordConfirm}
+                      onChange={(e) => setPasswordConfirm(e.target.value)}
+                      placeholder="비밀번호 재입력"
+                      maxLength={50}
+                      className={`${styles.input} ${passwordConfirm && password !== passwordConfirm ? styles.inputError : ''} ${passwordConfirm && password === passwordConfirm ? styles.inputOk : ''}`}
+                    />
+                    <button type="button" className={styles.eyeBtn} onClick={() => setShowPwConfirm(!showPwConfirm)} tabIndex={-1}>
+                      {showPwConfirm ? '숨김' : '표시'}
+                    </button>
+                  </div>
+                  {passwordConfirm && password !== passwordConfirm && <span className={styles.fieldError}>비밀번호가 일치하지 않습니다.</span>}
+                  {passwordConfirm && password === passwordConfirm && <span className={styles.verified}>비밀번호가 일치합니다.</span>}
+                </div>
+
+                {/* 이메일 */}
                 <div className={styles.formGroup}>
                   <label>이메일 <span className={styles.required}>*</span></label>
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="이메일을 입력하세요"
+                    placeholder="비밀번호 찾기에 사용됩니다"
                     className={styles.input}
                   />
                   {formErrors.email && <span className={styles.fieldError}>{formErrors.email}</span>}

@@ -120,10 +120,11 @@
 .userTypeBtn {
   flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 14px 16px;
+  gap: 3px;
+  padding: 12px 16px;
   border: none;
   background: #fff;
   color: var(--color-text-secondary);
@@ -146,6 +147,20 @@
 
 .userTypeBtn:hover {
   background: var(--color-bg);
+}
+
+.userTypMain {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.userTypeEn {
+  font-size: 11px;
+  font-weight: 400;
+  opacity: 0.65;
 }
 
 .userTypeActive {

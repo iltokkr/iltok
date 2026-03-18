@@ -344,16 +344,22 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose, initialUserType = 'bus
                 className={`${styles.userTypeBtn} ${userType === 'jobseeker' ? styles.userTypeActive : ''}`}
                 onClick={() => switchUserType('jobseeker')}
               >
-                <img src="/images/jobseeker-icon.png" alt="" className={styles.userTypeIcon} aria-hidden />
-                개인회원
+                <span className={styles.userTypMain}>
+                  <img src="/images/jobseeker-icon.png" alt="" className={styles.userTypeIcon} aria-hidden />
+                  개인회원
+                </span>
+                <span className={styles.userTypeEn}>Job Seeker</span>
               </button>
               <button
                 type="button"
                 className={`${styles.userTypeBtn} ${userType === 'business' ? styles.userTypeActive : ''}`}
                 onClick={() => switchUserType('business')}
               >
-                <img src="/images/business-icon.png" alt="" className={styles.userTypeIcon} aria-hidden />
-                기업회원
+                <span className={styles.userTypMain}>
+                  <img src="/images/business-icon.png" alt="" className={styles.userTypeIcon} aria-hidden />
+                  기업회원
+                </span>
+                <span className={styles.userTypeEn}>Employer</span>
               </button>
             </div>
           )}
@@ -411,7 +417,7 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose, initialUserType = 'bus
               <button type="button" className={styles.phoneLoginLink}
                 onClick={() => switchBusinessMode('phone')}>
                 <HiOutlineDeviceMobile />
-                처음 로그인하시나요? 휴대폰 인증으로 시작
+                기존 회원이신가요? 휴대폰 인증으로 시작
               </button>
             </>
           )}
@@ -421,7 +427,7 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose, initialUserType = 'bus
             <>
               <div className={styles.infoBox}>
                 <span className={styles.infoIcon}>📱</span>
-                <p>휴대폰 인증 후 아이디/비밀번호를 설정합니다.</p>
+                <p>가입 시 등록한 휴대폰 번호로 인증 후 아이디/비밀번호를 설정합니다.</p>
               </div>
               <PhoneOtpForm
                 phone={phone} authNum={authNum} otpSent={otpSent} loading={loading}
