@@ -163,6 +163,10 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose, initialUserType = 'bus
           body: JSON.stringify({ phone: formattedPhone }),
         });
         const json = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          setError('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+          return;
+        }
         if (json.isTransitioned) {
           setError('이 계정은 아이디 로그인으로 전환되었습니다.\n비밀번호를 모르시면 비밀번호 찾기를 이용해주세요.');
           return;
