@@ -348,7 +348,7 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose, initialUserType = 'bus
                   <img src="/images/jobseeker-icon.png" alt="" className={styles.userTypeIcon} aria-hidden />
                   개인회원
                 </span>
-                <span className={styles.userTypeEn}>Job Seeker</span>
+                <span className={styles.userTypeEn}>job seeker(求职者)</span>
               </button>
               <button
                 type="button"
@@ -359,7 +359,7 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose, initialUserType = 'bus
                   <img src="/images/business-icon.png" alt="" className={styles.userTypeIcon} aria-hidden />
                   기업회원
                 </span>
-                <span className={styles.userTypeEn}>Employer</span>
+                <span className={styles.userTypeEn}>employer(招聘方)</span>
               </button>
             </div>
           )}
