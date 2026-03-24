@@ -169,7 +169,7 @@ const BusinessVerificationModal: React.FC<BusinessVerificationModalProps> = ({ o
           .from('auth_file')
           .upload(fileName, compressed);
 
-        if (uploadError) throw uploadError;
+        if (uploadError) throw new Error(`파일 업로드 실패: ${uploadError.message}`);
 
         const { data: urlData } = supabase.storage
           .from('auth_file')
@@ -198,14 +198,15 @@ const BusinessVerificationModal: React.FC<BusinessVerificationModalProps> = ({ o
         .update(updateData)
         .eq('id', user.id);
 
-      if (updateError) throw updateError;
+      if (updateError) throw new Error(`정보 저장 실패: ${updateError.message}`);
 
       alert('사업자 정보가 등록되었습니다. 관리자 승인 후 이용 가능합니다.');
       onClose();
       window.location.reload(); // 페이지 새로고침하여 상태 업데이트
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating user data:', error);
-      alert('사업자 정보 등록 중 오류가 발생했습니다.');
+      const msg = error?.message || error?.error_description || JSON.stringify(error);
+      alert(`사업자 정보 등록 중 오류가 발생했습니다.\n\n${msg}`);
     } finally {
       setIsSubmitting(false);
     }

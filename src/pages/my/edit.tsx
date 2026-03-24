@@ -2,17 +2,12 @@ import React, { useState, useEffect, useContext } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { createClient } from '@supabase/supabase-js';
 import Header from '@/components/Header';
 import MainMenu from '@/components/MainMenu';
 import Footer from '@/components/Footer';
 import { AuthContext } from '@/contexts/AuthContext';
+import supabase from '@/lib/supabase';
 import styles from '@/styles/BusinessSignup.module.css';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 const BUSINESS_TERMS_CONTENT = `(주)일톡에서 국세청 사업자등록정보 진위확인 및 상태조회 서비스를 통해 조회한 정보를 대조하기 위해 입력한 사업자등록증 정보를 수집 및 이용하는 것에 동의하며, 이에 필요한 일체의 권한을 (주)일톡에 위임합니다.`;
 

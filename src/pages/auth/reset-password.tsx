@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { createClient } from '@supabase/supabase-js';
@@ -20,6 +20,7 @@ const ResetPasswordPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  const doneRef = useRef(false);
   const [showPw, setShowPw] = useState(false);
   const [showPwConfirm, setShowPwConfirm] = useState(false);
 
@@ -36,7 +37,11 @@ const ResetPasswordPage = () => {
       if (session?.user) setReady(true);
     });
 
-    return () => subscription.unsubscribe();
+    // 페이지 이탈 시 비밀번호 변경 완료 전이면 로그아웃
+    return () => {
+      subscription.unsubscribe();
+      if (!doneRef.current) supabase.auth.signOut();
+    };
   }, []);
 
   const handleSubmit = async () => {
@@ -60,6 +65,7 @@ const ResetPasswordPage = () => {
         await supabase.from('users').update({ password_set: true }).eq('id', user.id);
       }
 
+      doneRef.current = true;
       setDone(true);
       setTimeout(() => router.push('/my'), 2500);
     } catch (err) {
