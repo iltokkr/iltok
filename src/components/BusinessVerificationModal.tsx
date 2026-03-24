@@ -163,8 +163,8 @@ const BusinessVerificationModal: React.FC<BusinessVerificationModalProps> = ({ o
       if (file) {
         const compressed = await compressImage(file, 1200, 0.8);
         const fileExt = compressed.name.split('.').pop();
-        const safeName = companyName.trim().replace(/[\\/:*?"<>|]/g, '_');
-        const fileName = `${safeName}-${Date.now()}.${fileExt}`;
+        const safeName = companyName.trim().replace(/[^a-zA-Z0-9]/g, '_');
+        const fileName = `biz-${safeName || 'file'}-${Date.now()}.${fileExt}`;
         const { data: uploadData, error: uploadError } = await supabase.storage
           .from('auth_file')
           .upload(fileName, compressed);
