@@ -46,7 +46,9 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose, initialUserType = 'bus
     typeof window !== 'undefined' ? localStorage.getItem(SAVED_BUSINESS_ID_KEY) || '' : ''
   );
   const [password, setPassword] = useState('');
-  const [rememberId, setRememberId] = useState(false);
+  const [rememberId, setRememberId] = useState(() =>
+    typeof window !== 'undefined' ? !!localStorage.getItem(SAVED_BUSINESS_ID_KEY) : false
+  );
 
   // 휴대폰 OTP
   const [phone, setPhone] = useState('');
@@ -422,6 +424,10 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose, initialUserType = 'bus
                 onClick={() => switchBusinessMode('phone')}>
                 <HiOutlineDeviceMobile />
                 기존 회원이신가요? 휴대폰 인증으로 시작
+              </button>
+              <button type="button" className={styles.signupLink}
+                onClick={() => { onClose(); router.push('/signup/business'); }}>
+                아직 회원이 아니신가요? 회원가입
               </button>
             </>
           )}

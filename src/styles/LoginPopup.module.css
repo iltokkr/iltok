@@ -398,6 +398,26 @@
   font-size: 18px;
 }
 
+/* 회원가입 링크 버튼 */
+.signupLink {
+  width: 100%;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 12px;
+  background: none;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  font-weight: 400;
+  cursor: pointer;
+  text-align: center;
+  transition: color 0.2s;
+}
+
+.signupLink:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
 /* 안내 박스 (휴대폰 인증 모드 상단) */
 .infoBox {
   display: flex;
