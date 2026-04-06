@@ -49,10 +49,18 @@ const My: React.FC = () => {
   const [showVerificationAlert, setShowVerificationAlert] = useState(false);
   const [showPendingAlert, setShowPendingAlert] = useState(false);
   const [activeSection, setActiveSection] = useState<'ads' | 'info' | 'applications' | 'resume'>('ads');
+  const [mounted, setMounted] = useState(false);
   const authContext = useContext(AuthContext);
   const router = useRouter();
-  const isBusiness = userData?.user_type === 'business' || userData?.user_type === 'both';
-  const isJobseeker = userData?.user_type === 'jobseeker' || userData?.user_type === 'both';
+
+  useEffect(() => setMounted(true), []);
+
+  const activeLoginType = mounted ? (localStorage.getItem('iltok_active_login_type') as 'business' | 'jobseeker' | null) : null;
+  const rawUserType = userData?.user_type ?? null;
+  const effectiveUserType = activeLoginType ?? (rawUserType === 'both' ? 'business' : rawUserType);
+
+  const isBusiness = effectiveUserType === 'business';
+  const isJobseeker = effectiveUserType === 'jobseeker';
 
   // URL 쿼리 파라미터로 팝업 표시 여부 확인
   useEffect(() => {
@@ -80,15 +88,16 @@ const My: React.FC = () => {
     }
   }, [router.query.section]);
 
-  // 개인회원: /my 진입 시 section 없으면 지원공고로 리다이렉트
+  // 개인회원(effective): /my 진입 시 section 없거나 ads면 지원공고로 리다이렉트
   useEffect(() => {
-    if (!router.isReady || !userData) return;
+    if (!router.isReady || !userData || !mounted) return;
     const section = router.query.section as string | undefined;
-    const isJobseekerOnly = userData.user_type === 'jobseeker';
-    if (isJobseekerOnly && !section && router.pathname === '/my') {
+    const storedType = localStorage.getItem('iltok_active_login_type');
+    const effective = storedType ?? (userData.user_type === 'both' ? 'business' : userData.user_type);
+    if (effective === 'jobseeker' && (!section || section === 'ads') && router.pathname === '/my') {
       router.replace('/my?section=applications', undefined, { shallow: true });
     }
-  }, [router.isReady, router.pathname, router.query.section, userData?.user_type]);
+  }, [router.isReady, router.pathname, router.query.section, userData?.user_type, mounted]);
 
   useEffect(() => {
     if (authContext?.user) {

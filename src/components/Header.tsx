@@ -22,6 +22,8 @@ const Header: React.FC = () => {
   useEffect(() => setMounted(true), []);
 
   const userType = userProfile?.userType ?? null;
+  const activeLoginType = mounted ? (localStorage.getItem('iltok_active_login_type') as 'business' | 'jobseeker' | null) : null;
+  const effectiveUserType = activeLoginType ?? (userType === 'both' ? 'business' : userType);
   const userId = userProfile?.userId ?? null;
   const isUserLoading = userProfile?.isUserLoading ?? false;
 
@@ -177,19 +179,13 @@ const Header: React.FC = () => {
               <Link href={{ pathname: '/board', query: { board_type: '0' } }} onClick={closeMobileMenu} className={styles.mobileMenuLink}>
                 채용정보
               </Link>
-              {(userType === 'business' || userType === 'both') && isLoggedIn && (
+              {effectiveUserType === 'business' && isLoggedIn && (
                 <>
                   <Link href="/my" onClick={closeMobileMenu} className={styles.mobileMenuLink}>공고관리</Link>
                   <Link href="/my?section=info" onClick={closeMobileMenu} className={styles.mobileMenuLink}>회원정보</Link>
                 </>
               )}
-              {userType === 'both' && isLoggedIn && (
-                <>
-                  <Link href="/my?section=applications" onClick={closeMobileMenu} className={styles.mobileMenuLink}>지원공고</Link>
-                  <Link href="/my?section=resume" onClick={closeMobileMenu} className={styles.mobileMenuCta}>이력서 작성</Link>
-                </>
-              )}
-              {userType === 'jobseeker' && isLoggedIn && (
+              {effectiveUserType === 'jobseeker' && isLoggedIn && (
                 <>
                   <Link href="/my?section=applications" onClick={closeMobileMenu} className={styles.mobileMenuLink}>지원공고</Link>
                   <Link href="/my?section=resume" onClick={closeMobileMenu} className={styles.mobileMenuCta}>이력서 작성</Link>
@@ -199,7 +195,7 @@ const Header: React.FC = () => {
               {(!isLoggedIn || (isUserLoading && !userType)) && showMenuItems && (
                 <Link href="/my?section=info" onClick={closeMobileMenu} className={styles.mobileMenuLink}>회원정보</Link>
               )}
-              {userType !== 'jobseeker' && (
+              {effectiveUserType !== 'jobseeker' && (
                 <a href="/write" onClick={handleFreeAdClick} className={styles.mobileMenuCta}>
                   공고등록
                 </a>
@@ -209,7 +205,7 @@ const Header: React.FC = () => {
               </a>
             </>
           )}
-          {!showMenuItems && userType !== 'jobseeker' && (
+          {!showMenuItems && effectiveUserType !== 'jobseeker' && (
             <a href="/write" onClick={handleFreeAdClick} className={styles.mobileMenuCta}>
               공고등록
             </a>

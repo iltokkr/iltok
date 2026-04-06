@@ -25,6 +25,7 @@ interface LoginPopupProps {
 }
 
 const SAVED_BUSINESS_ID_KEY = 'iltok_saved_business_id';
+const ACTIVE_LOGIN_TYPE_KEY = 'iltok_active_login_type';
 
 // 기업회원 로그인 단계
 // password: 아이디/비번 로그인 (기본)
@@ -131,6 +132,7 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose, initialUserType = 'bus
 
       if (rememberId) localStorage.setItem(SAVED_BUSINESS_ID_KEY, loginId.trim());
       else localStorage.removeItem(SAVED_BUSINESS_ID_KEY);
+      localStorage.setItem(ACTIVE_LOGIN_TYPE_KEY, 'business');
 
       onClose();
       router.push('/my');
@@ -230,11 +232,15 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose, initialUserType = 'bus
       }
 
       // 개인회원 or 이미 전환된 기업회원
-      let redirectPath = '/my';
-      if (data.user && !isNewUser) {
+      localStorage.setItem(ACTIVE_LOGIN_TYPE_KEY, userType === 'business' ? 'business' : 'jobseeker');
+      // 개인 탭 로그인 → 항상 지원공고 섹션으로, 기업 탭 both 계정 → 공고관리 섹션으로
+      let redirectPath = userType === 'jobseeker' ? '/my?section=applications' : '/my';
+      if (userType === 'business' && data.user && !isNewUser) {
         const { data: userData } = await supabase
           .from('users').select('user_type').eq('id', data.user.id).maybeSingle();
-        if (userData?.user_type === 'both') redirectPath = '/my?section=ads';
+        if (userData?.user_type === 'both') {
+          redirectPath = '/my?section=ads';
+        }
       }
       redirectPath += redirectPath.includes('?') ? '&refresh=1' : '?refresh=1';
       onClose();

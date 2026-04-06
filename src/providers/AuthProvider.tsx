@@ -52,6 +52,7 @@ export const AuthProvider: React.FC<PropsWithChildren> = ({ children }) => {
   const signOut = async () => {
     await supabase.auth.signOut();
     setUser(null);
+    localStorage.removeItem('iltok_active_login_type');
   };
 
   const verifyOtp = async (phone: string, token: string) => {

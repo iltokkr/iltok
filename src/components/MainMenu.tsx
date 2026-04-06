@@ -26,6 +26,8 @@ const MainMenu: React.FC<MainMenuProps> = ({ currentBoardType = '0', showMenuIte
   useEffect(() => setMounted(true), []);
 
   const userType = userProfile?.userType ?? null;
+  const activeLoginType = mounted ? (localStorage.getItem('iltok_active_login_type') as 'business' | 'jobseeker' | null) : null;
+  const effectiveUserType = activeLoginType ?? (userType === 'both' ? 'business' : userType);
   const userId = userProfile?.userId ?? null;
   const isUserLoading = userProfile?.isUserLoading ?? false;
 
@@ -80,7 +82,7 @@ const MainMenu: React.FC<MainMenuProps> = ({ currentBoardType = '0', showMenuIte
                     </a>
                   </li>
                 </>
-              ) : mounted && (userType === 'business' || userType === 'both') && auth?.isLoggedIn ? (
+              ) : mounted && effectiveUserType === 'business' && auth?.isLoggedIn ? (
                 <>
                   <li>
                     <Link 
@@ -109,12 +111,22 @@ const MainMenu: React.FC<MainMenuProps> = ({ currentBoardType = '0', showMenuIte
                     </Link>
                   </li>
                   <li>
+                    <a
+                      href="https://pf.kakao.com/_ywaMn"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.externalLink}
+                    >
+                      고객센터
+                    </a>
+                  </li>
+                  <li>
                     <a href="/write" onClick={handleFreeAdClick} className={`${styles.menuCtaLink} ${router.pathname === '/write' ? styles.focus : ''}`}>
                       공고등록
                     </a>
                   </li>
                 </>
-              ) : mounted && userType === 'jobseeker' && auth?.isLoggedIn ? (
+              ) : mounted && effectiveUserType === 'jobseeker' && auth?.isLoggedIn ? (
                 <>
                   <li>
                     <Link 
@@ -208,17 +220,18 @@ const MainMenu: React.FC<MainMenuProps> = ({ currentBoardType = '0', showMenuIte
             ) : auth?.isLoggedIn ? (
               <>
                 {(() => {
-                  const section = router.pathname === '/my' ? (router.query.section as string) : currentSection;
-                  const showPersonal = userType === 'jobseeker' || (userType === 'both' && (section === 'applications' || section === 'info' || section === 'resume' || section !== 'ads'));
-                  const serviceHref = showPersonal ? '/my?section=applications' : '/my';
-                  const serviceLabel = showPersonal ? (userId ? <><span className={styles.userTag}>{userId}님</span> 개인서비스</> : '개인서비스') : (userId ? <><span className={styles.userTag}>{userId}님</span> 기업서비스</> : '기업서비스');
+                  const isPersonal = effectiveUserType === 'jobseeker';
+                  const serviceHref = isPersonal ? '/my?section=applications' : '/my';
+                  const serviceLabel = isPersonal
+                    ? (userId ? <><span className={styles.userTag}>{userId}님</span> 개인서비스</> : '개인서비스')
+                    : (userId ? <><span className={styles.userTag}>{userId}님</span> 기업서비스</> : '기업서비스');
                   return (
                     <a
                       href={serviceHref}
                       className={styles.menuLink}
                       onClick={(e) => { e.preventDefault(); router.push(serviceHref); }}
                     >
-                      {userType === 'jobseeker' ? (userId ? <><span className={styles.userTag}>{userId}님</span> 개인서비스</> : '개인서비스') : userType === 'business' ? (userId ? <><span className={styles.userTag}>{userId}님</span> 기업서비스</> : '기업서비스') : serviceLabel}
+                      {serviceLabel}
                     </a>
                   );
                 })()}
