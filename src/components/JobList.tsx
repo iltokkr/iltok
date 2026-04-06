@@ -125,7 +125,7 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
       const { data, error } = await supabase
         .from('jd')
         .select('id')
-        .eq('user_id', user.id)
+        .eq('uploader_id', user.id)
         .eq('board_type', '1')
         .limit(1);
         
