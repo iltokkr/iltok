@@ -47,7 +47,7 @@ const AdPopup: React.FC<AdPopupProps> = ({ onClose }) => {
                 <span className={styles.stepArrow}>→</span>
                 <div className={styles.stepItem}>
                   <span className={styles.stepBadge}>③</span>
-                  <span className={styles.stepText}>카카오톡으로 공고번호 전송</span>
+                  <span className={styles.stepText}>카카오톡으로 공고번호 · 이메일(계산서) 전송</span>
                 </div>
               </div>
             </div>
