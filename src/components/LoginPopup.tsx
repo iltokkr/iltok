@@ -1,5 +1,4 @@
 import React, { useState, useContext } from 'react';
-import { createClient } from '@supabase/supabase-js';
 import { useRouter } from 'next/router';
 import {
   HiOutlineUser,
@@ -13,11 +12,7 @@ import {
 import styles from '@/styles/LoginPopup.module.css';
 import { AuthContext } from '@/contexts/AuthContext';
 import { UserContext } from '@/contexts/UserContext';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import supabase from '@/lib/supabase';
 
 interface LoginPopupProps {
   onClose: () => void;
@@ -178,7 +173,7 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose, initialUserType = 'bus
       }
 
       const { data: existing } = await supabase
-        .from('users').select('number').eq('number', formattedPhone).single();
+        .from('users').select('number').eq('number', formattedPhone).maybeSingle();
       setIsNewUser(!existing);
 
       const { error } = await supabase.auth.signInWithOtp({ phone: formattedPhone });

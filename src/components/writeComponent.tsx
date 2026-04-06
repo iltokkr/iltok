@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import { useRouter } from 'next/router';
 import style from '@/styles/WriteComponent.module.css';
-import { createClient } from '@supabase/supabase-js';
 import Modal from '@/components/Modal';
 import { addHours, format, subHours } from 'date-fns';
 import { toZonedTime } from 'date-fns-tz';
@@ -9,12 +8,7 @@ import Link from 'next/link';
 import BusinessVerificationModal from '@/components/BusinessVerificationModal';
 import { AuthContext } from '@/contexts/AuthContext';
 import { HiOutlineCheckCircle } from 'react-icons/hi';
-
-// Supabase 클라이언트 설정
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import supabase from '@/lib/supabase';
 
 interface JobForm {
   id?: number;

@@ -2,16 +2,11 @@ import React, { useState } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { createClient } from '@supabase/supabase-js';
 import Header from '@/components/Header';
 import MainMenu from '@/components/MainMenu';
 import Footer from '@/components/Footer';
 import styles from '@/styles/BusinessSignup.module.css';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import supabase from '@/lib/supabase';
 
 // 지역 목록 (JobFilter와 동일)
 const locations: { [key: string]: string[] } = {

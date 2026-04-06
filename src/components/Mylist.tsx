@@ -2,16 +2,12 @@ import React, { useState, useContext, useEffect } from 'react';
 import Link from 'next/link';
 import { FaSearch } from 'react-icons/fa';
 import styles from '@/styles/Mylist.module.css';
-import { createClient } from '@supabase/supabase-js';
+import supabase from '@/lib/supabase';
 import { addHours, format, parseISO, subHours } from 'date-fns';
 import { AuthContext } from '@/contexts/AuthContext';
 import BusinessVerificationModal from '@/components/BusinessVerificationModal';
 import { event } from '@/lib/gtag';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
 interface MyPost {
   id: number;
   updated_time: string;
@@ -69,9 +65,14 @@ const Mylist: React.FC<MylistProps> = ({
   const [showWageViolationModal, setShowWageViolationModal] = useState(false);
   const [applicationCounts, setApplicationCounts] = useState<Record<number, number>>({});
   const [searchKeyword, setSearchKeyword] = useState('');
+  const [localPosts, setLocalPosts] = useState<MyPost[]>(posts);
   const authContext = useContext(AuthContext);
 
-  const regularPosts = posts.filter(post => post.board_type === '0');
+  useEffect(() => {
+    setLocalPosts(posts);
+  }, [posts]);
+
+  const regularPosts = localPosts.filter(post => post.board_type === '0');
   const filteredPosts = searchKeyword.trim()
     ? regularPosts.filter(post => post.title.toLowerCase().includes(searchKeyword.trim().toLowerCase()))
     : regularPosts;
@@ -91,7 +92,7 @@ const Mylist: React.FC<MylistProps> = ({
       setApplicationCounts(counts);
     };
     fetchApplicationCounts();
-  }, [posts]);
+  }, [localPosts]);
 
   // 사업자 인증 상태: 미등록 / 심사중 / 인증완료
   const getBusinessStatus = () => {
@@ -131,8 +132,8 @@ const Mylist: React.FC<MylistProps> = ({
   const handleReload = async (postId: number) => {
     try {
       // 해당 게시물 찾기
-      const targetPost = posts.find(p => p.id === postId);
-      
+      const targetPost = localPosts.find(p => p.id === postId);
+
       // 최저임금 위반 체크
       if (targetPost && (targetPost.is_wage_violation || checkWageViolation(targetPost))) {
         setShowWageViolationModal(true);
@@ -217,16 +218,13 @@ const Mylist: React.FC<MylistProps> = ({
         .eq('id', deleteTargetPost.id);
 
       if (error) throw error;
-      
+
+      setLocalPosts(prev => prev.filter(p => p.id !== deleteTargetPost.id));
       setShowDeleteModal(false);
       setDeleteTargetPost(null);
-      
-      // Show success modal
+
       setShowModal(true);
-      setTimeout(() => {
-        setShowModal(false);
-        window.location.reload();
-      }, 2000);
+      setTimeout(() => setShowModal(false), 2000);
     } catch (error) {
       console.error('삭제 실패:', error);
       alert('게시물 삭제에 실패했습니다.');
@@ -236,7 +234,7 @@ const Mylist: React.FC<MylistProps> = ({
   // 삭제 대신 숨김 처리
   const hideInsteadOfDelete = async () => {
     if (!deleteTargetPost) return;
-    
+
     try {
       const { error } = await supabase
         .from('jd')
@@ -244,7 +242,8 @@ const Mylist: React.FC<MylistProps> = ({
         .eq('id', deleteTargetPost.id);
 
       if (error) throw error;
-      
+
+      setLocalPosts(prev => prev.map(p => p.id === deleteTargetPost.id ? { ...p, is_hidden: true } : p));
       setShowDeleteModal(false);
       setDeleteTargetPost(null);
       setShowHideSuccessModal(true);
@@ -263,7 +262,8 @@ const Mylist: React.FC<MylistProps> = ({
         .eq('id', postId);
 
       if (error) throw error;
-      
+
+      setLocalPosts(prev => prev.map(p => p.id === postId ? { ...p, is_hidden: true } : p));
       setShowHideSuccessModal(true);
     } catch (error) {
       console.error('숨기기 실패:', error);
@@ -275,8 +275,8 @@ const Mylist: React.FC<MylistProps> = ({
   const handleUnhide = async (postId: number) => {
     try {
       // 해당 게시물 찾기
-      const targetPost = posts.find(p => p.id === postId);
-      
+      const targetPost = localPosts.find(p => p.id === postId);
+
       // 최저임금 위반 체크
       if (targetPost && (targetPost.is_wage_violation || checkWageViolation(targetPost))) {
         setShowWageViolationModal(true);
@@ -289,7 +289,8 @@ const Mylist: React.FC<MylistProps> = ({
         .eq('id', postId);
 
       if (error) throw error;
-      
+
+      setLocalPosts(prev => prev.map(p => p.id === postId ? { ...p, is_hidden: false } : p));
       setShowUnhideSuccessModal(true);
     } catch (error) {
       console.error('숨김 해제 실패:', error);
@@ -355,6 +356,16 @@ const Mylist: React.FC<MylistProps> = ({
       </div>
       )}
 
+      {/* 미승인 상태 안내 배너 - 공고관리에서만 표시 */}
+      {!showInfoSection && userType === 'business' && !isVerified && (
+        <div className={styles.unapprovedBanner}>
+          <span className={styles.unapprovedBannerIcon}>⚠️</span>
+          <span>
+            현재 <strong>{businessStatus}</strong> 상태이므로, 채용정보가 게시판에 업로드 되지 않습니다.
+          </span>
+        </div>
+      )}
+
       {/* 안내 문구 - 공고관리에서만 표시 */}
       {!showInfoSection && (
       <div className={styles.guideCard}>
@@ -399,12 +410,7 @@ const Mylist: React.FC<MylistProps> = ({
           <thead>
             <tr>
               <th>작성일</th>
-              <th className={styles.thAdManage}>
-                공고관리
-                {userType === 'business' && !isVerified && (
-                  <span className={styles.tableHeaderTag}>비공개 - 사업자 인증 필요</span>
-                )}
-              </th>
+              <th className={styles.thAdManage}>공고관리</th>
               <th>지원자</th>
               <th>관리</th>
             </tr>
@@ -515,12 +521,9 @@ const Mylist: React.FC<MylistProps> = ({
             <img src="/icons/check-circle.svg" alt="완료" className={styles.successIconImg} />
             <h3 className={styles.successTitle}>게시글이 숨김 처리되었습니다</h3>
             <p className={styles.successDesc}>게시판에서 더 이상 노출되지 않습니다.</p>
-            <button 
+            <button
               className={styles.successBtn}
-              onClick={() => {
-                setShowHideSuccessModal(false);
-                window.location.reload();
-              }}
+              onClick={() => setShowHideSuccessModal(false)}
             >
               확인
             </button>
@@ -537,12 +540,9 @@ const Mylist: React.FC<MylistProps> = ({
             <div className={styles.unhideTip}>
               [끌어올리기]로 상단 노출이 가능합니다.
             </div>
-            <button 
+            <button
               className={styles.successBtn}
-              onClick={() => {
-                setShowUnhideSuccessModal(false);
-                window.location.reload();
-              }}
+              onClick={() => setShowUnhideSuccessModal(false)}
             >
               확인
             </button>

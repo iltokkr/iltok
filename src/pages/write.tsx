@@ -1,6 +1,5 @@
 import Head from 'next/head';
 import React, { useEffect, useContext, useState } from 'react';
-import { createClient } from '@supabase/supabase-js'
 import { AuthContext } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
 import MainMenu from '@/components/MainMenu';
@@ -9,12 +8,7 @@ import WritePage from '@/components/writeComponent';
 import styles from '@/styles/Write.module.css';
 import { useRouter } from 'next/router';
 import LoginPopup from '@/components/LoginPopup';
-
-// Supabase 클라이언트 생성
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+import supabase from '@/lib/supabase';
 
 /**
  * Write 컴포넌트

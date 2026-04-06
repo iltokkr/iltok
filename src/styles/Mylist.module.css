@@ -265,6 +265,26 @@
   color: #c62828;
 }
 
+/* 미승인 상태 안내 배너 */
+.unapprovedBanner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff8e1;
+  border: 1px solid #f9a825;
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-bottom: 14px;
+  font-size: 14px;
+  color: #5d4037;
+  line-height: 1.5;
+}
+
+.unapprovedBannerIcon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
 /* 안내 카드 */
 .guideCard {
   background: var(--color-bg);

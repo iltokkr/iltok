@@ -1,16 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { createClient } from '@supabase/supabase-js';
 import Header from '@/components/Header';
 import MainMenu from '@/components/MainMenu';
 import Footer from '@/components/Footer';
 import styles from '@/styles/SetPassword.module.css';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import supabase from '@/lib/supabase';
 
 const SetPasswordPage = () => {
   const router = useRouter();
