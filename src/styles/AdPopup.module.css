@@ -233,6 +233,42 @@
   text-decoration: underline;
 }
 
+.stepFlow {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.stepItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #eef3fb;
+  border-radius: 20px;
+  padding: 5px 12px;
+}
+
+.stepBadge {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.stepText {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: nowrap;
+}
+
+.stepArrow {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+}
+
 @media screen and (max-width: 480px) {
   .overlay {
     padding: 16px;

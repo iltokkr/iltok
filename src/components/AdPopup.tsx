@@ -23,48 +23,11 @@ const AdPopup: React.FC<AdPopupProps> = ({ onClose }) => {
 
   const [vip, setVip] = useState('');
   const [phone, setPhone] = useState('');
-  const [receipt, setReceipt] = useState('T');
-  const [email, setEmail] = useState('');
-  const [file, setFile] = useState<File | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      let fileUrl = null;
-      
-      // 파일 업로드 (세금계산서 선택 시)
-      if (receipt === 'T' && file) {
-        const { data, error } = await supabase.storage
-          .from('ad_file')
-          .upload(`${Date.now()}_${file.name}`, file);
-        
-        if (error) throw error;
-        
-        // 업로드된 파일의 public URL 가져오기
-        const { data: publicUrlData } = supabase.storage
-          .from('ad_file')
-          .getPublicUrl(data.path);
-        
-        fileUrl = publicUrlData.publicUrl;
-      }
-      
-      // receipt 값을 ad.type에 맞게 변환
-      let adType;
-      switch (receipt) {
-        case '':
-          adType = 'none';
-          break;
-        case 'C':
-          adType = 'receipt';
-          break;
-        case 'T':
-          adType = 'tax';
-          break;
-        default:
-          adType = 'none';
-      }
-      
       // 데이터베이스에 정보 저장
       const { data, error } = await supabase
         .from('ad')
@@ -72,10 +35,7 @@ const AdPopup: React.FC<AdPopupProps> = ({ onClose }) => {
           {
             name: vip,
             number: phone,
-            email: receipt === 'T' ? email : null,
-            file_auth: fileUrl,
-            type: adType,
-            user: user ? user.id : null, // 로그인된 경우 user.id, 아니면 null
+            user: user ? user.id : null,
           },
         ]);
       
@@ -117,7 +77,22 @@ const AdPopup: React.FC<AdPopupProps> = ({ onClose }) => {
             </div>
             <div className={styles.infoRow}>
               <span className={styles.infoLabel}>등록절차</span>
-              <span className={styles.infoValue}>입금 후 카카오톡 문의하기로 공고번호 전송</span>
+              <div className={styles.stepFlow}>
+                <div className={styles.stepItem}>
+                  <span className={styles.stepBadge}>①</span>
+                  <span className={styles.stepText}>공고 등록</span>
+                </div>
+                <span className={styles.stepArrow}>→</span>
+                <div className={styles.stepItem}>
+                  <span className={styles.stepBadge}>②</span>
+                  <span className={styles.stepText}>입금</span>
+                </div>
+                <span className={styles.stepArrow}>→</span>
+                <div className={styles.stepItem}>
+                  <span className={styles.stepBadge}>③</span>
+                  <span className={styles.stepText}>카카오톡으로 공고번호 전송</span>
+                </div>
+              </div>
             </div>
             <div className={styles.infoRow}>
               <span className={styles.infoLabel}>등록문의</span>
@@ -128,19 +103,6 @@ const AdPopup: React.FC<AdPopupProps> = ({ onClose }) => {
           </div>
 
           <form onSubmit={handleSubmit} className={styles.formSection}>
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>증빙서류</label>
-              <select 
-                value={receipt} 
-                onChange={(e) => setReceipt(e.target.value)}
-                className={styles.selectInput}
-              >
-                <option value="">안함</option>
-                <option value="C">현금영수증</option>
-                <option value="T">세금계산서</option>
-              </select>
-            </div>
-
             <div className={styles.formGroup}>
               <label className={styles.formLabel}>입금자명</label>
               <input 
@@ -164,31 +126,6 @@ const AdPopup: React.FC<AdPopupProps> = ({ onClose }) => {
                 className={styles.textInput}
               />
             </div>
-
-            {receipt === 'T' && (
-              <>
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>이메일</label>
-                  <input 
-                    type="email" 
-                    value={email} 
-                    onChange={(e) => setEmail(e.target.value)} 
-                    placeholder="세금계산서 발행용 이메일" 
-                    maxLength={100} 
-                    className={styles.textInput}
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>사업자등록증</label>
-                  <input 
-                    type="file" 
-                    onChange={(e) => setFile(e.target.files?.[0] || null)} 
-                    accept=".pdf,.jpg,.png"
-                    className={styles.fileInput}
-                  />
-                </div>
-              </>
-            )}
 
             <button type="submit" className={styles.submitBtn}>신청하기</button>
           </form>
