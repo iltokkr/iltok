@@ -117,7 +117,7 @@ const AdPopup: React.FC<AdPopupProps> = ({ onClose }) => {
             </div>
             <div className={styles.infoRow}>
               <span className={styles.infoLabel}>등록절차</span>
-              <span className={styles.infoValue}>입금 후 신청</span>
+              <span className={styles.infoValue}>입금 후 카카오톡 문의하기로 공고번호 전송</span>
             </div>
             <div className={styles.infoRow}>
               <span className={styles.infoLabel}>등록문의</span>
