@@ -70,7 +70,6 @@ function InstallPWA() {
     setIsMobile(checkMobile());
 
     const handler = (e: any) => {
-      console.log('beforeinstallprompt 이벤트 발생!');
       e.preventDefault();
       setSupportsPWA(true);
       setPromptInstall(e);
