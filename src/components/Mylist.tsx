@@ -21,6 +21,8 @@ interface MyPost {
   salary_type?: string;
   salary_detail?: string;
   is_wage_violation?: boolean;
+  ad?: boolean;
+  ad_until?: string | null;
 }
 
 interface MylistProps {
@@ -427,6 +429,11 @@ const Mylist: React.FC<MylistProps> = ({
                     <span className={styles.adMeta}>
                       {post['1depth_region']} {post['2depth_region']} | {post['1depth_category']} {post['2depth_category']}
                     </span>
+                    {post.ad && (
+                      <span className={styles.premiumBadge}>
+                        프리미엄{post.ad_until ? ` (~${format(parseISO(post.ad_until), 'MM/dd')})` : ''}
+                      </span>
+                    )}
                     {post.is_hidden && <span className={styles.hiddenBadge}>숨김</span>}
                     {(post.is_wage_violation || checkWageViolation(post)) && (
                       <span className={styles.wageViolationBadge}>⚠️ 최저임금 위반</span>

@@ -425,7 +425,8 @@ const BoardPage: React.FC = () => {
             .eq('ad', true)
             .eq('board_type', currentBoardType)
             .eq('users.is_accept', true)
-            .or('is_hidden.is.null,is_hidden.eq.false');
+            .or('is_hidden.is.null,is_hidden.eq.false')
+            .or(`ad_until.is.null,ad_until.gte.${new Date().toISOString()}`);
 
           // uploader_id가 null인 광고도 별도로 가져옴
           let nullUploaderQuery = supabase
@@ -434,7 +435,8 @@ const BoardPage: React.FC = () => {
             .eq('ad', true)
             .eq('board_type', currentBoardType)
             .is('uploader_id', null)
-            .or('is_hidden.is.null,is_hidden.eq.false');
+            .or('is_hidden.is.null,is_hidden.eq.false')
+            .or(`ad_until.is.null,ad_until.gte.${new Date().toISOString()}`);
 
           // 필터 조건 추가
           if (city1) {
