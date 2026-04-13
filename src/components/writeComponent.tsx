@@ -253,6 +253,7 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [todayUploadCount, setTodayUploadCount] = useState<number>(0);
   const [showBusinessVerificationModal, setShowBusinessVerificationModal] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({
     title: false,
@@ -300,6 +301,15 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
   useEffect(() => {
     if (auth?.user) {
       setCurrentUserId(auth.user.id);
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      supabase
+        .from('jd')
+        .select('id', { count: 'exact', head: true })
+        .eq('uploader_id', auth.user.id)
+        .eq('board_type', '0')
+        .gte('updated_time', todayStart.toISOString())
+        .then(({ count }) => setTodayUploadCount(count ?? 0));
     }
   }, [auth?.user]);
 
@@ -616,27 +626,21 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
         return;
       }
 
-      // 자유게시판이 아닐 때만 비즈니스 인증 체크
-      // 채용정보만 하루 1건 제한 적용 (구직정보, 자유게시판은 제한 없음)
-      if (formData.board_type === '0') {
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('is_accept, is_upload')
-        .eq('id', user.id)
-        .maybeSingle();
+      // 채용정보만 하루 2건 제한 적용 (구직정보, 자유게시판은 제한 없음)
+      if (formData.board_type === '0' && !isEditing) {
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+        const { count } = await supabase
+          .from('jd')
+          .select('id', { count: 'exact', head: true })
+          .eq('uploader_id', user.id)
+          .eq('board_type', '0')
+          .gte('updated_time', todayStart.toISOString());
 
-      if (userError) throw userError;
-
-      if (!userData) {
-          setErrorMessage('사용자 정보를 찾을 수 없습니다.');
-        setIsModalOpen(true);
-        return;
-      }
-
-      if (!isEditing && userData.is_upload) {
-        setShowDailyLimitModal(true);
-        return;
-      }
+        if ((count ?? 0) >= 2) {
+          setShowDailyLimitModal(true);
+          return;
+        }
       }
 
       // 생년월일 합치기
@@ -690,13 +694,6 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
 
       if (response.error) throw response.error;
 
-      // 신규 등록이고 채용정보인 경우에만 is_upload를 true로 업데이트
-      if (!isEditing && formData.board_type === '0') {
-        await supabase
-          .from('users')
-          .update({ is_upload: true })
-          .eq('id', user.id);
-      }
 
       // 게시글 등록 후 이동 처리
       if (formData.board_type === '4') {
@@ -1590,7 +1587,7 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
         {/* 제출 버튼 */}
         <div className={`${style.formGroup} ${style.ft}`}>
           <button type="submit" className={style.submitButton}>
-            {isEditing ? '수정하기' : '등록하기'}
+            {isEditing ? '수정하기' : `등록하기 (하루 2건 · 잔여 ${Math.max(0, 2 - todayUploadCount)}건)`}
           </button>
         </div>
       </form>

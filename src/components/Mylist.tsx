@@ -22,6 +22,7 @@ interface MyPost {
   salary_detail?: string;
   is_wage_violation?: boolean;
   ad?: boolean;
+  ad_since?: string | null;
   ad_until?: string | null;
 }
 
@@ -96,6 +97,22 @@ const Mylist: React.FC<MylistProps> = ({
     };
     fetchApplicationCounts();
   }, [localPosts]);
+
+  const formatAdPeriod = (since?: string | null, until?: string | null) => {
+    const s = since ? format(parseISO(since), 'yy.MM.dd') : null;
+    const u = until ? format(parseISO(until), 'yy.MM.dd') : null;
+    if (s && u) return `${s} ~ ${u}`;
+    if (u) return `~ ${u}`;
+    return null;
+  };
+
+  const getDday = (until?: string | null) => {
+    if (!until) return null;
+    const diff = Math.ceil((new Date(until).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+    if (diff < 0) return '만료';
+    if (diff === 0) return 'D-day';
+    return `D-${diff}`;
+  };
 
   // 사업자 인증 상태: 미등록 / 심사중 / 인증완료
   const getBusinessStatus = () => {
@@ -344,6 +361,22 @@ const Mylist: React.FC<MylistProps> = ({
           </span>
         </div>
 
+        {/* 프리미엄 서비스 현황 */}
+        {localPosts.filter(p => p.ad).length > 0 && (
+          <div className={styles.premiumSection}>
+            <p className={styles.premiumSectionTitle}>프리미엄 채용정보 게재중</p>
+            {localPosts.filter(p => p.ad).map(p => (
+              <div key={p.id} className={styles.premiumSectionRow}>
+                <span className={styles.premiumSectionName}>{p.title}</span>
+                <span className={styles.premiumSectionPeriod}>
+                  {formatAdPeriod(p.ad_since, p.ad_until) || '기간 미설정'}
+                  {getDday(p.ad_until) && <span className={styles.premiumDday}>{getDday(p.ad_until)}</span>}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* 하단 버튼 */}
         <div className={styles.cardButtonRow}>
           <button
@@ -374,6 +407,10 @@ const Mylist: React.FC<MylistProps> = ({
         <div className={`${styles.guideItem} ${styles.guideItemWithBtn}`}>
           <span className={styles.guideCheck} aria-hidden>✓</span>
           <span className={styles.guideText}>기업은 <strong>사업자 인증</strong>이 필요합니다. 인증 전 게시글은 비공개 상태입니다.</span>
+        </div>
+        <div className={styles.guideItem}>
+          <span className={styles.guideCheck} aria-hidden>✓</span>
+          <span className={styles.guideText}>채용정보는 <strong>하루 2건</strong>까지 등록할 수 있습니다.</span>
         </div>
         <div className={styles.guideItem}>
           <span className={styles.guideCheck} aria-hidden>✓</span>
@@ -425,8 +462,12 @@ const Mylist: React.FC<MylistProps> = ({
                       {post['1depth_region']} {post['2depth_region']} | {post['1depth_category']} {post['2depth_category']}
                     </span>
                     {post.ad && (
-                      <span className={styles.premiumBadge}>
-                        프리미엄 채용정보 게재중{post.ad_until ? ` (~${format(parseISO(post.ad_until), 'MM/dd')})` : ''}
+                      <span className={styles.premiumBadge}>프리미엄 채용정보 게재중</span>
+                    )}
+                    {post.ad && (formatAdPeriod(post.ad_since, post.ad_until)) && (
+                      <span className={styles.premiumPeriod}>
+                        {formatAdPeriod(post.ad_since, post.ad_until)}
+                        {getDday(post.ad_until) && <span className={styles.premiumDday}>{getDday(post.ad_until)}</span>}
                       </span>
                     )}
                     {post.is_hidden && <span className={styles.hiddenBadge}>숨김</span>}
