@@ -648,7 +648,7 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
             ...formData,
         salary_detail: formData.salary_detail.replace(/,/g, ''), // 콤마 제거하고 저장
             uploader_id: user.id,
-            ad: false,
+            ...(isEditing ? {} : { ad: false }),
         is_ads: formData.board_type === '0' ? (formData.is_ads ?? false) : false,
         content_image: formData.board_type === '0' && (formData.is_ads && formData.content_image) ? formData.content_image.trim() || null : null,
         // 구직정보인 경우 배열 데이터를 JSON 문자열로 변환
