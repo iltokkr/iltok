@@ -270,13 +270,13 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  background: #fff8e1;
-  border: 1px solid #f9a825;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
   border-radius: 10px;
   padding: 14px 18px;
   margin-bottom: 14px;
   font-size: 14px;
-  color: #5d4037;
+  color: #495057;
   line-height: 1.5;
 }
 
