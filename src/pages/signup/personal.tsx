@@ -53,6 +53,7 @@ const PersonalSignup = () => {
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   const [isVerified, setIsVerified] = useState(false);
+  const [verifiedUser, setVerifiedUser] = useState<any>(null);
 
   const [name, setName] = useState('');
   const [gender, setGender] = useState('');
@@ -124,10 +125,12 @@ const PersonalSignup = () => {
             return;
           }
           if (existingUser.user_type === 'business') {
+            setVerifiedUser(data.user);
             setIsVerified(true);
             return;
           }
         }
+        setVerifiedUser(data.user);
         setIsVerified(true);
       }
     } catch (err) {
@@ -175,7 +178,7 @@ const PersonalSignup = () => {
     e.preventDefault();
     if (!validateForm()) return;
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const user = verifiedUser ?? (await supabase.auth.getUser()).data.user;
     if (!user) {
       alert('본인인증이 만료되었습니다. 처음부터 다시 진행해주세요.');
       router.push('/signup/personal');
