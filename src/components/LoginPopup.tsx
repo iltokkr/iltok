@@ -437,7 +437,7 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose, initialUserType = 'bus
           {userType === 'business' && businessMode === 'phone' && (
             <>
               <div className={styles.infoBox}>
-                <span className={styles.infoIcon}>📱</span>
+                <HiOutlineDeviceMobile className={styles.infoIcon} />
                 <p>가입 시 등록한 휴대폰 번호로 인증 후 아이디/비밀번호를 설정합니다.</p>
               </div>
               <PhoneOtpForm

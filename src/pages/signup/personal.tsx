@@ -254,7 +254,8 @@ const PersonalSignup = () => {
 
           <form onSubmit={handleSubmit}>
             <section className={styles.section}>
-              <h2 className={styles.sectionTitle}>약관동의 <span className={styles.required}>*</span></h2>
+              <h2 className={styles.sectionTitle}>약관동의</h2>
+              <p className={styles.sectionDesc}>서비스 이용을 위해 약관에 동의해주세요.</p>
               <div className={styles.termsGroup}>
                 <label className={styles.checkboxLabel}>
                   <input
@@ -279,10 +280,8 @@ const PersonalSignup = () => {
             </section>
 
             <section className={styles.section}>
-              <h2 className={styles.sectionTitle}>번호인증 <span className={styles.required}>*</span></h2>
-              <p className={styles.verified} style={{ marginBottom: 12, color: 'var(--color-text-secondary)', fontWeight: 'normal' }}>
-                핸드폰 번호가 아이디입니다. 비밀번호 없이 해당 번호로 인증하면 로그인됩니다.
-              </p>
+              <h2 className={styles.sectionTitle}>번호인증</h2>
+              <p className={styles.sectionDesc}>인증받은 번호로 바로 로그인할 수 있습니다.</p>
               <div className={styles.authGroup}>
                 <div className={styles.inputRow}>
                   <input
@@ -319,7 +318,8 @@ const PersonalSignup = () => {
             </section>
 
             <section className={styles.section}>
-              <h2 className={styles.sectionTitle}>회원정보 <span className={styles.required}>*</span></h2>
+              <h2 className={styles.sectionTitle}>회원정보</h2>
+              <p className={styles.sectionDesc}>지원 시 채용 담당자에게 전달되는 정보입니다.</p>
               <div className={styles.form}>
                 <div className={styles.formGroup}>
                   <label>이름 <span className={styles.required}>*</span></label>

@@ -486,7 +486,8 @@ const BoardPage: React.FC = () => {
             .eq('is_ads', true)
             .eq('users.is_accept', true)
             .not('uploader_id', 'is', null)
-            .or('is_hidden.is.null,is_hidden.eq.false');
+            .or('is_hidden.is.null,is_hidden.eq.false')
+            .or(`ad_until.is.null,ad_until.gte.${new Date().toISOString()}`);
           if (city1) partnerQuery = partnerQuery.eq('1depth_region', city1);
           if (city2) partnerQuery = partnerQuery.eq('2depth_region', city2);
           if (cate1) partnerQuery = partnerQuery.eq('1depth_category', cate1);

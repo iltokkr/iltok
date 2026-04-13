@@ -290,7 +290,8 @@ const BusinessSignup = () => {
           <form onSubmit={handleSubmit}>
             {/* 약관동의 */}
             <section className={styles.section}>
-              <h2 className={styles.sectionTitle}>약관동의 <span className={styles.required}>*</span></h2>
+              <h2 className={styles.sectionTitle}>약관동의</h2>
+              <p className={styles.sectionDesc}>서비스 이용을 위해 약관에 동의해주세요.</p>
               <div className={styles.termsGroup}>
                 <label className={styles.checkboxLabel}>
                   <input
@@ -328,7 +329,8 @@ const BusinessSignup = () => {
 
             {/* 본인인증 */}
             <section className={styles.section}>
-              <h2 className={styles.sectionTitle}>본인인증 <span className={styles.required}>*</span></h2>
+              <h2 className={styles.sectionTitle}>본인인증</h2>
+              <p className={styles.sectionDesc}>본인 명의의 휴대폰 번호를 입력해주세요.</p>
               <div className={styles.authGroup}>
                 <div className={styles.inputRow}>
                   <input
@@ -374,11 +376,11 @@ const BusinessSignup = () => {
               </div>
             </section>
 
-            {/* 회원정보 */}
+            {/* 로그인 정보 */}
             <section className={styles.section}>
-              <h2 className={styles.sectionTitle}>로그인 정보 <span className={styles.required}>*</span></h2>
+              <h2 className={styles.sectionTitle}>로그인 정보</h2>
+              <p className={styles.sectionDesc}>아이디와 이메일은 로그인 및 비밀번호 찾기에 사용됩니다.</p>
               <div className={styles.form}>
-                {/* 아이디 */}
                 <div className={styles.formGroup}>
                   <label>아이디 <span className={styles.required}>*</span></label>
                   <div className={styles.inputRow}>
@@ -386,7 +388,7 @@ const BusinessSignup = () => {
                       type="text"
                       value={userId}
                       onChange={(e) => { setUserId(e.target.value.replace(/\s/g, '')); setUserIdChecked(null); }}
-                      placeholder="영문, 숫자 4자 이상"
+                      placeholder="영문, 숫자 포함 4자 이상 (로그인 시 사용)"
                       maxLength={30}
                       className={styles.input}
                     />
@@ -403,7 +405,6 @@ const BusinessSignup = () => {
                   {formErrors.userId && <span className={styles.fieldError}>{formErrors.userId}</span>}
                 </div>
 
-                {/* 비밀번호 */}
                 <div className={styles.formGroup}>
                   <label>비밀번호 <span className={styles.required}>*</span></label>
                   <div className={styles.inputRow}>
@@ -411,7 +412,7 @@ const BusinessSignup = () => {
                       type={showPw ? 'text' : 'password'}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="8자리 이상"
+                      placeholder="영문+숫자+특수문자 조합 8자 이상"
                       maxLength={50}
                       className={styles.input}
                     />
@@ -432,7 +433,6 @@ const BusinessSignup = () => {
                   {formErrors.password && <span className={styles.fieldError}>{formErrors.password}</span>}
                 </div>
 
-                {/* 비밀번호 확인 */}
                 <div className={styles.formGroup}>
                   <label>비밀번호 확인 <span className={styles.required}>*</span></label>
                   <div className={styles.inputRow}>
@@ -452,17 +452,36 @@ const BusinessSignup = () => {
                   {passwordConfirm && password === passwordConfirm && <span className={styles.verified}>비밀번호가 일치합니다.</span>}
                 </div>
 
-                {/* 이메일 */}
                 <div className={styles.formGroup}>
                   <label>이메일 <span className={styles.required}>*</span></label>
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="비밀번호 찾기에 사용됩니다"
+                    placeholder="비밀번호 재설정 시 사용됩니다"
                     className={styles.input}
                   />
                   {formErrors.email && <span className={styles.fieldError}>{formErrors.email}</span>}
+                </div>
+              </div>
+            </section>
+
+            {/* 사업자 정보 */}
+            <section className={styles.section}>
+              <h2 className={styles.sectionTitle}>사업자 정보</h2>
+              <p className={styles.sectionDesc}>입력한 사업자 정보가 채용정보에 표시됩니다.</p>
+              <div className={styles.form}>
+                <div className={styles.formGroup}>
+                  <label>회사/점포명 <span className={styles.required}>*</span></label>
+                  <input
+                    type="text"
+                    value={companyName}
+                    onChange={(e) => setCompanyName(e.target.value)}
+                    placeholder="회사 또는 점포명을 입력하세요"
+                    maxLength={50}
+                    className={styles.input}
+                  />
+                  {formErrors.companyName && <span className={styles.fieldError}>{formErrors.companyName}</span>}
                 </div>
                 <div className={styles.formGroup}>
                   <label>사업자등록번호 <span className={styles.required}>*</span></label>
@@ -475,18 +494,6 @@ const BusinessSignup = () => {
                     className={styles.input}
                   />
                   {formErrors.businessNumber && <span className={styles.fieldError}>{formErrors.businessNumber}</span>}
-                </div>
-                <div className={styles.formGroup}>
-                  <label>회사/점포명 <span className={styles.required}>*</span></label>
-                  <input
-                    type="text"
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
-                    placeholder="회사 또는 점포명을 입력하세요"
-                    maxLength={50}
-                    className={styles.input}
-                  />
-                  {formErrors.companyName && <span className={styles.fieldError}>{formErrors.companyName}</span>}
                 </div>
                 <div className={styles.formGroup}>
                   <label>대표자명 <span className={styles.required}>*</span></label>
