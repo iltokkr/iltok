@@ -363,7 +363,7 @@ const Mylist: React.FC<MylistProps> = ({
         <div className={styles.unapprovedBanner}>
           <span className={styles.unapprovedBannerIcon}>⚠️</span>
           <span>
-            현재 <strong>{businessStatus}</strong> 상태이므로, 채용정보가 게시판에 업로드 되지 않습니다.
+            현재 <strong>{businessStatus}</strong> 상태이므로, 채용정보가 게시판에 업로드 되지 않습니다. 심사는 당일~익일 내 완료됩니다.
           </span>
         </div>
       )}
