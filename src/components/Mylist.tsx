@@ -373,11 +373,6 @@ const Mylist: React.FC<MylistProps> = ({
         <div className={`${styles.guideItem} ${styles.guideItemWithBtn}`}>
           <span className={styles.guideCheck} aria-hidden>✓</span>
           <span className={styles.guideText}>기업은 <strong>사업자 인증</strong>이 필요합니다. 인증 전 게시글은 비공개 상태입니다.</span>
-          {userType === 'business' && !isVerified && (
-            <button type="button" className={styles.guideVerifyBtn} onClick={() => setShowVerificationModal(true)}>
-              인증하기 &gt;
-            </button>
-          )}
         </div>
         <div className={styles.guideItem}>
           <span className={styles.guideCheck} aria-hidden>✓</span>
