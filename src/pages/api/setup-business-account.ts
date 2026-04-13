@@ -81,12 +81,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       email_confirm: true,
     });
 
-    if (authError) {
-      if (authError.message?.toLowerCase().includes('different from the old password')) {
-        return res.status(400).json({ error: '기존 비밀번호와 다른 비밀번호를 입력해주세요.' });
-      }
-      throw authError;
-    }
+    if (authError) throw authError;
 
     // users 테이블 업데이트
     const { error: dbError } = await supabaseAdmin

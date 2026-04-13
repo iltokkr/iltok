@@ -70,6 +70,7 @@ const Mylist: React.FC<MylistProps> = ({
   const [localPosts, setLocalPosts] = useState<MyPost[]>(posts);
   const authContext = useContext(AuthContext);
 
+
   useEffect(() => {
     setLocalPosts(posts);
   }, [posts]);
@@ -362,7 +363,7 @@ const Mylist: React.FC<MylistProps> = ({
       {!showInfoSection && userType === 'business' && !isVerified && (
         <div className={styles.unapprovedBanner}>
           <span>
-            현재 <strong>{businessStatus}</strong> 상태이므로, 채용정보가 게시판에 업로드 되지 않습니다. 심사는 당일~익일 내 완료됩니다.
+            현재 <span className={styles.statusInlineBadge}>{businessStatus}</span> 상태이므로, 채용정보가 게시판에 업로드 되지 않습니다. 심사는 당일~익일 내 완료됩니다.
           </span>
         </div>
       )}
@@ -425,7 +426,7 @@ const Mylist: React.FC<MylistProps> = ({
                     </span>
                     {post.ad && (
                       <span className={styles.premiumBadge}>
-                        프리미엄{post.ad_until ? ` (~${format(parseISO(post.ad_until), 'MM/dd')})` : ''}
+                        프리미엄 채용정보 게재중{post.ad_until ? ` (~${format(parseISO(post.ad_until), 'MM/dd')})` : ''}
                       </span>
                     )}
                     {post.is_hidden && <span className={styles.hiddenBadge}>숨김</span>}

@@ -26,17 +26,14 @@ const BusinessEditPage = () => {
 
   // 회원정보
   const [userId, setUserId] = useState('');
-  const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
+  const [originalEmail, setOriginalEmail] = useState('');
   const [businessNumber, setBusinessNumber] = useState('');
   const [companyName, setCompanyName] = useState('');
   const [representativeName, setRepresentativeName] = useState('');
   const [existingBizFile, setExistingBizFile] = useState<string | null>(null);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [userIdChecked, setUserIdChecked] = useState<boolean | null>(null);
-  const [userIdCheckLoading, setUserIdCheckLoading] = useState(false);
-  const [hasExistingUserId, setHasExistingUserId] = useState(false);
 
   const formatPhoneDisplay = (value: string) => {
     const numbers = value.replace(/[^0-9]/g, '');
@@ -55,35 +52,6 @@ const BusinessEditPage = () => {
     if (numbers.length <= 3) return numbers;
     if (numbers.length <= 5) return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
     return `${numbers.slice(0, 3)}-${numbers.slice(3, 5)}-${numbers.slice(5, 10)}`;
-  };
-
-  const checkUserIdDuplicate = async () => {
-    const id = userId.trim();
-    if (!id) {
-      setFormErrors((prev) => ({ ...prev, userId: '아이디를 입력해주세요.' }));
-      return;
-    }
-    setUserIdCheckLoading(true);
-    setFormErrors((prev) => ({ ...prev, userId: '' }));
-    setUserIdChecked(null);
-    try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('id')
-        .eq('user_id', id)
-        .maybeSingle();
-      if (error) throw error;
-      if (data && data.id !== auth?.user?.id) {
-        setUserIdChecked(false);
-        setFormErrors((prev) => ({ ...prev, userId: '이미 사용 중인 아이디입니다.' }));
-      } else {
-        setUserIdChecked(true);
-      }
-    } catch (err) {
-      setFormErrors((prev) => ({ ...prev, userId: '중복 검사 중 오류가 발생했습니다.' }));
-    } finally {
-      setUserIdCheckLoading(false);
-    }
   };
 
   useEffect(() => {
@@ -108,8 +76,8 @@ const BusinessEditPage = () => {
         }
 
         setUserId(data.user_id || '');
-        setHasExistingUserId(!!data.user_id);
         setEmail(data.email || '');
+        setOriginalEmail(data.email || '');
         setPhone(data.number || '');
         setCompanyName(data.company_name || '');
         setRepresentativeName(data.name || '');
@@ -129,7 +97,8 @@ const BusinessEditPage = () => {
 
   const validateForm = () => {
     const err: Record<string, string> = {};
-    if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) err.email = '올바른 이메일 형식을 입력해주세요.';
+    if (!email.trim()) err.email = '이메일을 입력해주세요.';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) err.email = '올바른 이메일 형식을 입력해주세요.';
     if (!businessTermsAgreed) err.businessTerms = '사업자등록정보 수집 및 이용 동의에 체크해주세요.';
     setFormErrors(err);
     return Object.keys(err).length === 0;
@@ -142,11 +111,11 @@ const BusinessEditPage = () => {
     setIsSubmitting(true);
     try {
       const updateData: Record<string, unknown> = {
-        email: email.trim() || null,
+        email: email.trim(),
         auth_term: businessTermsAgreed,
       };
 
-      if (email.trim()) {
+      if (email.trim() !== originalEmail) {
         const { error: authUpdateError } = await supabase.auth.updateUser({ email: email.trim() });
         if (authUpdateError) throw authUpdateError;
       }
@@ -215,9 +184,9 @@ const BusinessEditPage = () => {
                     checked={businessTermsAgreed}
                     disabled={businessTermsAgreed}
                     onChange={(e) => {
-                    setBusinessTermsAgreed(e.target.checked);
-                    setFormErrors((prev) => ({ ...prev, businessTerms: '' }));
-                  }}
+                      setBusinessTermsAgreed(e.target.checked);
+                      setFormErrors((prev) => ({ ...prev, businessTerms: '' }));
+                    }}
                   />
                   <span>사업자등록정보 수집 및 이용 동의 <span className={styles.required}>*</span></span>
                   <button
@@ -278,35 +247,21 @@ const BusinessEditPage = () => {
                     <button
                       type="button"
                       className={styles.changePasswordBtn}
-                      onClick={async () => {
-                        if (!email.trim()) {
-                          alert('등록된 이메일이 없습니다. 이메일을 먼저 저장해주세요.');
-                          return;
-                        }
-                        const res = await fetch('/api/send-password-reset', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ email: email.trim() }),
-                        });
-                        if (res.ok) {
-                          alert('비밀번호 재설정 링크를 이메일로 발송했습니다.');
-                        } else {
-                          alert('발송 중 오류가 발생했습니다.');
-                        }
-                      }}
+                      onClick={() => router.push('/my/change-password')}
                     >
                       변경
                     </button>
                   </div>
-                  <p className={styles.fieldHint}>등록된 이메일로 비밀번호 재설정 링크를 보내드립니다.</p>
+                  <p className={styles.fieldHint}>비밀번호는 사이트 내에서 바로 변경할 수 있습니다.</p>
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label>이메일 <span className={styles.optional}>(선택)</span></label>
+                  <label>이메일 <span className={styles.required}>*</span></label>
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    required
                     placeholder="이메일을 입력하세요"
                     className={styles.input}
                   />
