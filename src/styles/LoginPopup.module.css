@@ -352,6 +352,28 @@
   opacity: 0.7;
 }
 
+.linkDivider {
+  font-size: 12px;
+  color: var(--color-border);
+  user-select: none;
+}
+
+/* 아이디 찾기 결과 박스 */
+.foundIdBox {
+  display: inline-block;
+  min-width: 180px;
+  padding: 14px 24px;
+  margin: 4px 0 14px;
+  background: var(--color-primary-light);
+  border: 1px solid var(--color-primary);
+  border-radius: 12px;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-primary);
+  letter-spacing: 0.02em;
+  word-break: break-all;
+}
+
 /* 구분선 */
 .divider {
   display: flex;

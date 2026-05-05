@@ -27,7 +27,8 @@ const ACTIVE_LOGIN_TYPE_KEY = 'iltok_active_login_type';
 // phone:    휴대폰 OTP 입력 단계
 // setup:    OTP 완료 후 아이디/이메일/비번 설정 단계
 // forgot:   비밀번호 찾기
-type BusinessMode = 'password' | 'phone' | 'setup' | 'forgot';
+// findId:   아이디 찾기 (휴대폰 OTP 인증 후 user_id 표시)
+type BusinessMode = 'password' | 'phone' | 'setup' | 'forgot' | 'findId';
 
 const LoginPopup: React.FC<LoginPopupProps> = ({ onClose, initialUserType = 'business' }) => {
   const router = useRouter();
@@ -65,6 +66,10 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose, initialUserType = 'bus
   const [forgotInput, setForgotInput] = useState('');
   const [forgotSent, setForgotSent] = useState(false);
 
+  // 아이디 찾기
+  const [foundUserId, setFoundUserId] = useState<string | null>(null);
+  const [findIdNoAccount, setFindIdNoAccount] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -88,10 +93,13 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose, initialUserType = 'bus
     setAuthNum('');
     setForgotInput('');
     setForgotSent(false);
+    setFoundUserId(null);
+    setFindIdNoAccount(false);
   };
 
   const headerTitle = () => {
     if (businessMode === 'forgot') return '비밀번호 찾기';
+    if (businessMode === 'findId') return '아이디 찾기';
     if (businessMode === 'setup') return '로그인 정보 설정';
     if (businessMode === 'phone') return '휴대폰 인증';
     return '로그인';
@@ -319,6 +327,85 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose, initialUserType = 'bus
     }
   };
 
+  // ─── 아이디 찾기: OTP 발송 ─────────────────────────────────────────
+  const handleFindIdSend = async () => {
+    if (!phone || phone.length < 10) {
+      setError('올바른 휴대폰 번호를 입력해주세요.');
+      return;
+    }
+    setLoading(true);
+    setError(null);
+    try {
+      const formattedPhone = formatPhone(phone);
+
+      // 등록된 기업회원 휴대폰인지 먼저 확인
+      const { data: existing } = await supabase
+        .from('users')
+        .select('user_id, user_type')
+        .eq('number', formattedPhone)
+        .in('user_type', ['business', 'both'])
+        .maybeSingle();
+
+      if (!existing) {
+        setError('등록되지 않은 휴대폰 번호입니다.');
+        return;
+      }
+
+      const { error } = await supabase.auth.signInWithOtp({
+        phone: formattedPhone,
+        options: { shouldCreateUser: false },
+      });
+      if (error) throw error;
+      setOtpSent(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '인증번호 발송에 실패했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ─── 아이디 찾기: OTP 인증 후 user_id 조회 ────────────────────────
+  const handleFindIdVerify = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const formattedPhone = formatPhone(phone);
+      const { error, data } = await supabase.auth.verifyOtp({
+        phone: formattedPhone,
+        token: authNum,
+        type: 'sms',
+      });
+      if (error) throw error;
+
+      if (!data.user) throw new Error('인증에 실패했습니다.');
+
+      const { data: userData } = await supabase
+        .from('users')
+        .select('user_id')
+        .eq('id', data.user.id)
+        .maybeSingle();
+
+      // 본인 확인 후 자동 로그인 방지: 세션 종료
+      await supabase.auth.signOut();
+
+      if (userData?.user_id) {
+        setFoundUserId(userData.user_id);
+      } else {
+        setFindIdNoAccount(true);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '인증에 실패했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 찾은 아이디로 로그인 화면 복귀
+  const handleUseFoundId = () => {
+    if (foundUserId) setLoginId(foundUserId);
+    switchBusinessMode('password');
+  };
+
   const pwMatch = !!setupPasswordConfirm && setupPassword === setupPasswordConfirm;
   const pwMismatch = !!setupPasswordConfirm && setupPassword !== setupPasswordConfirm;
 
@@ -412,6 +499,11 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose, initialUserType = 'bus
                 <input type="checkbox" id="rememberIdChk" checked={rememberId}
                   onChange={(e) => setRememberId(e.target.checked)} />
                 <label htmlFor="rememberIdChk">아이디 저장</label>
+                <button type="button" className={styles.forgotLink}
+                  onClick={() => switchBusinessMode('findId')}>
+                  아이디 찾기
+                </button>
+                <span className={styles.linkDivider} aria-hidden>|</span>
                 <button type="button" className={styles.forgotLink}
                   onClick={() => switchBusinessMode('forgot')}>
                   비밀번호 찾기
@@ -594,6 +686,51 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose, initialUserType = 'bus
                   <button className={styles.btnLogin} onClick={handleForgotPassword} disabled={loading}>
                     {loading ? '발송 중...' : '재설정 링크 받기'}
                   </button>
+                </>
+              )}
+            </>
+          )}
+
+          {/* ── 기업: 아이디 찾기 ── */}
+          {userType === 'business' && businessMode === 'findId' && (
+            <>
+              {foundUserId ? (
+                <div className={styles.successBox}>
+                  <div className={styles.successIcon}>✓</div>
+                  <p className={styles.successTitle}>회원님의 아이디입니다</p>
+                  <div className={styles.foundIdBox}>{foundUserId}</div>
+                  <p className={styles.successDesc}>
+                    아래 버튼을 눌러 비밀번호를 입력하시면<br />로그인할 수 있습니다.
+                  </p>
+                  <button className={styles.btnLogin} style={{ marginTop: 20 }}
+                    onClick={handleUseFoundId}>
+                    이 아이디로 로그인하기
+                  </button>
+                </div>
+              ) : findIdNoAccount ? (
+                <div className={styles.successBox}>
+                  <div className={styles.successIcon} style={{ background: 'var(--color-bg-input)', color: 'var(--color-text-secondary)' }}>!</div>
+                  <p className={styles.successTitle}>등록된 아이디가 없습니다</p>
+                  <p className={styles.successDesc}>
+                    이 휴대폰 번호는 휴대폰 인증으로만 로그인되어 있습니다.<br />
+                    휴대폰 인증으로 로그인 후 아이디를 설정해주세요.
+                  </p>
+                  <button className={styles.btnLogin} style={{ marginTop: 20 }}
+                    onClick={() => switchBusinessMode('phone')}>
+                    휴대폰 인증으로 로그인
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <p className={styles.forgotDesc}>
+                    가입 시 등록한 휴대폰 번호로 인증하면<br />아이디를 바로 확인할 수 있습니다.
+                  </p>
+                  <PhoneOtpForm
+                    phone={phone} authNum={authNum} otpSent={otpSent} loading={loading}
+                    onPhoneChange={setPhone} onAuthNumChange={setAuthNum}
+                    onSend={handleFindIdSend} onVerify={handleFindIdVerify}
+                    styles={styles}
+                  />
                 </>
               )}
             </>
