@@ -22,6 +22,7 @@ interface MyPost {
   salary_detail?: string;
   is_wage_violation?: boolean;
   ad?: boolean;
+  ad_auto?: boolean;
   ad_since?: string | null;
   ad_until?: string | null;
 }
@@ -361,11 +362,11 @@ const Mylist: React.FC<MylistProps> = ({
           </span>
         </div>
 
-        {/* 프리미엄 서비스 현황 */}
-        {localPosts.filter(p => p.ad).length > 0 && (
+        {/* 프리미엄 서비스 현황 — 결제한 광고만 (자동 선정은 제외) */}
+        {localPosts.filter(p => p.ad && !p.ad_auto).length > 0 && (
           <div className={styles.premiumSection}>
             <p className={styles.premiumSectionTitle}>프리미엄 채용정보 게재중</p>
-            {localPosts.filter(p => p.ad).map(p => (
+            {localPosts.filter(p => p.ad && !p.ad_auto).map(p => (
               <div key={p.id} className={styles.premiumSectionRow}>
                 <span className={styles.premiumSectionName}>{p.title}</span>
                 <span className={styles.premiumSectionPeriod}>
@@ -461,14 +462,17 @@ const Mylist: React.FC<MylistProps> = ({
                     <span className={styles.adMeta}>
                       {post['1depth_region']} {post['2depth_region']} | {post['1depth_category']} {post['2depth_category']}
                     </span>
-                    {post.ad && (
+                    {post.ad && !post.ad_auto && (
                       <span className={styles.premiumBadge}>프리미엄 채용정보 게재중</span>
                     )}
-                    {post.ad && (formatAdPeriod(post.ad_since, post.ad_until)) && (
+                    {post.ad && !post.ad_auto && (formatAdPeriod(post.ad_since, post.ad_until)) && (
                       <span className={styles.premiumPeriod}>
                         {formatAdPeriod(post.ad_since, post.ad_until)}
                         {getDday(post.ad_until) && <span className={styles.premiumDday}>{getDday(post.ad_until)}</span>}
                       </span>
+                    )}
+                    {post.ad && post.ad_auto && (
+                      <span className={styles.featuredBadge}>🔥 오늘의 인기 공고로 노출중</span>
                     )}
                     {post.is_hidden && <span className={styles.hiddenBadge}>숨김</span>}
                     {(post.is_wage_violation || checkWageViolation(post)) && (
