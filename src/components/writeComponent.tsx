@@ -643,6 +643,47 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
         }
       }
 
+      // 채용정보 중복 등록 차단: 본인의 활성(숨김 아님) 공고 중
+      // (제목+지역) 또는 (내용+지역)이 동일하면 등록 불가
+      if (formData.board_type === '0' && !isEditing) {
+        const region1 = formData['1depth_region'];
+        const region2 = formData['2depth_region'];
+
+        const { data: titleMatch } = await supabase
+          .from('jd')
+          .select('id')
+          .eq('uploader_id', user.id)
+          .eq('board_type', '0')
+          .neq('is_hidden', true)
+          .eq('title', formData.title)
+          .eq('1depth_region', region1)
+          .eq('2depth_region', region2)
+          .limit(1);
+
+        if (titleMatch && titleMatch.length > 0) {
+          setErrorMessage('동일한 제목과 지역의 공고가 이미 등록되어 있습니다.\n기존 공고를 끌어올리거나 수정해 주세요.');
+          setIsModalOpen(true);
+          return;
+        }
+
+        const { data: contentsMatch } = await supabase
+          .from('jd')
+          .select('id')
+          .eq('uploader_id', user.id)
+          .eq('board_type', '0')
+          .neq('is_hidden', true)
+          .eq('contents', formData.contents)
+          .eq('1depth_region', region1)
+          .eq('2depth_region', region2)
+          .limit(1);
+
+        if (contentsMatch && contentsMatch.length > 0) {
+          setErrorMessage('동일한 내용과 지역의 공고가 이미 등록되어 있습니다.\n기존 공고를 끌어올리거나 수정해 주세요.');
+          setIsModalOpen(true);
+          return;
+        }
+      }
+
       // 생년월일 합치기
       const birthDateStr = formData.birth_year 
         ? `${formData.birth_year}-${formData.birth_month?.padStart(2, '0') || '01'}-${formData.birth_day?.padStart(2, '0') || '01'}`
