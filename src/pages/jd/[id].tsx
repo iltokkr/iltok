@@ -144,15 +144,85 @@ const JobDetailPage: React.FC<PageProps> = ({ initialJobDetail, initialComments 
   // JD 페이지 진입 시 항상 맨 위로 스크롤 및 조회수 증가
   useEffect(() => {
     window.scrollTo(0, 0);
-    
-    // 조회수 증가
-    const incrementViewCount = async () => {
-      if (id) {
-        await supabase.rpc('increment_view_count', { post_id: Number(id) });
+
+    if (!id) return;
+    const postId = Number(id);
+    if (!Number.isFinite(postId)) return;
+
+    let logRowId: number | null = null;
+    const startedAt = Date.now();
+
+    const trackView = async () => {
+      await supabase.rpc('increment_view_count', { post_id: postId });
+
+      let sessionId = localStorage.getItem('iltok_session_id');
+      if (!sessionId) {
+        sessionId = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+        localStorage.setItem('iltok_session_id', sessionId);
+      }
+
+      const fromParam = typeof router.query.from === 'string' ? router.query.from : null;
+      const referrer = typeof document !== 'undefined' ? document.referrer : '';
+      const source = fromParam
+        || (referrer.includes('114114kr') || referrer.includes('114114KR')
+          ? (referrer.includes('/board') ? 'board'
+            : referrer.includes('/?') || referrer.endsWith('/') ? 'home'
+            : 'internal')
+          : referrer
+            ? 'external'
+            : 'direct');
+
+      const { data: { user } } = await supabase.auth.getUser();
+
+      const { data: insertData } = await supabase
+        .from('jd_view_log')
+        .insert({
+          jd_id: postId,
+          viewer_user_id: user?.id ?? null,
+          session_id: sessionId,
+          referrer: referrer || null,
+          source,
+          user_agent: typeof navigator !== 'undefined' ? navigator.userAgent.slice(0, 500) : null,
+        })
+        .select('id')
+        .single();
+
+      logRowId = insertData?.id ?? null;
+    };
+    trackView();
+
+    let dwellSent = false;
+    const updateDwell = () => {
+      if (logRowId == null || dwellSent) return;
+      dwellSent = true;
+      const dwellMs = Date.now() - startedAt;
+      const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/jd_view_log?id=eq.${logRowId}`;
+      try {
+        fetch(url, {
+          method: 'PATCH',
+          headers: {
+            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
+            'Content-Type': 'application/json',
+            Prefer: 'return=minimal',
+          },
+          body: JSON.stringify({ dwell_ms: dwellMs }),
+          keepalive: true,
+        });
+      } catch {
+        /* noop */
       }
     };
-    incrementViewCount();
-  }, [id]);
+
+    window.addEventListener('beforeunload', updateDwell);
+    window.addEventListener('pagehide', updateDwell);
+
+    return () => {
+      updateDwell();
+      window.removeEventListener('beforeunload', updateDwell);
+      window.removeEventListener('pagehide', updateDwell);
+    };
+  }, [id, router.query.from]);
 
   const canonicalUrl = `https://114114KR.com/JobDetailPage/${id}`;
 
