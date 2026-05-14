@@ -2,6 +2,7 @@ import Head from 'next/head';
 import React, { useMemo } from 'react';
 import { GetServerSideProps } from 'next';
 import { createClient } from '@supabase/supabase-js';
+import { FaRegEye, FaLock } from 'react-icons/fa';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import MainMenu from '@/components/MainMenu';
@@ -303,7 +304,10 @@ const AnalyticsPage: React.FC<PageProps> = (props) => {
       <main className={styles.main}>
         <div className={styles.header}>
           {preview && (
-            <p className={styles.previewBadge}>👀 미리보기 모드 — 실제 데이터 없이 레이아웃만 표시됩니다</p>
+            <p className={styles.previewBadge}>
+              <FaRegEye className={styles.previewIcon} aria-hidden />
+              미리보기 모드 — 실제 데이터 없이 레이아웃만 표시됩니다
+            </p>
           )}
           <h1 className={styles.title}>광고 성과 분석</h1>
           <p className={styles.subtitle}>{jd.title}</p>
@@ -418,7 +422,8 @@ const AnalyticsPage: React.FC<PageProps> = (props) => {
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>조회자 분포 (로그인 회원 기준 · 익명 집계)</h2>
           <p className={styles.privacyNote}>
-            🔒 개인정보 보호를 위해 인원수 5명 미만 항목은 '기타'로 묶어 표시합니다.
+            <FaLock className={styles.privacyIcon} aria-hidden />
+            개인정보 보호를 위해 인원수 5명 미만 항목은 '기타'로 묶어 표시합니다.
           </p>
           <div className={styles.distGrid}>
             <DistBlock title="국적" data={viewerNationality} empty="아직 수집된 데이터가 없습니다." />

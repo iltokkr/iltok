@@ -96,6 +96,19 @@
   border-radius: 6px;
   margin: 0 0 12px;
   border: 1px solid #fde68a;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.previewIcon {
+  flex-shrink: 0;
+}
+
+.privacyIcon {
+  flex-shrink: 0;
+  margin-right: 6px;
+  vertical-align: -2px;
 }
 
 .cards {
