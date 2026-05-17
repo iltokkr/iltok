@@ -54,15 +54,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const supabase = createClient(supabaseUrl, serviceRoleKey);
 
   try {
-    // 1) 기존 자동 프리미엄 해제 (유료 광고는 ad_auto != true 라 안 건드림)
-    const { error: clearError, count: clearedCount } = await supabase
-      .from('jd')
-      .update({ ad: false, ad_auto: false, ad_since: null, ad_until: null }, { count: 'exact' })
-      .eq('ad_auto', true);
-
-    if (clearError) throw clearError;
-
-    // 2) 후보 수집
+    // 1) 후보 수집 (해제보다 먼저 — 후보 0건이면 기존 자동 프리미엄을 그대로 유지)
     const windowStart = new Date();
     windowStart.setDate(windowStart.getDate() - CANDIDATE_WINDOW_DAYS);
 
@@ -75,23 +67,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         updated_time,
         ad,
         ad_auto,
+        is_hidden,
+        is_wage_violation,
         users!inner(is_accept)
       `)
       .eq('board_type', '0')
-      .neq('is_hidden', true)
-      .neq('is_wage_violation', true)
       .eq('users.is_accept', true)
       .gte('updated_time', windowStart.toISOString())
       .gt('view_count', 0)
       .order('view_count', { ascending: false })
-      .limit(500);
+      .limit(1000);
 
     if (fetchError) throw fetchError;
 
-    // 3) 점수 계산 + 정렬
+    // is_hidden / is_wage_violation 은 NULL 인 경우가 정상 — 클라이언트에서 필터링
+    // (.neq('col', true) 는 NULL 행을 제외해버려서 후보가 0건이 되는 버그가 있었음)
+    const visibleCandidates = (candidates || []).filter(
+      (c: any) => c.is_hidden !== true && c.is_wage_violation !== true
+    );
+
+    // 2) 점수 계산 + 정렬
     const now = Date.now();
-    const scored = (candidates || [])
-      .filter((c: any) => !c.ad_auto) // 안전망: 방금 해제된 행이 다시 보일 수 있는 경우 대비
+    const scored = visibleCandidates
       .map((c: any) => {
         const ageMs = now - new Date(c.updated_time).getTime();
         const ageDays = Math.max(1, ageMs / (1000 * 60 * 60 * 24));
@@ -103,7 +100,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       })
       .sort((a, b) => b.score - a.score);
 
-    // 4) uploader 다양성 보정 — 같은 업체 최대 2건
+    // 3) uploader 다양성 보정 — 같은 업체 최대 2건
     const uploaderCount = new Map<string, number>();
     const selected: number[] = [];
     for (const item of scored) {
@@ -116,14 +113,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     if (selected.length === 0) {
+      // 후보가 없으면 기존 자동 프리미엄을 그대로 유지 (해제 금지)
       return res.status(200).json({
         ok: true,
-        cleared: clearedCount ?? 0,
+        cleared: 0,
         candidates: candidates?.length ?? 0,
+        visibleCandidates: visibleCandidates.length,
         selected: 0,
-        note: 'No eligible candidates',
+        note: 'No eligible candidates — keeping existing auto premiums',
       });
     }
+
+    // 4) 기존 자동 프리미엄 해제 (유료 광고는 ad_auto != true 라 안 건드림)
+    const { error: clearError, count: clearedCount } = await supabase
+      .from('jd')
+      .update({ ad: false, ad_auto: false, ad_since: null, ad_until: null }, { count: 'exact' })
+      .eq('ad_auto', true);
+
+    if (clearError) throw clearError;
 
     // 5) 자동 프리미엄 세팅
     const adSince = new Date();
@@ -147,6 +154,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       ok: true,
       cleared: clearedCount ?? 0,
       candidates: candidates?.length ?? 0,
+      visibleCandidates: visibleCandidates.length,
       selected: selected.length,
       ids: selected,
     });
