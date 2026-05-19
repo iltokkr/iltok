@@ -26,12 +26,12 @@ function ensureEnvLoaded() {
 
 const PICK_COUNT = 50;
 const MAX_PER_UPLOADER = 2;
-const CANDIDATE_WINDOW_DAYS = 30;
+const CANDIDATE_WINDOW_DAYS = 7;
 
 /**
  * 자동 프리미엄 광고 갱신 (Vercel Cron, 매일 KST 00:30)
  * - 운영자 결제 광고(ad_auto != true)는 절대 안 건드림
- * - 후보: 최근 30일 내 등록, 활성, 사업자 인증된 채용공고
+ * - 후보: 최근 7일 내 등록, 활성, 사업자 인증된 채용공고
  * - 점수: view_count / (days_since_post + 1)
  * - 다양성: 같은 uploader_id는 최대 2건
  */
