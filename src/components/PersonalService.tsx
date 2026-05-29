@@ -468,6 +468,15 @@ const PersonalService: React.FC<PersonalServiceProps> = ({ activeSection }) => {
                   {saving ? '저장 중...' : '수정하기'}
                 </button>
               </div>
+
+              <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid var(--color-border)', textAlign: 'center' }}>
+                <Link
+                  href="/my/withdraw"
+                  style={{ fontSize: 13, color: 'var(--color-text-muted)', textDecoration: 'underline' }}
+                >
+                  회원탈퇴
+                </Link>
+              </div>
             </div>
           </section>
         </div>

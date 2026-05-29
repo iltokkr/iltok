@@ -322,6 +322,15 @@ const BusinessEditPage = () => {
                     {isSubmitting ? '수정 중...' : '수정하기'}
                   </button>
                 </div>
+
+                <div style={{ marginTop: 20, textAlign: 'center' }}>
+                  <Link
+                    href="/my/withdraw"
+                    style={{ fontSize: 13, color: 'var(--color-text-muted)', textDecoration: 'underline' }}
+                  >
+                    회원탈퇴
+                  </Link>
+                </div>
               </div>
             </section>
           </form>
