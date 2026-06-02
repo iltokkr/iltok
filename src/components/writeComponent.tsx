@@ -654,7 +654,7 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
           .select('id')
           .eq('uploader_id', user.id)
           .eq('board_type', '0')
-          .neq('is_hidden', true)
+          .or('is_hidden.is.null,is_hidden.eq.false')
           .eq('title', formData.title)
           .eq('1depth_region', region1)
           .eq('2depth_region', region2)
@@ -671,7 +671,7 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
           .select('id')
           .eq('uploader_id', user.id)
           .eq('board_type', '0')
-          .neq('is_hidden', true)
+          .or('is_hidden.is.null,is_hidden.eq.false')
           .eq('contents', formData.contents)
           .eq('1depth_region', region1)
           .eq('2depth_region', region2)
@@ -1248,7 +1248,7 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
                 className={getInputClassName('work_location_detail', style.input)}
                 placeholder="상세 주소"
               />
-              {(errors['1depth_region'] || errors['2depth_region'] || errors.work_location_detail) && 
+              {(errors['1depth_region'] || errors['2depth_region'] || errors.work_location_detail) &&
                 <div className={style.errorText}>지역 정보를 모두 입력해주세요</div>}
             </div>
           </div>
