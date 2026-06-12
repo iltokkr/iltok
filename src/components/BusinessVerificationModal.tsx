@@ -186,6 +186,7 @@ const BusinessVerificationModal: React.FC<BusinessVerificationModalProps> = ({ o
         policy_term: termsChecked,
         auth_term: policyChecked,
         is_accept: false, // 수정 시 재검토가 필요하므로 인증 상태를 false로 변경
+        accept_notified: false, // 재승인 시 승인 완료 알림을 다시 띄우기 위해 리셋
       };
 
       // 새 파일이 업로드된 경우에만 biz_file 업데이트
