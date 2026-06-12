@@ -254,6 +254,7 @@ const BusinessSignup = () => {
 
       if (updateError) throw updateError;
 
+      localStorage.setItem('iltok_active_login_type', 'business');
       alert('회원가입이 완료되었습니다. 관리자 승인 후 이용 가능합니다.');
       router.push('/my');
     } catch (err: unknown) {

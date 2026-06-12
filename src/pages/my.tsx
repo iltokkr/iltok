@@ -57,7 +57,14 @@ const My: React.FC = () => {
 
   const activeLoginType = mounted ? (localStorage.getItem('iltok_active_login_type') as 'business' | 'jobseeker' | null) : null;
   const rawUserType = userData?.user_type ?? null;
-  const effectiveUserType = activeLoginType ?? (rawUserType === 'both' ? 'business' : rawUserType);
+  // DB user_type이 진실의 원천. localStorage(activeLoginType)는
+  //  - 'both' 계정에서 어느 탭으로 들어왔는지 구분할 때
+  //  - userData 로딩 전(rawUserType=null) 깜빡임 방지용 임시 폴백
+  // 으로만 사용한다. DB값이 'business'/'jobseeker'로 확정되면 그 값이 항상 우선.
+  const effectiveUserType =
+    rawUserType === 'both'
+      ? (activeLoginType ?? 'business')
+      : (rawUserType ?? activeLoginType);
 
   const isBusiness = effectiveUserType === 'business';
   const isJobseeker = effectiveUserType === 'jobseeker';
@@ -93,7 +100,8 @@ const My: React.FC = () => {
     if (!router.isReady || !userData || !mounted) return;
     const section = router.query.section as string | undefined;
     const storedType = localStorage.getItem('iltok_active_login_type');
-    const effective = storedType ?? (userData.user_type === 'both' ? 'business' : userData.user_type);
+    const effective =
+      userData.user_type === 'both' ? (storedType ?? 'business') : userData.user_type;
     if (effective === 'jobseeker' && (!section || section === 'ads') && router.pathname === '/my') {
       router.replace('/my?section=applications', undefined, { shallow: true });
     }
