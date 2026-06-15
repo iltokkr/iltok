@@ -1,0 +1,239 @@
+/* 방장 채널 — 메인 게시판 상단 단방향 브로드캐스트(텔레그램 채널 느낌) */
+
+.channel {
+  max-width: 980px;
+  margin: 12px auto;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+/* 헤더 */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--color-gradient-cta);
+  color: #fff;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.bellIcon {
+  flex: 0 0 auto;
+  font-size: 18px;
+  color: #fff;
+}
+
+.titleBox {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+  min-width: 0;
+}
+
+.name {
+  font-weight: 700;
+  font-size: 14px;
+  color: #fff;
+}
+
+.desc {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.collapseBtn {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  cursor: pointer;
+  border-radius: 50%;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.collapseBtn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* 메시지 리스트 */
+.list {
+  max-height: 320px;
+  overflow-y: auto;
+  padding: 12px 14px;
+  background: var(--color-primary-bg);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.empty {
+  margin: 8px 0;
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+/* 메시지 블록: 보낸이 + (말풍선 + 시간) */
+.msg {
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: 92%;
+}
+
+.sender {
+  align-self: flex-start;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  padding-left: 2px;
+}
+
+/* 한 줄: 말풍선 + 바깥 시간 */
+.row {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  min-width: 0;
+}
+
+/* 말풍선 */
+.bubble {
+  min-width: 0;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 4px 14px 14px 14px;
+  padding: 8px 12px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+}
+
+.bubbleText {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.link {
+  color: var(--color-primary);
+  text-decoration: underline;
+  word-break: break-all;
+}
+
+.meta {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.time {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.deleteBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  border-radius: 50%;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.deleteBtn:hover {
+  color: var(--color-error);
+  background: var(--color-error-bg);
+}
+
+/* 입력칸 (방장만 노출) */
+.composer {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.input {
+  flex: 1;
+  resize: none;
+  max-height: 120px;
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+  padding: 9px 14px;
+  font-size: 14px;
+  line-height: 1.5;
+  background: var(--color-bg-input);
+  color: var(--color-text);
+  outline: none;
+}
+
+.input:focus {
+  border-color: var(--color-primary);
+  background: var(--color-surface);
+}
+
+.sendBtn {
+  flex: 0 0 auto;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 19px;
+  padding: 0 18px;
+  background: var(--color-primary);
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.sendBtn:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+}
+
+.sendBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .channel {
+    margin: 8px;
+    border-radius: 12px;
+  }
+  .list {
+    max-height: 260px;
+  }
+}

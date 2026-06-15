@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Header from '@/components/Header';
 import MainMenu from '@/components/MainMenu';
+import BoardChat from '@/components/BoardChat';
 import JobFilter from '@/components/JobFilter';
 import JobList from '@/components/JobList';
 import Pagination from '@/components/Pagination';
@@ -821,6 +822,7 @@ const BoardPage: React.FC = () => {
 
       <Header/>
       <MainMenu currentBoardType={boardType} />
+      {boardType === '0' && <BoardChat />}
       <div className={styles.layout} ref={contentRef}>
         <JobFilter
           boardType={boardType}
