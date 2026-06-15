@@ -22,6 +22,12 @@ const MESSAGE_LIMIT = 30;
 const CHANNEL_NAME = '114114KR 운영자';
 const CHANNEL_DESC = '소식·공지 채널';
 
+// 이모지 반응 종류 — 바꾸고 싶으면 여기만 수정
+const REACTIONS = ['👍', '❤️', '😂', '😮'];
+
+// chatId -> emoji -> { count, mine(내가 눌렀는지) }
+type ReactionMap = Record<number, Record<string, { count: number; mine: boolean }>>;
+
 // 본문 속 URL 을 자동으로 링크로 변환
 function linkify(text: string): React.ReactNode {
   const parts = text.split(/(https?:\/\/[^\s]+)/g);
@@ -51,12 +57,27 @@ const BoardChat: React.FC = () => {
   const user = auth?.user ?? null;
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [reactions, setReactions] = useState<ReactionMap>({});
+  const [clientId, setClientId] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
 
   const listRef = useRef<HTMLDivElement>(null);
+
+  // 브라우저별 익명 식별자 (반응 1인 1회 보장용)
+  useEffect(() => {
+    let id = localStorage.getItem('bc_client_id');
+    if (!id) {
+      id =
+        typeof crypto !== 'undefined' && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `c_${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`;
+      localStorage.setItem('bc_client_id', id);
+    }
+    setClientId(id);
+  }, []);
 
   // 메시지 로드 (새로고침/진입 시)
   const fetchMessages = useCallback(async () => {
@@ -102,6 +123,73 @@ const BoardChat: React.FC = () => {
       listRef.current.scrollTop = listRef.current.scrollHeight;
     }
   }, [messages, collapsed]);
+
+  // 이모지 반응 로드 (메시지/로그인 변경 시 집계)
+  useEffect(() => {
+    const ids = messages.map((m) => m.id);
+    if (ids.length === 0) {
+      setReactions({});
+      return;
+    }
+    let active = true;
+    (async () => {
+      const { data, error } = await supabase
+        .from('board_chat_reaction')
+        .select('chat_id, emoji, client_id')
+        .in('chat_id', ids);
+      if (!active || error || !data) return;
+      const map: ReactionMap = {};
+      for (const r of data as { chat_id: number; emoji: string; client_id: string }[]) {
+        const byEmoji = (map[r.chat_id] ||= {});
+        const cell = (byEmoji[r.emoji] ||= { count: 0, mine: false });
+        cell.count += 1;
+        if (clientId && r.client_id === clientId) cell.mine = true;
+      }
+      setReactions(map);
+    })();
+    return () => {
+      active = false;
+    };
+  }, [messages, clientId]);
+
+  // 반응 토글 (로그인 불필요 — 브라우저별 client_id 기준)
+  const toggleReaction = useCallback(
+    async (chatId: number, emoji: string) => {
+      if (!clientId) return;
+      const mine = !!reactions[chatId]?.[emoji]?.mine;
+
+      // 낙관적 업데이트
+      setReactions((prev) => {
+        const next: ReactionMap = { ...prev };
+        const byEmoji = { ...(next[chatId] || {}) };
+        const cell = { ...(byEmoji[emoji] || { count: 0, mine: false }) };
+        if (mine) {
+          cell.count = Math.max(0, cell.count - 1);
+          cell.mine = false;
+        } else {
+          cell.count += 1;
+          cell.mine = true;
+        }
+        byEmoji[emoji] = cell;
+        next[chatId] = byEmoji;
+        return next;
+      });
+
+      if (mine) {
+        await supabase
+          .from('board_chat_reaction')
+          .delete()
+          .eq('chat_id', chatId)
+          .eq('client_id', clientId)
+          .eq('emoji', emoji);
+      } else {
+        await supabase
+          .from('board_chat_reaction')
+          .insert({ chat_id: chatId, client_id: clientId, user_id: user?.id ?? null, emoji });
+      }
+    },
+    [clientId, user, reactions]
+  );
 
   const handleSend = useCallback(async () => {
     const text = input.trim();
@@ -189,6 +277,24 @@ const BoardChat: React.FC = () => {
                         </button>
                       )}
                     </div>
+                  </div>
+                  <div className={styles.reactions}>
+                    {REACTIONS.map((emoji) => {
+                      const cell = reactions[m.id]?.[emoji];
+                      const count = cell?.count ?? 0;
+                      return (
+                        <button
+                          key={emoji}
+                          type="button"
+                          className={`${styles.reactionBtn} ${cell?.mine ? styles.reactionActive : ''}`}
+                          onClick={() => toggleReaction(m.id, emoji)}
+                          aria-label={`${emoji} 반응`}
+                        >
+                          <span className={styles.reactionEmoji}>{emoji}</span>
+                          {count > 0 && <span className={styles.reactionCount}>{count}</span>}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               ))
