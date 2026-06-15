@@ -508,7 +508,7 @@
 /* 모바일 대응 */
 @media (max-width: 768px) {
   .jobItem {
-    font-size: 12px;
+    font-size: 13px;
     padding: 2px 0;
     flex-wrap: wrap;
   }
