@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -42,6 +42,30 @@ const BusinessSignup = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [userIdChecked, setUserIdChecked] = useState<boolean | null>(null);
   const [userIdCheckLoading, setUserIdCheckLoading] = useState(false);
+
+  // 이미 로그인된 개인회원(jobseeker)이 "기업회원 전환" 메뉴로 진입한 경우:
+  // 세션으로 본인이 확인되므로 휴대폰 재인증(OTP)을 생략한다. (Twilio 문자 비용/번거로움 제거)
+  useEffect(() => {
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: existing } = await supabase
+        .from('users')
+        .select('number, user_type')
+        .eq('id', user.id)
+        .maybeSingle();
+      // 순수 개인회원만 자동 인증 처리 (business/both는 기존 OTP 흐름에서 차단)
+      if (!existing || existing.user_type !== 'jobseeker') return;
+      setVerifiedUser(user);
+      setIsVerified(true);
+      if (existing.number) {
+        const local = existing.number.startsWith('+82')
+          ? '0' + existing.number.slice(3)
+          : existing.number;
+        setPhone(local.replace(/[^0-9]/g, ''));
+      }
+    })();
+  }, []);
 
   const formatPhoneForApi = (value: string) => {
     const numbers = value.replace(/[^0-9]/g, '');
@@ -216,7 +240,11 @@ const BusinessSignup = () => {
         .eq('id', user.id)
         .maybeSingle();
 
-      const newUserType = existingUser?.user_type === 'jobseeker' ? 'both' : 'business';
+      // 기존이 개인(jobseeker)이거나 이미 both면 both 유지/승격, 그 외에는 business
+      const newUserType =
+        existingUser?.user_type === 'jobseeker' || existingUser?.user_type === 'both'
+          ? 'both'
+          : 'business';
 
       // 아이디/이메일/비밀번호 설정 (service role로 이메일 확인 없이)
       const setupRes = await fetch('/api/setup-business-account', {

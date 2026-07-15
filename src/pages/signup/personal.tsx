@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -66,6 +66,30 @@ const PersonalSignup = () => {
   const [region2, setRegion2] = useState('');
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // 이미 로그인된 기업회원(business)이 "개인회원 전환" 메뉴로 진입한 경우:
+  // 세션으로 본인이 확인되므로 휴대폰 재인증(OTP)을 생략한다. (business.tsx와 대칭)
+  useEffect(() => {
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: existing } = await supabase
+        .from('users')
+        .select('number, user_type')
+        .eq('id', user.id)
+        .maybeSingle();
+      // 순수 기업회원만 자동 인증 처리
+      if (!existing || existing.user_type !== 'business') return;
+      setVerifiedUser(user);
+      setIsVerified(true);
+      if (existing.number) {
+        const local = existing.number.startsWith('+82')
+          ? '0' + existing.number.slice(3)
+          : existing.number;
+        setPhone(local.replace(/[^0-9]/g, ''));
+      }
+    })();
+  }, []);
 
   const formatPhoneForApi = (value: string) => {
     const numbers = value.replace(/[^0-9]/g, '');
@@ -196,7 +220,11 @@ const PersonalSignup = () => {
         .eq('id', user.id)
         .maybeSingle();
 
-      const newUserType = existingUser?.user_type === 'business' ? 'both' : 'jobseeker';
+      // 기존이 기업(business)이거나 이미 both면 both 유지/승격, 그 외에는 jobseeker
+      const newUserType =
+        existingUser?.user_type === 'business' || existingUser?.user_type === 'both'
+          ? 'both'
+          : 'jobseeker';
       const userData = {
         id: user.id,
         number: formattedPhone,
@@ -233,7 +261,14 @@ const PersonalSignup = () => {
       router.push('/my');
     } catch (err: unknown) {
       console.error(err);
-      alert(err instanceof Error ? err.message : '회원가입 중 오류가 발생했습니다.');
+      // Supabase 에러(PostgrestError)는 Error 인스턴스가 아니라 { message } 객체이므로 함께 처리
+      const msg =
+        err instanceof Error
+          ? err.message
+          : err && typeof err === 'object' && 'message' in err
+            ? String((err as { message: string }).message)
+            : '';
+      alert(msg || '회원가입 중 오류가 발생했습니다.');
     } finally {
       setIsSubmitting(false);
     }

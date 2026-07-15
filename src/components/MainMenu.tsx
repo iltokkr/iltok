@@ -1,5 +1,6 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { FaUserCircle, FaChevronDown, FaExchangeAlt } from 'react-icons/fa';
 import { useRouter } from 'next/router';
 import styles from '@/styles/MainMenu.module.css';
 import LoginPopup from './LoginPopup';
@@ -27,7 +28,9 @@ const MainMenu: React.FC<MainMenuProps> = ({ currentBoardType = '0', showMenuIte
 
   const userType = userProfile?.userType ?? null;
   const activeLoginType = mounted ? (localStorage.getItem('iltok_active_login_type') as 'business' | 'jobseeker' | null) : null;
-  const effectiveUserType = activeLoginType ?? (userType === 'both' ? 'business' : userType);
+  // DB user_type이 진실의 원천. activeLoginType(localStorage)은 'both' 계정에서 어느 모드인지 구분할 때,
+  // 그리고 userType 로딩 전 깜빡임 방지용으로만 쓴다. (my.tsx와 동일한 규칙 — 메뉴/본문 불일치 방지)
+  const effectiveUserType = userType === 'both' ? (activeLoginType ?? 'business') : (userType ?? activeLoginType);
   const userId = userProfile?.userId ?? null;
   const isUserLoading = userProfile?.isUserLoading ?? false;
 
@@ -48,6 +51,32 @@ const MainMenu: React.FC<MainMenuProps> = ({ currentBoardType = '0', showMenuIte
   const handleFreeAdClick = (e: React.MouseEvent) => {
     e.preventDefault();
     router.push('/write');
+  };
+
+  // both 계정: 재로그인 없이 개인↔기업 모드 전환 (localStorage 플래그만 변경 후 이동)
+  const handleModeSwitch = (target: 'jobseeker' | 'business') => {
+    localStorage.setItem('iltok_active_login_type', target);
+    router.push(target === 'jobseeker' ? '/my?section=applications' : '/my');
+  };
+
+  // 프로필 드롭다운 (PC) — 계정 관련 항목을 우측 프로필 메뉴로 모음
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!showProfileMenu) return;
+    const handler = (e: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setShowProfileMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [showProfileMenu]);
+
+  const goProfile = (href: string) => {
+    setShowProfileMenu(false);
+    router.push(href);
   };
 
   return (
@@ -101,16 +130,6 @@ const MainMenu: React.FC<MainMenuProps> = ({ currentBoardType = '0', showMenuIte
                     </Link>
                   </li>
                   <li>
-                    <Link href="/my" className={currentSection === 'ads' ? styles.focus : styles.menuLink}>
-                      공고관리
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/my?section=info" className={currentSection === 'info' ? styles.focus : styles.menuLink}>
-                      회원정보
-                    </Link>
-                  </li>
-                  <li>
                     <a
                       href="https://pf.kakao.com/_ywaMn"
                       target="_blank"
@@ -145,17 +164,7 @@ const MainMenu: React.FC<MainMenuProps> = ({ currentBoardType = '0', showMenuIte
                     </Link>
                   </li>
                   <li>
-                    <Link href="/my?section=applications" className={currentSection === 'applications' ? styles.focus : styles.menuLink}>
-                      지원공고
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/my?section=resume" className={`${styles.menuCtaLink} ${currentSection === 'resume' ? styles.focus : ''}`}>
-                      이력서 작성
-                    </Link>
-                  </li>
-                  <li>
-                    <a 
+                    <a
                       href="https://pf.kakao.com/_ywaMn"
                       target="_blank"
                       rel="noopener noreferrer"
@@ -218,26 +227,59 @@ const MainMenu: React.FC<MainMenuProps> = ({ currentBoardType = '0', showMenuIte
                 <a href="#" onClick={(e) => { e.preventDefault(); setShowSignupTypeModal(true); }} className={styles.menuLink}>회원가입</a>
               </>
             ) : auth?.isLoggedIn ? (
-              <>
-                {(() => {
-                  const isPersonal = effectiveUserType === 'jobseeker';
-                  const serviceHref = isPersonal ? '/my?section=applications' : '/my';
-                  const serviceLabel = isPersonal
-                    ? (userId ? <><span className={styles.userTag}>{userId}님</span> 개인서비스</> : '개인서비스')
-                    : (userId ? <><span className={styles.userTag}>{userId}님</span> 기업서비스</> : '기업서비스');
-                  return (
-                    <a
-                      href={serviceHref}
-                      className={styles.menuLink}
-                      onClick={(e) => { e.preventDefault(); router.push(serviceHref); }}
+              <div className={styles.profileWrap} ref={profileRef}>
+                <button
+                  type="button"
+                  className={styles.profileBtn}
+                  onClick={() => setShowProfileMenu((v) => !v)}
+                  aria-expanded={showProfileMenu}
+                  aria-label="내 메뉴"
+                >
+                  <FaUserCircle className={styles.profileAvatar} />
+                  <FaChevronDown className={`${styles.profileCaret} ${showProfileMenu ? styles.profileCaretOpen : ''}`} />
+                </button>
+                {showProfileMenu && (
+                  <div className={styles.profileMenu}>
+                    <div className={styles.profileHeader}>
+                      <span className={styles.profileName}>{userId ? `${userId}님` : '회원님'}</span>
+                      <span className={styles.profileRole}>{effectiveUserType === 'jobseeker' ? '개인회원' : '기업회원'}</span>
+                    </div>
+                    <div className={styles.profileDivider} />
+                    {effectiveUserType === 'business' ? (
+                      <>
+                        <button type="button" className={styles.profileItem} onClick={() => goProfile('/my')}>공고관리</button>
+                        <button type="button" className={styles.profileItem} onClick={() => goProfile('/my?section=info')}>회원정보</button>
+                      </>
+                    ) : (
+                      <>
+                        <button type="button" className={styles.profileItem} onClick={() => goProfile('/my?section=applications')}>지원공고</button>
+                        <button type="button" className={styles.profileItem} onClick={() => goProfile('/my?section=resume')}>이력서 작성</button>
+                        <button type="button" className={styles.profileItem} onClick={() => goProfile('/my?section=info')}>회원정보</button>
+                      </>
+                    )}
+                    {userType === 'both' && (
+                      <>
+                        <div className={styles.profileDivider} />
+                        <button
+                          type="button"
+                          className={`${styles.profileItem} ${styles.profileSwitch}`}
+                          onClick={() => { setShowProfileMenu(false); handleModeSwitch(effectiveUserType === 'business' ? 'jobseeker' : 'business'); }}
+                        >
+                          <FaExchangeAlt /> {effectiveUserType === 'business' ? '개인 전환' : '기업 전환'}
+                        </button>
+                      </>
+                    )}
+                    <div className={styles.profileDivider} />
+                    <button
+                      type="button"
+                      className={`${styles.profileItem} ${styles.profileLogout}`}
+                      onClick={() => { setShowProfileMenu(false); auth.logout().then(() => router.push('/board')); }}
                     >
-                      {serviceLabel}
-                    </a>
-                  );
-                })()}
-                <span className={styles.menuSep}>|</span>
-                <a href="#" onClick={(e) => { e.preventDefault(); auth.logout().then(() => router.push('/board')); }} className={styles.menuLink}>로그아웃</a>
-              </>
+                      로그아웃
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
               <>
                 <a href="#" onClick={(e) => { e.preventDefault(); setShowLoginPopup(true); }} className={styles.menuLink}>로그인</a>

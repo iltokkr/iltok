@@ -6,7 +6,7 @@ import LoginPopup from './LoginPopup';
 import SignupTypeModal from './SignupTypeModal';
 import { AuthContext } from '@/contexts/AuthContext';
 import { UserContext } from '@/contexts/UserContext';
-import { FaSearch, FaTimes, FaBars } from 'react-icons/fa';
+import { FaSearch, FaTimes, FaBars, FaExchangeAlt } from 'react-icons/fa';
 
 const Header: React.FC = () => {
   const [showLoginPopup, setShowLoginPopup] = useState(false);
@@ -23,7 +23,8 @@ const Header: React.FC = () => {
 
   const userType = userProfile?.userType ?? null;
   const activeLoginType = mounted ? (localStorage.getItem('iltok_active_login_type') as 'business' | 'jobseeker' | null) : null;
-  const effectiveUserType = activeLoginType ?? (userType === 'both' ? 'business' : userType);
+  // DB user_type이 진실의 원천 (my.tsx와 동일 규칙 — 메뉴/본문 불일치 방지)
+  const effectiveUserType = userType === 'both' ? (activeLoginType ?? 'business') : (userType ?? activeLoginType);
   const userId = userProfile?.userId ?? null;
   const isUserLoading = userProfile?.isUserLoading ?? false;
 
@@ -32,13 +33,19 @@ const Header: React.FC = () => {
   const { isLoggedIn } = auth;
 
   const currentBoardType = (router.pathname === '/board' ? (router.query.board_type as string) : null) || '0';
-  const currentSection = (router.pathname === '/my' ? (router.query.section as string) : undefined) as 'ads' | 'info' | 'applications' | 'resume' | undefined;
   const showMenuItems = !['/signup/business', '/signup/personal', '/privacy', '/privacy-policy'].includes(router.pathname) && !router.pathname.startsWith('/resume');
 
   const handleFreeAdClick = (e: React.MouseEvent) => {
     e.preventDefault();
     setShowMobileMenu(false);
     router.push('/write');
+  };
+
+  // both 계정: 재로그인 없이 개인↔기업 모드 전환 (localStorage 플래그만 변경 후 이동)
+  const handleModeSwitch = (target: 'jobseeker' | 'business') => {
+    localStorage.setItem('iltok_active_login_type', target);
+    closeMobileMenu();
+    router.push(target === 'jobseeker' ? '/my?section=applications' : '/my');
   };
 
   const handleSignupTypeSelect = (type: 'jobseeker' | 'business') => {
@@ -214,22 +221,21 @@ const Header: React.FC = () => {
           <div className={styles.mobileMenuDivider} />
           <div className={styles.mobileMenuAuthSection}>
             {isLoggedIn && userId && (userType === 'business' || userType === 'both' || userType === 'jobseeker') && (
-              <span className={styles.mobileMenuUserTag}>{userId}님</span>
+              <span className={styles.mobileMenuUserTag}>{userId}님 · {effectiveUserType === 'jobseeker' ? '개인회원' : '기업회원'}</span>
             )}
             {isLoggedIn && userType ? (
               <>
-                <a
-                  href={userType === 'jobseeker' ? '/my?section=applications' : (userType === 'both' && (currentSection === 'applications' || currentSection === 'info' || currentSection === 'resume' || currentSection !== 'ads') ? '/my?section=applications' : '/my')}
-                  className={styles.mobileMenuLink}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    const href = userType === 'jobseeker' ? '/my?section=applications' : (userType === 'both' && (currentSection === 'applications' || currentSection === 'info' || currentSection === 'resume' || currentSection !== 'ads') ? '/my?section=applications' : '/my');
-                    closeMobileMenu();
-                    router.push(href);
-                  }}
-                >
-                  {userType === 'jobseeker' ? '개인서비스' : (userType === 'both' && (currentSection === 'applications' || currentSection === 'info' || currentSection === 'resume' || currentSection !== 'ads') ? '개인서비스' : '기업서비스')}
-                </a>
+                {userType === 'both' && (
+                  <a
+                    href={effectiveUserType === 'business' ? '/my?section=applications' : '/my'}
+                    onClick={(e) => { e.preventDefault(); handleModeSwitch(effectiveUserType === 'business' ? 'jobseeker' : 'business'); }}
+                    className={styles.mobileMenuLink}
+                    style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+                  >
+                    <FaExchangeAlt />
+                    {effectiveUserType === 'business' ? '개인 전환' : '기업 전환'}
+                  </a>
+                )}
                 <a href="#" onClick={(e) => { e.preventDefault(); auth.logout().then(() => { closeMobileMenu(); router.push('/board'); }); }} className={styles.mobileMenuLink}>
                   로그아웃
                 </a>
