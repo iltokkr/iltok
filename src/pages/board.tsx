@@ -22,6 +22,39 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
+// 목록에서 실제로 렌더링되는 컬럼만 조회한다.
+// contents는 본문 전체(평균 714B, row의 73%)라 목록에서는 미리보기 생성 컬럼으로 대체한다.
+// (검색용 ilike는 서버에서 원본 contents를 그대로 쓰므로 영향 없음)
+const LIST_COLUMNS = `
+  id,
+  updated_time,
+  title,
+  contents:contents_preview,
+  salary_type,
+  salary_detail,
+  1depth_region,
+  2depth_region,
+  1depth_category,
+  2depth_category,
+  ad,
+  view_count,
+  community_tag,
+  is_urgent,
+  is_ads,
+  is_day_pay,
+  work_start_time,
+  work_end_time,
+  age_limit,
+  korean_name,
+  seeker_gender,
+  birth_date,
+  nationality,
+  visa_status,
+  desired_regions,
+  work_conditions,
+  career_history
+`;
+
 interface FilterOptions {
   city1: string;
   city2: string;
@@ -275,9 +308,7 @@ const BoardPage: React.FC = () => {
       let baseQuery = supabase
         .from('jd')
         .select(`
-          *,
-          is_urgent,
-          is_ads,
+          ${LIST_COLUMNS},
           users!inner (
             is_accept
           )
@@ -408,7 +439,7 @@ const BoardPage: React.FC = () => {
               id,
               updated_time,
               title,
-              contents,
+              contents:contents_preview,
               salary_type,
               salary_detail,
               1depth_region,
@@ -432,7 +463,7 @@ const BoardPage: React.FC = () => {
           // uploader_id가 null인 광고도 별도로 가져옴
           let nullUploaderQuery = supabase
             .from('jd')
-            .select()
+            .select(LIST_COLUMNS)
             .eq('ad', true)
             .eq('board_type', currentBoardType)
             .is('uploader_id', null)
@@ -478,9 +509,7 @@ const BoardPage: React.FC = () => {
           let partnerQuery = supabase
             .from('jd')
             .select(`
-              *,
-              is_urgent,
-              is_ads,
+              ${LIST_COLUMNS},
               users!inner (is_accept)
             `)
             .eq('board_type', currentBoardType)
@@ -532,7 +561,7 @@ const BoardPage: React.FC = () => {
               id,
               updated_time,
               title,
-              contents,
+              contents:contents_preview,
               salary_type,
               salary_detail,
               1depth_region,

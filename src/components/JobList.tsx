@@ -154,23 +154,34 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
     fetchApplications();
   }, [isLoggedIn, user]);
 
-  const fetchBookmarkCounts = async () => {
-    const { data, error } = await supabase
-      .from('job_application')
-      .select('jd_id');
-
-    if (data && !error) {
-      const counts = data.reduce((acc: Record<number, number>, item: { jd_id: number }) => {
-        acc[item.jd_id] = (acc[item.jd_id] || 0) + 1;
-        return acc;
-      }, {});
-      setBookmarkCounts(counts);
-    }
-  };
+  // 화면에 보이는 공고의 지원 수만 조회한다.
+  // (전체 job_application을 긁으면 방문자 1명당 최대 1000행이 내려가 egress를 크게 잡아먹는다)
+  const visibleJobIds = [...jobs, ...adJobs].map((job) => job.id);
+  const visibleJobIdsKey = visibleJobIds.join(',');
 
   useEffect(() => {
+    if (!visibleJobIdsKey) {
+      setBookmarkCounts({});
+      return;
+    }
+
+    const fetchBookmarkCounts = async () => {
+      const { data, error } = await supabase
+        .from('job_application')
+        .select('jd_id')
+        .in('jd_id', visibleJobIdsKey.split(',').map(Number));
+
+      if (data && !error) {
+        const counts = data.reduce((acc: Record<number, number>, item: { jd_id: number }) => {
+          acc[item.jd_id] = (acc[item.jd_id] || 0) + 1;
+          return acc;
+        }, {});
+        setBookmarkCounts(counts);
+      }
+    };
+
     fetchBookmarkCounts();
-  }, []);
+  }, [visibleJobIdsKey]);
 
   // 기존 날짜 형식 (구인/구직정보용) - MM-dd
   const formatDate = (dateString: string) => {
