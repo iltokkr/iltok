@@ -88,8 +88,20 @@ export async function getServerSideProps({ params }: { params?: { id?: string } 
     const [jobResponse, commentsResponse] = await Promise.all([
       supabase
         .from('jd')
+        // JobDetailProps.jobDetail이 요구하는 컬럼만 조회한다.
+        // select('*')는 embedding(벡터)·contents_preview·analytics_token 등
+        // 상세 화면에서 쓰지 않는 컬럼까지 전부 가져온다.
         .select(`
-          *,
+          id, updated_time, title, contents, ad, board_type,
+          experience, gender, education, age_limit, required_visa,
+          salary_type, salary_detail,
+          1depth_category, 2depth_category, 1depth_region, 2depth_region,
+          work_location_detail, work_start_time, work_end_time,
+          is_two_shift, work_start_time2, work_end_time2,
+          is_ads, content_image, contact_name, contact_phone,
+          korean_name, english_name, seeker_gender, birth_date,
+          nationality, visa_status, korean_ability,
+          work_conditions, desired_regions, career_history,
           uploader:users (company_name, name, number)
         `)
         .eq('id', id)

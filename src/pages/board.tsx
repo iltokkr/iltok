@@ -24,12 +24,15 @@ const supabase = createClient(
 
 // 목록에서 실제로 렌더링되는 컬럼만 조회한다.
 // contents는 본문 전체(평균 714B, row의 73%)라 목록에서는 미리보기 생성 컬럼으로 대체한다.
-// (검색용 ilike는 서버에서 원본 contents를 그대로 쓰므로 영향 없음)
-const LIST_COLUMNS = `
+// 게시판별로 본문 미리보기를 쓰는 곳이 다르다:
+//   0(채용정보) renderJobItem  - 본문을 아예 표시하지 않으므로 조회하지 않는다
+//   1(구직정보) renderJobSeekerItem, 4(자유게시판) 커뮤니티/인기글 - 미리보기를 표시한다
+// (검색용 ilike는 서버에서 원본 contents를 그대로 쓰므로 어느 쪽이든 영향 없음)
+const listColumns = (boardType: string) => `
   id,
   updated_time,
   title,
-  contents:contents_preview,
+  ${boardType === '0' ? '' : 'contents:contents_preview,'}
   salary_type,
   salary_detail,
   1depth_region,
@@ -68,7 +71,8 @@ interface Job {
   id: number;
   updated_time: string;
   title: string;
-  contents: string;
+  // 채용정보(board_type 0) 목록과 광고는 본문을 표시하지 않아 조회하지 않는다.
+  contents?: string;
   salary_type: string;
   salary_detail: string;
   '1depth_region': string;
@@ -308,7 +312,7 @@ const BoardPage: React.FC = () => {
       let baseQuery = supabase
         .from('jd')
         .select(`
-          ${LIST_COLUMNS},
+          ${listColumns(currentBoardType)},
           users!inner (
             is_accept
           )
@@ -439,7 +443,6 @@ const BoardPage: React.FC = () => {
               id,
               updated_time,
               title,
-              contents:contents_preview,
               salary_type,
               salary_detail,
               1depth_region,
@@ -447,7 +450,6 @@ const BoardPage: React.FC = () => {
               1depth_category,
               2depth_category,
               ad,
-              uploader_id,
               is_urgent,
               is_ads,
               users!inner (
@@ -463,7 +465,7 @@ const BoardPage: React.FC = () => {
           // uploader_id가 null인 광고도 별도로 가져옴
           let nullUploaderQuery = supabase
             .from('jd')
-            .select(LIST_COLUMNS)
+            .select(listColumns(currentBoardType))
             .eq('ad', true)
             .eq('board_type', currentBoardType)
             .is('uploader_id', null)
@@ -509,7 +511,7 @@ const BoardPage: React.FC = () => {
           let partnerQuery = supabase
             .from('jd')
             .select(`
-              ${LIST_COLUMNS},
+              ${listColumns(currentBoardType)},
               users!inner (is_accept)
             `)
             .eq('board_type', currentBoardType)
@@ -537,9 +539,10 @@ const BoardPage: React.FC = () => {
           if (adResult.error) throw adResult.error;
           if (nullUploaderResult.error) throw nullUploaderResult.error;
 
-          const allAdJobs = [...(adResult.data || []), ...(nullUploaderResult.data || [])]
+          // 두 광고 쿼리는 조회 컬럼이 달라 추론 타입이 갈리므로 any[]로 합친다.
+          const allAdJobs = ([...(adResult.data || []), ...(nullUploaderResult.data || [])] as any[])
             .sort((a, b) => new Date(b.updated_time).getTime() - new Date(a.updated_time).getTime())
-            .map(job => ({
+            .map((job: any) => ({
               ...job,
               board_type: currentBoardType,
               ad: true as const,
@@ -561,15 +564,13 @@ const BoardPage: React.FC = () => {
               id,
               updated_time,
               title,
-              contents:contents_preview,
               salary_type,
               salary_detail,
               1depth_region,
               2depth_region,
               1depth_category,
               2depth_category,
-              ad,
-              uploader_id
+              ad
             `)
             .eq('ad', true)
             .eq('board_type', currentBoardType);

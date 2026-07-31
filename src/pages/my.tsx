@@ -126,7 +126,14 @@ const My: React.FC = () => {
   const fetchMyPosts = async () => {
     const { data, error } = await supabase
       .from('jd')
-      .select('*')
+      // Mylist의 MyPost 인터페이스가 요구하는 컬럼만 조회한다.
+      // select('*')는 52개 컬럼 전부를 가져와 20건 기준 59.5KB가 나갔다.
+      .select(`
+        id, updated_time, title,
+        1depth_region, 2depth_region, 1depth_category, 2depth_category,
+        board_type, is_hidden, salary_type, salary_detail, is_wage_violation,
+        ad, ad_auto, ad_since, ad_until
+      `)
       .eq('uploader_id', authContext?.user?.id)
       .order('updated_time', { ascending: false });
 
