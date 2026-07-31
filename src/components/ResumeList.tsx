@@ -98,12 +98,16 @@ const ResumeList: React.FC = () => {
     try {
       const koreaTime = addHours(new Date(), 9);
 
-      const [postUpdate, userUpdate] = await Promise.all([
-        supabase.from('jd').update({ updated_time: koreaTime }).eq('id', postId),
-        supabase.from('users').update({ resume_reload_last_used_at: new Date().toISOString() }).eq('id', auth.user.id)
+      // 공고 갱신을 먼저 확정한다. 실패한 끌어올리기 때문에 하루 1회 기회가 소모되면 안 된다.
+      const postUpdate = await supabase.from('jd').update({ updated_time: koreaTime }).eq('id', postId);
+      if (postUpdate.error) throw postUpdate.error;
+
+      // 여기부터는 부가 처리. jd_bump_log는 도배 감지용 기록이라 실패해도 무시한다.
+      const [userUpdate] = await Promise.all([
+        supabase.from('users').update({ resume_reload_last_used_at: new Date().toISOString() }).eq('id', auth.user.id),
+        supabase.from('jd_bump_log').insert({ jd_id: postId, uploader_id: auth.user.id }).then(() => undefined, () => undefined)
       ]);
 
-      if (postUpdate.error) throw postUpdate.error;
       if (userUpdate.error) throw userUpdate.error;
 
       setShowReloadModal(true);

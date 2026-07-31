@@ -7,6 +7,7 @@ import { addHours, format, parseISO, subHours } from 'date-fns';
 import { AuthContext } from '@/contexts/AuthContext';
 import BusinessVerificationModal from '@/components/BusinessVerificationModal';
 import { event } from '@/lib/gtag';
+import { getPostingRestrictionMessage } from '@/lib/postingRestriction';
 
 interface MyPost {
   id: number;
@@ -179,21 +180,29 @@ const Mylist: React.FC<MylistProps> = ({
         value: reloadTimes - 1  // 남은 재등록 횟수를 value로 전달
       });
 
-      // Update both the post's updated_time and user's reload_times
-      const [postUpdate, userUpdate] = await Promise.all([
-        supabase
-          .from('jd')
-          .update({ updated_time: koreaTime })
-          .eq('id', postId),
+      // 공고 갱신을 먼저 확정한다. 정지된 계정은 DB 트리거가 여기서 막으므로,
+      // 실패한 끌어올리기 때문에 횟수가 차감되는 일이 없어야 한다.
+      const postUpdate = await supabase
+        .from('jd')
+        .update({ updated_time: koreaTime })
+        .eq('id', postId);
+
+      if (postUpdate.error) throw postUpdate.error;
+
+      // 여기부터는 부가 처리. jd_bump_log는 도배 감지용 기록이라 실패해도 무시한다.
+      const [userUpdate] = await Promise.all([
         supabase
           .from('users')
           .update({ reload_times: reloadTimes - 1 })
-          .eq('id', authContext?.user?.id)
+          .eq('id', authContext?.user?.id),
+        supabase
+          .from('jd_bump_log')
+          .insert({ jd_id: postId, uploader_id: authContext?.user?.id })
+          .then(() => undefined, () => undefined)
       ]);
 
-      if (postUpdate.error) throw postUpdate.error;
       if (userUpdate.error) throw userUpdate.error;
-      
+
       setShowModal(true);
       setTimeout(() => {
         setShowModal(false);
@@ -201,6 +210,11 @@ const Mylist: React.FC<MylistProps> = ({
       }, 2000);
     } catch (error) {
       console.error('끌어올리기 실패:', error);
+      // 도배 경고로 공고 등록이 제한된 계정이면 사유를 안내한다 (DB 트리거가 차단)
+      const restrictionMessage = getPostingRestrictionMessage(error);
+      if (restrictionMessage) {
+        alert(restrictionMessage);
+      }
       event({
         action: 'reload_post_error',
         category: 'my_list',

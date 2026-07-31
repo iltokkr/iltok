@@ -1,0 +1,1310 @@
+/* Admin.module.css — 관리자 페이지
+ * 운영 도구. 화려함보다 판단 속도.
+ * 색상은 전부 globals.css 변수 사용. 하드코딩 금지.
+ */
+
+/* ── 레이아웃 ── */
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--color-bg);
+}
+
+.main {
+  flex: 1;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 24px 20px 48px;
+  box-sizing: border-box;
+}
+
+.pageTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 24px;
+  letter-spacing: -0.02em;
+}
+
+/* ── 로딩/에러/접근 거부 전면 ── */
+.fullscreen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 12px;
+  color: var(--color-text-secondary);
+  font-size: 15px;
+}
+
+.fullscreenError {
+  color: var(--color-error);
+}
+
+/* ── 요약 카드 4개 ── */
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.summaryCard {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.summaryLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.summaryValue {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--color-text);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.summaryValuePending {
+  color: var(--color-warning);
+}
+
+.summaryValueError {
+  color: var(--color-error);
+}
+
+/* ── 탭 ── */
+.tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--color-border);
+  margin-bottom: 20px;
+}
+
+.tab {
+  padding: 10px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.tab:hover {
+  color: var(--color-text);
+}
+
+.tabActive {
+  color: var(--color-primary);
+  font-weight: 700;
+  border-bottom-color: var(--color-primary);
+}
+
+/* ── 빈 상태 ── */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  gap: 10px;
+  color: var(--color-text-secondary);
+  text-align: center;
+}
+
+.emptyIcon {
+  width: 44px;
+  height: 44px;
+  color: var(--color-gray-400);
+  margin-bottom: 4px;
+}
+
+.emptyTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.emptyDesc {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── 로딩 스피너 ── */
+.spinner {
+  width: 24px;
+  height: 24px;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── 검토 대기 탭: 리포트 카드 ── */
+.reportList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.reportCard {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.reportCardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px 14px;
+  border-bottom: 1px solid var(--color-border);
+  flex-wrap: wrap;
+}
+
+.reportMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  min-width: 0;
+}
+
+.reportNameRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.reportName {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.reportSubRow {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.reportSubItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.reportSubLabel {
+  color: var(--color-text-muted);
+}
+
+/* 확신도 배지 */
+.confidenceBadge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.confidenceHigh {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+.confidenceMedium {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+  border: 1px solid rgba(234, 88, 12, 0.2);
+}
+
+.confidenceLow {
+  background: var(--color-gray-200);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+}
+
+/* 구분 신호 배지 4개 */
+.signalBadges {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 12px 18px;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.signalBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+
+.signalMatch {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+  border-color: rgba(220, 38, 38, 0.2);
+}
+
+.signalDiff {
+  background: var(--color-gray-200);
+  color: var(--color-text-muted);
+  border-color: var(--color-border);
+}
+
+.signalDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.signalMatchDot {
+  background: var(--color-error);
+}
+
+.signalDiffDot {
+  background: var(--color-gray-400);
+}
+
+/* 유사도 + 확신도 낮음 안내 */
+.reportInfoBar {
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.similarityText {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.similarityValue {
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.lowConfidenceNotice {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--color-warning-bg);
+  border: 1px solid rgba(234, 88, 12, 0.2);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--color-warning);
+  line-height: 1.5;
+  word-break: keep-all;
+  flex: 1;
+}
+
+.lowConfidenceIcon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ── 공고 본문 비교 영역 ── */
+.postsCompare {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.postsCompareTitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 10px;
+}
+
+.postsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.postCol {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--color-surface);
+}
+
+.postColHeader {
+  padding: 10px 12px;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.postColTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 6px;
+  line-height: 1.3;
+  word-break: break-all;
+}
+
+.postColMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.postColMetaRow {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  display: flex;
+  gap: 4px;
+}
+
+.postColMetaLabel {
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+  width: 42px;
+}
+
+.postSentences {
+  padding: 8px 0;
+}
+
+.sentence {
+  padding: 4px 12px;
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--color-text);
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+.sentenceShared {
+  background: var(--color-error-bg);
+}
+
+.sentenceUnique {
+  background: var(--color-success-bg);
+}
+
+.showMorePostsBtn {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 8px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.15s;
+}
+
+.showMorePostsBtn:hover {
+  background: var(--color-gray-200);
+}
+
+/* ── 발송 결과 미리보기 ── */
+.actionPreview {
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.actionPreviewLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.actionPreviewText {
+  font-size: 13px;
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.actionPreviewBadge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--color-error-bg);
+  color: var(--color-error);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  margin-left: 4px;
+}
+
+/* ── 카드 하단 버튼 행 ── */
+.reportActions {
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btnWarn {
+  padding: 9px 18px;
+  background: var(--color-error);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+}
+
+.btnWarn:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.btnWarn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btnDismiss {
+  padding: 9px 16px;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.btnDismiss:hover:not(:disabled) {
+  background: var(--color-bg);
+  border-color: var(--color-gray-400);
+}
+
+.btnDismiss:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── 영구 제한 확인 단계 ── */
+.permanentConfirmBox {
+  background: var(--color-error-bg);
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin: 0 18px 14px;
+}
+
+.permanentConfirmTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-error);
+  margin: 0 0 6px;
+}
+
+.permanentConfirmDesc {
+  font-size: 13px;
+  color: var(--color-text);
+  line-height: 1.6;
+  margin: 0 0 12px;
+  word-break: keep-all;
+}
+
+.permanentConfirmBtns {
+  display: flex;
+  gap: 8px;
+}
+
+.btnConfirmPermanent {
+  padding: 8px 16px;
+  background: var(--color-error);
+  color: #fff;
+  border: none;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.btnConfirmPermanent:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.btnConfirmPermanent:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btnCancelConfirm {
+  padding: 8px 14px;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btnCancelConfirm:hover {
+  background: var(--color-bg);
+}
+
+/* ── 회원 조회 탭 ── */
+.searchForm {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 200px;
+  padding: 9px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 14px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.searchInput:focus {
+  border-color: var(--color-primary);
+}
+
+.btnSearch {
+  padding: 9px 18px;
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+}
+
+.btnSearch:hover:not(:disabled) {
+  opacity: 0.88;
+}
+
+.btnSearch:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 회원 목록 테이블 */
+.userTable {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  overflow: hidden;
+  font-size: 13px;
+}
+
+.userTable th {
+  padding: 10px 12px;
+  background: var(--color-bg);
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.userTable td {
+  padding: 11px 12px;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+  vertical-align: middle;
+}
+
+.userTable tr:last-child td {
+  border-bottom: none;
+}
+
+.userTableRow {
+  cursor: pointer;
+  transition: background 0.1s;
+}
+
+.userTableRow:hover {
+  background: var(--color-bg);
+}
+
+.userTableRowActive {
+  background: var(--color-primary-bg);
+}
+
+.userTableRowActive:hover {
+  background: var(--color-primary-bg);
+}
+
+/* 상태 배지 */
+.userStatusBadge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.statusNormal {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.statusSuspended {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.statusPermanent {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+/* 회원 상세 패널 */
+.userDetail {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  margin-top: 12px;
+  overflow: hidden;
+}
+
+/* 상세 패널 머리 — 표 아래에 떨어져 열리므로 누구 것인지 이름을 밝힌다 */
+.userDetailHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 18px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.userDetailName {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.userDetailClose {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-input);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.userDetailClose:hover {
+  color: var(--color-text);
+  border-color: var(--color-text-muted);
+}
+
+/* 상세 패널이 들어가는 표 칸 — 누른 행 바로 아래에 표 폭 그대로 펼쳐진다 */
+.userDetailCell {
+  padding: 0 0 12px;
+  background: var(--color-bg);
+}
+
+.mutedNote {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin: 0;
+  line-height: 1.6;
+}
+
+.sectionHint {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--color-text-muted);
+  margin-left: 6px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.suspensionText {
+  font-size: 13px;
+  color: var(--color-text);
+}
+
+/* 경고 이력 한 건 — 사유와 메모가 여러 줄이라 블록으로 감싼다 */
+.warningHistoryBlock {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.warningHistoryBlock:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.warningExtra {
+  display: flex;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--color-text);
+  margin: 6px 0 0;
+  line-height: 1.6;
+  word-break: keep-all;
+}
+
+.warningExtraLabel {
+  flex-shrink: 0;
+  min-width: 92px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+/* 내용이 비슷한 공고 묶음 */
+.postGroup {
+  margin-bottom: 14px;
+}
+
+.postGroup:last-child {
+  margin-bottom: 0;
+}
+
+.postGroupHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.similarGroupBadge {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-error);
+  background: var(--color-error-bg);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  border-radius: 100px;
+  padding: 3px 10px;
+}
+
+.postGroupActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.postGroupSelect {
+  font-size: 12px;
+  color: var(--color-primary);
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* 문장 색 범례 — 왜 유사하다고 보는지 운영자가 직접 확인하는 근거 */
+/* 같은 회원이 여러 묶음으로 잡혔을 때 — 묶음마다 경고하면 하루 만에 영구 제한이 된다 */
+.siblingNotice {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--color-warning);
+  background: var(--color-warning-bg);
+  border: 1px solid rgba(234, 88, 12, 0.2);
+  border-radius: 8px;
+  padding: 9px 12px;
+  margin: 0 0 10px;
+  word-break: keep-all;
+}
+
+.warnLockedNotice {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--color-error);
+  background: var(--color-error-bg);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  border-radius: 8px;
+  padding: 9px 12px;
+  margin: 0 0 10px;
+  word-break: keep-all;
+}
+
+/* 경고 없이 공고만 내리는 버튼 — 경고 발송과 확실히 구분되어야 한다 */
+.btnHideOnly {
+  padding: 9px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-warning);
+  background: var(--color-warning-bg);
+  border: 1px solid rgba(234, 88, 12, 0.35);
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btnHideOnly:hover:not(:disabled) {
+  background: #ffedd5;
+}
+
+.btnHideOnly:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.diffLegend {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-input);
+  border-radius: 6px;
+  padding: 7px 10px;
+  margin: 0 0 10px;
+  line-height: 1.6;
+}
+
+.legendShared {
+  font-weight: 700;
+  color: var(--color-error);
+}
+
+.legendUnique {
+  font-weight: 700;
+  color: var(--color-success);
+}
+
+.postGroupSelect:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.userDetailSection {
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.userDetailSection:last-child {
+  border-bottom: none;
+}
+
+.userDetailSectionTitle {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 0 0 10px;
+}
+
+/* 경고 이력 */
+.warningHistoryList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+}
+
+.warningHistoryItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 13px;
+  flex-wrap: wrap;
+}
+
+.warningLevel {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--color-error-bg);
+  color: var(--color-error);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.warningKind {
+  color: var(--color-text-secondary);
+  flex: 1;
+}
+
+.warningDate {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.warningAcked {
+  font-size: 11px;
+  color: var(--color-success);
+  background: var(--color-success-bg);
+  padding: 2px 7px;
+  border-radius: 100px;
+  white-space: nowrap;
+}
+
+.warningUnacked {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  background: var(--color-gray-200);
+  padding: 2px 7px;
+  border-radius: 100px;
+  white-space: nowrap;
+}
+
+/* 정지 상태 */
+.suspensionInfo {
+  padding: 10px 14px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.suspensionBadge {
+  flex-shrink: 0;
+}
+
+/* 공고 선택 목록 */
+.postCheckList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+}
+
+.postCheckItem {
+  padding: 9px 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  transition: background 0.1s, border-color 0.1s;
+}
+
+/* 한 줄: 체크박스(고르기) · 제목(펼치기) · 링크(실제 공고) */
+.postRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.postTitleBtn {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 0;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.postRowActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.postToggleBtn {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-input);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 4px 9px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.postToggleBtn:hover {
+  color: var(--color-text);
+  border-color: var(--color-text-muted);
+}
+
+.postOpenLink {
+  font-size: 12px;
+  color: var(--color-primary);
+  text-decoration: none;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 4px 9px;
+  white-space: nowrap;
+}
+
+.postOpenLink:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+/* 펼친 본문 — 운영자가 직접 읽고 판단하는 자리 */
+.postBody {
+  margin: 10px 0 0;
+  padding: 12px 14px;
+  max-height: 320px;
+  overflow-y: auto;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--color-text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.postCheckItemSelected {
+  background: var(--color-primary-bg);
+  border-color: var(--color-primary);
+}
+
+.postCheckItem input[type="checkbox"] {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--color-primary);
+}
+
+.postCheckTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.postCheckMeta {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+/* 제목 버튼 안에서는 제목과 메타가 위아래로 쌓인다 */
+.postTitleBtn .postCheckTitle {
+  flex: none;
+  width: 100%;
+}
+
+.postTitleBtn .postCheckMeta {
+  white-space: normal;
+  line-height: 1.5;
+}
+
+/* 수동 경고 발송 폼 */
+.manualWarnForm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.formLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.formLabelSub {
+  font-weight: 400;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  margin-left: 4px;
+}
+
+.formTextarea {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 13px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  resize: vertical;
+  min-height: 60px;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.15s;
+  font-family: inherit;
+  line-height: 1.6;
+}
+
+.formTextarea:focus {
+  border-color: var(--color-primary);
+}
+
+.formActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 4px;
+  flex-wrap: wrap;
+}
+
+/* ── 반응형 ── */
+@media (max-width: 900px) {
+  .summaryGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .main {
+    padding: 16px 12px 40px;
+  }
+
+  .pageTitle {
+    font-size: 18px;
+    margin-bottom: 16px;
+  }
+
+  .summaryGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .summaryCard {
+    padding: 12px 14px;
+  }
+
+  .summaryValue {
+    font-size: 22px;
+  }
+
+  .tab {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  /* 공고 비교: 모바일에서 세로로 */
+  .postsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  /* 회원 테이블: 일부 컬럼 숨김 */
+  .hideOnMobile {
+    display: none;
+  }
+
+  .reportCardHeader {
+    padding: 12px 14px;
+  }
+
+  .signalBadges {
+    padding: 10px 14px;
+  }
+
+  .postsCompare {
+    padding: 12px 14px;
+  }
+
+  .actionPreview {
+    padding: 10px 14px;
+  }
+
+  .reportActions {
+    padding: 10px 14px;
+  }
+
+  .permanentConfirmBox {
+    margin: 0 14px 12px;
+  }
+
+  .userDetailSection {
+    padding: 12px 14px;
+  }
+}

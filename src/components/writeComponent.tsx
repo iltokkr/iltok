@@ -9,6 +9,7 @@ import BusinessVerificationModal from '@/components/BusinessVerificationModal';
 import { AuthContext } from '@/contexts/AuthContext';
 import { HiOutlineCheckCircle } from 'react-icons/hi';
 import supabase from '@/lib/supabase';
+import { getPostingRestrictionMessage } from '@/lib/postingRestriction';
 
 interface JobForm {
   id?: number;
@@ -765,9 +766,12 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
 
     } catch (error: unknown) {
       console.error('Error submitting form:', error);
-      const errMsg = error && typeof error === 'object' && 'message' in error
-        ? String((error as { message?: string }).message)
-        : '게시글 등록에 실패했습니다. 다시 시도해주세요.';
+      // 도배 경고로 공고 등록이 제한된 계정이면 사유를 안내한다 (DB 트리거가 차단)
+      const restrictionMessage = getPostingRestrictionMessage(error);
+      const errMsg = restrictionMessage
+        ?? (error && typeof error === 'object' && 'message' in error
+          ? String((error as { message?: string }).message)
+          : '게시글 등록에 실패했습니다. 다시 시도해주세요.');
       setErrorMessage(errMsg);
       setIsModalOpen(true);
     }
