@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Header from '@/components/Header';
 import MainMenu from '@/components/MainMenu';
@@ -8,7 +8,6 @@ import JobList from '@/components/JobList';
 import Pagination from '@/components/Pagination';
 import Footer from '@/components/Footer';
 import MainCarousel from '@/components/MainCarousel';
-import AdPopup from '@/components/AdPopup';
 import styles from '@/styles/Board.module.css';
 import { createClient } from '@supabase/supabase-js'
 import Head from 'next/head'// 사용자에게 알림을 표시하기 위해 추가
@@ -91,6 +90,42 @@ interface Job {
 interface AdJob extends Job {
   ad: true;
 }
+
+// 상세로 갔다가 뒤로 돌아올 때 쓰는 스냅샷.
+// 재조회를 기다렸다가 스크롤을 옮기면 "상단이 잠깐 보였다가 툭 점프"하는 것처럼 보이므로,
+// 목록과 좌표를 함께 저장해뒀다가 첫 페인트 전에 통째로 복원한다(Supabase 재조회도 생략).
+const SNAPSHOT_KEY = 'boardSnapshot';
+const SNAPSHOT_TTL = 10 * 60 * 1000;
+
+interface BoardSnapshot {
+  url: string;
+  savedAt: number;
+  scrollY: number;
+  regularJobs: Job[];
+  adJobs: AdJob[];
+  partnerJobs: Job[];
+  currentPage: number;
+  totalPages: number;
+  totalCount: number;
+}
+
+// 같은 URL(게시판·필터·페이지)로 돌아온 경우에만 재사용한다.
+function readSnapshot(): BoardSnapshot | null {
+  try {
+    const raw = sessionStorage.getItem(SNAPSHOT_KEY);
+    if (!raw) return null;
+    const snap = JSON.parse(raw) as BoardSnapshot;
+    if (!snap?.regularJobs?.length) return null;
+    if (Date.now() - snap.savedAt > SNAPSHOT_TTL) return null;
+    if (snap.url !== window.location.pathname + window.location.search) return null;
+    return snap;
+  } catch {
+    return null;
+  }
+}
+
+// SSR 에서는 layout effect 를 쓸 수 없어 경고가 나므로 브라우저에서만 사용한다.
+const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 function InstallPWA() {
   const [supportsPWA, setSupportsPWA] = useState(false);
@@ -253,7 +288,6 @@ const BoardPage: React.FC = () => {
   const [regularJobs, setRegularJobs] = useState<Job[]>([]);
   const [adJobs, setAdJobs] = useState<AdJob[]>([]);
   const [partnerJobs, setPartnerJobs] = useState<Job[]>([]); // 제휴(is_ads) - 프리미엄 상단 고정용
-  const [showAdPopup, setShowAdPopup] = useState(false); // 배너 클릭 시 광고 안내 팝업
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
@@ -636,15 +670,30 @@ const BoardPage: React.FC = () => {
     }
   }, [bookmarkedJobs]);
 
-  const [shouldRestoreScroll, setShouldRestoreScroll] = useState(false);
+  // 스냅샷으로 복원했으면 첫 조회를 건너뛴다(이미 화면이 완성돼 있음)
+  const restoredFromSnapshotRef = useRef(false);
+  // 복원 대기 중인 스크롤 좌표 — 목록이 DOM 에 올라간 커밋 직후 한 번만 적용한다
+  const pendingScrollRef = useRef<number | null>(null);
 
-  // 스크롤 위치 저장 (상세 페이지로 이동 시)
+  // 상세 페이지로 나갈 때 화면 상태 저장
   useEffect(() => {
     const handleRouteChangeStart = (url: string) => {
-      if (url.startsWith('/jd/')) {
-        const currentPosition = window.pageYOffset || document.documentElement.scrollTop;
-        sessionStorage.setItem('boardScrollPosition', currentPosition.toString());
-        sessionStorage.setItem('shouldRestoreScroll', 'true');
+      if (!url.startsWith('/jd/')) return;
+      try {
+        const snapshot: BoardSnapshot = {
+          url: window.location.pathname + window.location.search,
+          savedAt: Date.now(),
+          scrollY: window.pageYOffset || document.documentElement.scrollTop,
+          regularJobs,
+          adJobs,
+          partnerJobs,
+          currentPage,
+          totalPages,
+          totalCount
+        };
+        sessionStorage.setItem(SNAPSHOT_KEY, JSON.stringify(snapshot));
+      } catch {
+        // 저장 실패(용량 초과 등)는 무시 — 스냅샷이 없으면 기존대로 재조회한다
       }
     };
 
@@ -653,37 +702,32 @@ const BoardPage: React.FC = () => {
     return () => {
       router.events.off('routeChangeStart', handleRouteChangeStart);
     };
-  }, [router]);
+  }, [router, regularJobs, adJobs, partnerJobs, currentPage, totalPages, totalCount]);
 
-  // 페이지 로드 시 스크롤 복원 플래그 확인
-  useEffect(() => {
-    if (sessionStorage.getItem('shouldRestoreScroll') === 'true') {
-      setShouldRestoreScroll(true);
-    }
+  // 뒤로가기 복원: 저장해둔 목록을 첫 페인트 전에 되돌린다
+  // (브라우저 자동 복원은 _app.tsx 에서 이미 manual 로 꺼둔 상태)
+  useIsoLayoutEffect(() => {
+    const snap = readSnapshot();
+    if (!snap) return;
+
+    restoredFromSnapshotRef.current = true;
+    setRegularJobs(snap.regularJobs);
+    setAdJobs(snap.adJobs);
+    setPartnerJobs(snap.partnerJobs);
+    setCurrentPage(snap.currentPage);
+    setTotalPages(snap.totalPages);
+    setTotalCount(snap.totalCount);
+    setIsInitialLoad(false);
+    pendingScrollRef.current = snap.scrollY;
+    sessionStorage.removeItem(SNAPSHOT_KEY);
   }, []);
 
-  // 데이터 로딩 완료 후 스크롤 복원
-  useEffect(() => {
-    if (shouldRestoreScroll && !isLoading && regularJobs.length > 0) {
-      const savedPosition = sessionStorage.getItem('boardScrollPosition');
-      if (savedPosition !== null) {
-        const position = parseInt(savedPosition);
-        // 여러 번 시도하여 확실하게 복원
-        const restore = () => {
-          window.scrollTo(0, position);
-        };
-        restore();
-        setTimeout(restore, 50);
-        setTimeout(restore, 100);
-        setTimeout(restore, 200);
-        setTimeout(() => {
-          restore();
-          sessionStorage.removeItem('shouldRestoreScroll');
-          setShouldRestoreScroll(false);
-        }, 300);
-      }
-    }
-  }, [shouldRestoreScroll, isLoading, regularJobs]);
+  // 목록이 그려진 커밋 직후(=브라우저가 화면을 칠하기 전)에 딱 한 번 좌표 복원
+  useIsoLayoutEffect(() => {
+    if (pendingScrollRef.current === null || regularJobs.length === 0) return;
+    window.scrollTo(0, pendingScrollRef.current);
+    pendingScrollRef.current = null;
+  });
 
   // 페이지네이션 변경 시 상단으로 스크롤
   useEffect(() => {
@@ -699,11 +743,29 @@ const BoardPage: React.FC = () => {
     // console.log('Router is ready. Current query:', router.query);
 
     const { city1, city2, cate1, cate2, keyword, page, board_type, searchType } = router.query;
-    
+
     // board_type 변경 시 기존 데이터와 필터 초기화
     const newBoardType = board_type as string || '0';
+
+    // 뒤로가기 스냅샷으로 이미 같은 URL의 목록을 복원했다면
+    // 필터·페이지 상태만 URL 에 맞춰두고 재조회는 건너뛴다(깜빡임·불필요한 조회 제거).
+    if (restoredFromSnapshotRef.current) {
+      restoredFromSnapshotRef.current = false;
+      setFilters({
+        city1: city1 as string || '',
+        city2: city2 as string || '',
+        cate1: cate1 as string || '',
+        cate2: cate2 as string || '',
+        keyword: keyword as string || '',
+        searchType: (searchType as 'title' | 'contents' | 'both') || 'both'
+      });
+      setBoardType(newBoardType);
+      setCurrentPage(page ? parseInt(page as string) : 1);
+      return;
+    }
+
     const isBoardTypeChanged = newBoardType !== boardType;
-    
+
     if (isBoardTypeChanged) {
       setIsLoading(true);
       setRegularJobs([]);
@@ -852,22 +914,9 @@ const BoardPage: React.FC = () => {
                 mobileSrc: '/banner_23030_mo.png',
                 action: 'navigate',
                 navigateTo: '/jd/23030'
-              },
-              {
-                src: '/50.png',
-                mobileSrc: '/50.png',
-                action: 'popup'
-              },
-              {
-                src: '/job.png',
-                mobileSrc: '/job.png',
-                action: 'navigate',
-                navigateTo: '/write?board_type=1'
               }
             ]}
-            onAdPopupOpen={() => setShowAdPopup(true)}
           />
-          {showAdPopup && <AdPopup onClose={() => setShowAdPopup(false)} />}
           <BoardChat />
         </>
       )}

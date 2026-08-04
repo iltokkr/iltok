@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Slider from 'react-slick';
 import styles from '@/styles/MainCarousel.module.css';
 import "slick-carousel/slick/slick.css";
@@ -18,18 +18,6 @@ interface CarouselProps {
 }
 
 const Carousel: React.FC<CarouselProps> = ({ images, onAdPopupOpen }) => {
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
   const handleImageClick = (image: CarouselImage, e: React.MouseEvent) => {
     e.preventDefault();
     
@@ -43,7 +31,8 @@ const Carousel: React.FC<CarouselProps> = ({ images, onAdPopupOpen }) => {
   };
 
   const settings = {
-    dots: true,
+    // 1장뿐이면 점 하나만 덩그러니 남으므로 숨긴다
+    dots: images.length > 1,
     infinite: images.length > 1,
     speed: 500,
     slidesToShow: 1,
@@ -59,7 +48,7 @@ const Carousel: React.FC<CarouselProps> = ({ images, onAdPopupOpen }) => {
         breakpoint: 768,
         settings: {
           arrows: false,
-          dots: true
+          dots: images.length > 1
         }
       }
     ]
@@ -75,11 +64,18 @@ const Carousel: React.FC<CarouselProps> = ({ images, onAdPopupOpen }) => {
               onClick={(e) => handleImageClick(image, e)}
               style={{ cursor: 'pointer' }}
             >
-              <img
-                src={isMobile && image.mobileSrc ? image.mobileSrc : image.src}
-                alt={`Slide ${index + 1}`}
-                className={styles.image}
-              />
+              {/* 모바일 판정을 JS 로 하면 데스크톱 배너를 먼저 그렸다가 교체돼 상단이 한 번 밀린다.
+                  picture/source 로 첫 페인트부터 알맞은 배너를 받도록 한다. */}
+              <picture>
+                {image.mobileSrc && (
+                  <source media="(max-width: 767px)" srcSet={image.mobileSrc} />
+                )}
+                <img
+                  src={image.src}
+                  alt={`Slide ${index + 1}`}
+                  className={styles.image}
+                />
+              </picture>
             </a>
           </div>
         ))}

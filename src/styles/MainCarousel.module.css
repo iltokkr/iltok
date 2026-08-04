@@ -57,7 +57,8 @@
   overflow: hidden;
 }
 
-.slideWrapper a {
+.slideWrapper a,
+.slideWrapper picture {
   display: block;
   height: auto !important;
 }
