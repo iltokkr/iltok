@@ -34,6 +34,17 @@ const BusinessEditPage = () => {
   const [existingBizFile, setExistingBizFile] = useState<string | null>(null);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // 관리자는 일반 회원에게 잠겨 있는 항목(아이디·전화번호·사업자 정보)까지 고칠 수 있다.
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  /** 잠긴 입력에 붙일 props. 관리자면 잠금을 풀고 onChange 를 살린다. */
+  const lockedInput = (setter: (v: string) => void) =>
+    isAdmin
+      ? { onChange: (e: React.ChangeEvent<HTMLInputElement>) => setter(e.target.value), className: styles.input }
+      : { readOnly: true, className: `${styles.input} ${styles.inputReadonly}` };
+
+  /** 라벨 옆 "(수정 불가)" 배지 — 관리자에게는 표시하지 않는다. */
+  const lockBadge = isAdmin ? null : <span className={styles.disabledLabel}>(수정 불가)</span>;
 
   const formatPhoneDisplay = (value: string) => {
     const numbers = value.replace(/[^0-9]/g, '');
@@ -65,9 +76,8 @@ const BusinessEditPage = () => {
       try {
         const { data, error } = await supabase
           .from('users')
-          .select('user_id, email, number, company_name, name, business_number, business_address, biz_file, policy_term, auth_term')
+          .select('user_id, email, number, company_name, name, business_number, business_address, biz_file, policy_term, auth_term, user_type, is_admin')
           .eq('id', userId)
-          .eq('user_type', 'business')
           .single();
 
         if (error || !data) {
@@ -75,6 +85,15 @@ const BusinessEditPage = () => {
           return;
         }
 
+        // 'both'(개인+기업 겸용) 계정도 기업 정보 수정 대상이다.
+        // 'business'만 통과시키면 both 계정은 여기서 되튕겨 버튼이 안 먹는 것처럼 보인다.
+        // 관리자는 회원유형과 무관하게 언제나 들어올 수 있다.
+        if (!data.is_admin && !['business', 'both'].includes(data.user_type ?? '')) {
+          router.replace('/my');
+          return;
+        }
+
+        setIsAdmin(!!data.is_admin);
         setUserId(data.user_id || '');
         setEmail(data.email || '');
         setOriginalEmail(data.email || '');
@@ -100,6 +119,11 @@ const BusinessEditPage = () => {
     if (!email.trim()) err.email = '이메일을 입력해주세요.';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) err.email = '올바른 이메일 형식을 입력해주세요.';
     if (!businessTermsAgreed) err.businessTerms = '사업자등록정보 수집 및 이용 동의에 체크해주세요.';
+    // 관리자만 고칠 수 있는 항목들 — 빈 값으로 저장하면 로그인이 막힌다.
+    if (isAdmin) {
+      if (!userId.trim()) err.userId = '아이디를 입력해주세요.';
+      if (phone.replace(/[^0-9]/g, '').length < 10) err.phone = '올바른 전화번호를 입력해주세요.';
+    }
     setFormErrors(err);
     return Object.keys(err).length === 0;
   };
@@ -110,22 +134,47 @@ const BusinessEditPage = () => {
 
     setIsSubmitting(true);
     try {
-      const updateData: Record<string, unknown> = {
-        email: email.trim(),
-        auth_term: businessTermsAgreed,
-      };
+      if (isAdmin) {
+        // 관리자는 전화번호·아이디까지 바꾸므로 auth.users 도 함께 손봐야 한다.
+        // service role 이 필요해 서버 라우트를 거친다.
+        const { data: sessionData } = await supabase.auth.getSession();
+        const token = sessionData.session?.access_token;
+        if (!token) throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
 
-      if (email.trim() !== originalEmail) {
-        const { error: authUpdateError } = await supabase.auth.updateUser({ email: email.trim() });
-        if (authUpdateError) throw authUpdateError;
+        const res = await fetch('/api/admin/update-self-profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            user_id: userId.trim(),
+            email: email.trim(),
+            number: phone.trim(),
+            business_number: businessNumber.replace(/[^0-9]/g, ''),
+            company_name: companyName.trim(),
+            name: representativeName.trim(),
+            auth_term: businessTermsAgreed,
+            policy_term: termsAgreed,
+          }),
+        });
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(json?.error || '수정 중 오류가 발생했습니다.');
+      } else {
+        const updateData: Record<string, unknown> = {
+          email: email.trim(),
+          auth_term: businessTermsAgreed,
+        };
+
+        if (email.trim() !== originalEmail) {
+          const { error: authUpdateError } = await supabase.auth.updateUser({ email: email.trim() });
+          if (authUpdateError) throw authUpdateError;
+        }
+
+        const { error: updateError } = await supabase
+          .from('users')
+          .update(updateData)
+          .eq('id', auth.user.id);
+
+        if (updateError) throw updateError;
       }
-
-      const { error: updateError } = await supabase
-        .from('users')
-        .update(updateData)
-        .eq('id', auth.user.id);
-
-      if (updateError) throw updateError;
 
       alert('회원정보가 수정되었습니다.');
       router.push('/my?section=info');
@@ -169,20 +218,25 @@ const BusinessEditPage = () => {
           <form onSubmit={handleSubmit}>
             {/* 약관동의 - 비활성 */}
             <section className={styles.section}>
-              <h2 className={styles.sectionTitle}>약관동의 <span className={styles.required}>*</span> <span className={styles.disabledLabel}>(수정 불가)</span></h2>
+              <h2 className={styles.sectionTitle}>약관동의 <span className={styles.required}>*</span> {lockBadge}</h2>
               <div className={styles.termsGroup}>
-                <label className={`${styles.checkboxLabel} ${styles.checkboxDisabled}`}>
-                  <input type="checkbox" checked={termsAgreed} disabled />
+                <label className={`${styles.checkboxLabel} ${isAdmin ? '' : styles.checkboxDisabled}`}>
+                  <input
+                    type="checkbox"
+                    checked={termsAgreed}
+                    disabled={!isAdmin}
+                    onChange={(e) => setTermsAgreed(e.target.checked)}
+                  />
                   <span>서비스 이용약관 동의 <span className={styles.required}>*</span></span>
                   <Link href="/privacy-policy" target="_blank" rel="noopener noreferrer" className={styles.termsBtn}>
                     내용 보기
                   </Link>
                 </label>
-                <label className={`${styles.checkboxLabel} ${businessTermsAgreed ? styles.checkboxDisabled : ''}`}>
+                <label className={`${styles.checkboxLabel} ${businessTermsAgreed && !isAdmin ? styles.checkboxDisabled : ''}`}>
                   <input
                     type="checkbox"
                     checked={businessTermsAgreed}
-                    disabled={businessTermsAgreed}
+                    disabled={businessTermsAgreed && !isAdmin}
                     onChange={(e) => {
                       setBusinessTermsAgreed(e.target.checked);
                       setFormErrors((prev) => ({ ...prev, businessTerms: '' }));
@@ -206,18 +260,22 @@ const BusinessEditPage = () => {
 
             {/* 본인인증 - 비활성 */}
             <section className={styles.section}>
-              <h2 className={styles.sectionTitle}>본인인증 <span className={styles.required}>*</span> <span className={styles.disabledLabel}>(수정 불가)</span></h2>
+              <h2 className={styles.sectionTitle}>본인인증 <span className={styles.required}>*</span> {lockBadge}</h2>
               <div className={styles.authGroup}>
                 <div className={styles.inputRow}>
                   <input
                     type="tel"
-                    value={formatPhoneDisplay(phone)}
-                    readOnly
-                    className={`${styles.input} ${styles.inputReadonly}`}
+                    value={isAdmin ? phone : formatPhoneDisplay(phone)}
+                    {...lockedInput(setPhone)}
                   />
                 </div>
-                <p className={styles.verified}>인증 완료</p>
-                <p className={styles.authNotice}>연락처(전화번호)가 아이디로 사용되며, 해당 번호로 로그인할 수 있습니다.</p>
+                {formErrors.phone && <span className={styles.fieldError}>{formErrors.phone}</span>}
+                {!isAdmin && <p className={styles.verified}>인증 완료</p>}
+                <p className={styles.authNotice}>
+                  {isAdmin
+                    ? '이 번호가 로그인 계정입니다. 바꾸면 다음 로그인부터 새 번호를 써야 합니다.'
+                    : '연락처(전화번호)가 아이디로 사용되며, 해당 번호로 로그인할 수 있습니다.'}
+                </p>
               </div>
             </section>
 
@@ -226,13 +284,14 @@ const BusinessEditPage = () => {
               <h2 className={styles.sectionTitle}>회원정보</h2>
               <div className={styles.form}>
                 <div className={styles.formGroup}>
-                  <label>아이디 <span className={styles.disabledLabel}>(수정 불가)</span></label>
+                  <label>아이디 {lockBadge}</label>
                   <input
                     type="text"
-                    value={userId || '미설정'}
-                    readOnly
-                    className={`${styles.input} ${styles.inputReadonly}`}
+                    value={isAdmin ? userId : userId || '미설정'}
+                    placeholder={isAdmin ? '아이디를 입력하세요' : undefined}
+                    {...lockedInput(setUserId)}
                   />
+                  {formErrors.userId && <span className={styles.fieldError}>{formErrors.userId}</span>}
                 </div>
 
                 <div className={styles.formGroup}>
@@ -269,36 +328,34 @@ const BusinessEditPage = () => {
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label>사업자등록번호 <span className={styles.disabledLabel}>(수정 불가)</span></label>
+                  <label>사업자등록번호 {lockBadge}</label>
                   <input
                     type="text"
                     value={formatBusinessNumber(businessNumber)}
-                    readOnly
-                    className={`${styles.input} ${styles.inputReadonly}`}
+                    {...lockedInput(setBusinessNumber)}
                   />
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label>회사/점포명 <span className={styles.disabledLabel}>(수정 불가)</span></label>
+                  <label>회사/점포명 {lockBadge}</label>
                   <input
                     type="text"
                     value={companyName}
-                    readOnly
-                    className={`${styles.input} ${styles.inputReadonly}`}
+                    {...lockedInput(setCompanyName)}
                   />
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label>대표자명 <span className={styles.disabledLabel}>(수정 불가)</span></label>
+                  <label>대표자명 {lockBadge}</label>
                   <input
                     type="text"
                     value={representativeName}
-                    readOnly
-                    className={`${styles.input} ${styles.inputReadonly}`}
+                    {...lockedInput(setRepresentativeName)}
                   />
                 </div>
 
                 <div className={styles.formGroup}>
+                  {/* 파일 교체는 업로드 UI가 있는 "사업자 정보 수정하기" 모달에서만 한다. */}
                   <label>사업자등록증 <span className={styles.disabledLabel}>(수정 불가)</span></label>
                   <div className={styles.fileWrapper}>
                     <span className={styles.fileName}>
@@ -310,7 +367,11 @@ const BusinessEditPage = () => {
                 <div className={styles.footer}>
                   <h4>사업자 정보 수정이 필요한 경우</h4>
                   <ul>
-                    <li>사업자등록번호, 회사명, 대표자명, 사업자등록증은 고객센터를 통해 문의해주세요.</li>
+                    {isAdmin ? (
+                      <li>관리자 계정이라 잠금이 풀려 있습니다. 사업자등록증 파일 교체는 회원정보 화면의 &ldquo;사업자 정보 수정하기&rdquo;에서 하세요.</li>
+                    ) : (
+                      <li>사업자등록번호, 회사명, 대표자명, 사업자등록증은 고객센터를 통해 문의해주세요.</li>
+                    )}
                   </ul>
                 </div>
 

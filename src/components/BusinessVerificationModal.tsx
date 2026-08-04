@@ -1,13 +1,13 @@
 import React, { useState, useContext, useEffect } from 'react';
 import styles from '@/styles/BusinessVerificationModal.module.css';
-import { createClient } from '@supabase/supabase-js';
 import { AuthContext } from '@/contexts/AuthContext';
 import { compressImage } from '@/lib/imageCompress';
 
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )  
+// 새 클라이언트를 만들지 않고 공용 인스턴스를 쓴다. (admin/index.tsx 와 같은 이유)
+// supabase-js 는 인스턴스마다 같은 저장소 키에 락을 걸어서, 인스턴스가 늘어나면
+// getSession() 이 서로 기다리다 멈추거나 낡은 토큰을 돌려준다.
+// 여기서 자체 클라이언트를 쓰다가 관리자 저장이 401 "인증에 실패했습니다" 로 막혔다.
+import supabase from '@/lib/supabase';
 
 interface BusinessVerificationModalProps {
   onClose: () => void;
@@ -26,7 +26,9 @@ const BusinessVerificationModal: React.FC<BusinessVerificationModalProps> = ({ o
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
-  
+  // 관리자는 잠긴 전화번호까지 고칠 수 있고, 수정해도 재심사가 걸리지 않는다.
+  const [isAdmin, setIsAdmin] = useState(false);
+
   const auth = useContext(AuthContext);
   if (!auth) {
     throw new Error("AuthContext must be used within an AuthProvider");
@@ -41,7 +43,7 @@ const BusinessVerificationModal: React.FC<BusinessVerificationModalProps> = ({ o
       try {
         const { data, error } = await supabase
           .from('users')
-          .select('number, company_name, name, business_number, business_address, policy_term, auth_term, biz_file')
+          .select('number, company_name, name, business_number, business_address, policy_term, auth_term, biz_file, is_admin')
           .eq('id', user.id)
           .single();
 
@@ -56,6 +58,7 @@ const BusinessVerificationModal: React.FC<BusinessVerificationModalProps> = ({ o
           setTermsChecked(data.policy_term || false);
           setPolicyChecked(data.auth_term || false);
           setExistingFile(data.biz_file || null);
+          setIsAdmin(!!data.is_admin);
         }
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -178,30 +181,57 @@ const BusinessVerificationModal: React.FC<BusinessVerificationModalProps> = ({ o
         fileUrl = urlData.publicUrl;
       }
 
-      const updateData: any = {
-        company_name: companyName,
-        name: representativeName,
-        business_number: businessNumber,
-        business_address: businessAddress,
-        policy_term: termsChecked,
-        auth_term: policyChecked,
-        is_accept: false, // 수정 시 재검토가 필요하므로 인증 상태를 false로 변경
-        accept_notified: false, // 재승인 시 승인 완료 알림을 다시 띄우기 위해 리셋
-      };
+      if (isAdmin) {
+        // 관리자는 전화번호까지 바꿀 수 있어 auth.users 동기화가 필요하고,
+        // 본인 계정이므로 재심사(is_accept=false)를 걸지 않는다.
+        const { data: sessionData } = await supabase.auth.getSession();
+        const token = sessionData.session?.access_token;
+        if (!token) throw new Error('세션이 만료되었습니다. 다시 로그인해주세요.');
 
-      // 새 파일이 업로드된 경우에만 biz_file 업데이트
-      if (fileUrl) {
-        updateData.biz_file = fileUrl;
+        const res = await fetch('/api/admin/update-self-profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({
+            number: phone,
+            company_name: companyName,
+            name: representativeName,
+            business_number: businessNumber,
+            business_address: businessAddress,
+            policy_term: termsChecked,
+            auth_term: policyChecked,
+            ...(fileUrl ? { biz_file: fileUrl } : {}),
+          }),
+        });
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(json?.error || '정보 저장 실패');
+      } else {
+        const updateData: any = {
+          company_name: companyName,
+          name: representativeName,
+          business_number: businessNumber,
+          business_address: businessAddress,
+          policy_term: termsChecked,
+          auth_term: policyChecked,
+          is_accept: false, // 수정 시 재검토가 필요하므로 인증 상태를 false로 변경
+          accept_notified: false, // 재승인 시 승인 완료 알림을 다시 띄우기 위해 리셋
+        };
+
+        // 새 파일이 업로드된 경우에만 biz_file 업데이트
+        if (fileUrl) {
+          updateData.biz_file = fileUrl;
+        }
+
+        const { error: updateError } = await supabase
+          .from('users')
+          .update(updateData)
+          .eq('id', user.id);
+
+        if (updateError) throw new Error(`정보 저장 실패: ${updateError.message}`);
       }
 
-      const { error: updateError } = await supabase
-        .from('users')
-        .update(updateData)
-        .eq('id', user.id);
-
-      if (updateError) throw new Error(`정보 저장 실패: ${updateError.message}`);
-
-      alert('사업자 정보가 등록되었습니다. 관리자 승인 후 이용 가능합니다.');
+      alert(isAdmin
+        ? '사업자 정보가 수정되었습니다. (관리자 계정이라 재심사 없이 인증 상태가 유지됩니다)'
+        : '사업자 정보가 등록되었습니다. 관리자 승인 후 이용 가능합니다.');
       onClose();
       window.location.reload(); // 페이지 새로고침하여 상태 업데이트
     } catch (error: any) {
@@ -254,13 +284,16 @@ const BusinessVerificationModal: React.FC<BusinessVerificationModalProps> = ({ o
           <form onSubmit={handleSubmit}>
             {/* 본인인증 */}
             <div className={styles.formGroup}>
-              <label className={styles.formLabel}>본인인증 <span className={styles.disabledLabel}>(수정 불가)</span></label>
+              <label className={styles.formLabel}>
+                본인인증 {!isAdmin && <span className={styles.disabledLabel}>(수정 불가)</span>}
+              </label>
               <input
                 type="tel"
-                value={formatPhoneDisplay(phone)}
-                readOnly
-                disabled
-                className={`${styles.formInput} ${styles.inputReadonly}`}
+                value={isAdmin ? phone : formatPhoneDisplay(phone)}
+                readOnly={!isAdmin}
+                disabled={!isAdmin}
+                onChange={isAdmin ? (e) => setPhone(e.target.value) : undefined}
+                className={isAdmin ? styles.formInput : `${styles.formInput} ${styles.inputReadonly}`}
                 placeholder="회원가입 시 인증한 번호"
               />
               <p className={styles.verified}>인증 완료</p>
