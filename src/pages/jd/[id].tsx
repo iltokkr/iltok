@@ -102,7 +102,7 @@ export async function getServerSideProps({ params }: { params?: { id?: string } 
           korean_name, english_name, seeker_gender, birth_date,
           nationality, visa_status, korean_ability,
           work_conditions, desired_regions, career_history,
-          uploader:users (company_name, name, number)
+          uploader_id
         `)
         .eq('id', id)
         .single(),
@@ -126,9 +126,28 @@ export async function getServerSideProps({ params }: { params?: { id?: string } 
       };
     }
 
+    // 작성자(업체) 정보는 남의 users 행이라 anon 으로는 못 읽는다.
+    // RLS 잠금(users_select_self) 이후 위 조회에 uploader:users(...) 를 조인하면
+    // 결과가 null 이 되어 화면에 "정보 없음"만 나오고, 전화번호가 비어 채용담당자
+    // 카드(문자보내기 포함)까지 사라졌다.
+    // getServerSideProps 는 서버에서만 도므로 여기서 service role 로 따로 읽는다.
+    // jd 조회 자체는 anon 그대로 두어 숨김·차단 공고를 거르는 RLS 동작을 유지한다.
+    let uploader: { company_name?: string; name?: string; number?: string } | null = null;
+    const uploaderId = (jobResponse.data as { uploader_id?: string }).uploader_id;
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (uploaderId && serviceRoleKey) {
+      const admin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, serviceRoleKey);
+      const { data } = await admin
+        .from('users')
+        .select('company_name, name, number')
+        .eq('id', uploaderId)
+        .maybeSingle();
+      uploader = data;
+    }
+
     const processedData = {
       ...jobResponse.data,
-      uploader: jobResponse.data.uploader || { company_name: "정보 없음", name: "정보 없음" },
+      uploader: uploader || { company_name: "정보 없음", name: "정보 없음" },
       board_type: jobResponse.data.board_type
     };
 
