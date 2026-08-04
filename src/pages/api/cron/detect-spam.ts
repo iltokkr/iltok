@@ -50,6 +50,14 @@ const SCAN_LIMIT = 5000;
 /** 한 번에 새로 만들 후보 수 상한 — 첫 실행에서 목록이 넘치는 것을 막는다 */
 const MAX_NEW_REPORTS = 100;
 
+// ── 오래된 기록 정리 ────────────────────────────────────────
+// 로그를 영원히 쌓아두지 않는다. 감지는 최근 30일만 보므로 그보다 넉넉히 남기고 지운다.
+// user_warnings 는 지우지 않는다 — 왜 경고했는지 근거를 남겨야 하고 양도 적다.
+/** 끌어올리기 로그 보관 기간 (감지 창 30일 + 기준 조정용 여유) */
+const BUMP_LOG_KEEP_DAYS = 90;
+/** 처리 완료된 후보 보관 기간. 검토 대기(pending)는 지우지 않는다 */
+const REPORT_KEEP_DAYS = 180;
+
 /** 값이 전부 같고 비어 있지 않을 때만 "동일" 신호로 친다. 전부 비어 있으면 근거가 없는 것이다 */
 const allSameNonEmpty = (values: (string | null | undefined)[]): boolean => {
   const first = values[0];
@@ -85,6 +93,36 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const supabase = createClient(supabaseUrl, serviceRoleKey);
   const since = new Date(Date.now() - WINDOW_DAYS * 24 * 60 * 60 * 1000).toISOString();
+
+  // 오래된 기록부터 정리한다. 여기서 실패해도 감지는 그대로 진행한다.
+  const purged = { bumpLogs: 0, reports: 0 };
+  if (req.query.dry !== '1') {
+    try {
+      const bumpCutoff = new Date(
+        Date.now() - BUMP_LOG_KEEP_DAYS * 24 * 60 * 60 * 1000
+      ).toISOString();
+      const { data: delBump } = await supabase
+        .from('jd_bump_log')
+        .delete()
+        .lt('bumped_at', bumpCutoff)
+        .select('id');
+      purged.bumpLogs = delBump?.length ?? 0;
+
+      // 검토 대기(pending)는 아무리 오래돼도 지우지 않는다. 처리된 것만 정리한다.
+      const reportCutoff = new Date(
+        Date.now() - REPORT_KEEP_DAYS * 24 * 60 * 60 * 1000
+      ).toISOString();
+      const { data: delReports } = await supabase
+        .from('spam_reports')
+        .delete()
+        .neq('status', 'pending')
+        .lt('reviewed_at', reportCutoff)
+        .select('id');
+      purged.reports = delReports?.length ?? 0;
+    } catch (e) {
+      console.error('detect-spam 오래된 기록 정리 실패:', e);
+    }
+  }
 
   try {
     const { data: jdRows, error: jdError } = await supabase
@@ -216,7 +254,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     if (candidates.length === 0) {
-      return res.status(200).json({ scanned: active.length, found: 0, inserted: 0, skipped: 0 });
+      return res.status(200).json({ scanned: active.length, found: 0, inserted: 0, skipped: 0, purged });
     }
 
     // 이미 올라온 묶음은 건너뛴다.
@@ -249,6 +287,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       inserted: toInsert.length,
       skipped: candidates.length - fresh.length,
       truncated: fresh.length - toInsert.length,
+      purged,
     });
   } catch (err) {
     console.error('detect-spam error:', err);

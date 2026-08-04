@@ -239,6 +239,22 @@ CREATE POLICY jd_bump_log_insert_own ON jd_bump_log
   FOR INSERT TO authenticated WITH CHECK (uploader_id = auth.uid());
 ```
 
+### 4.6 보관 기간
+
+로그를 영원히 쌓아두지 않는다. 매일 도는 감지 배치가 시작할 때 함께 정리한다.
+
+| 테이블 | 보관 | 이유 |
+|---|---|---|
+| `jd_bump_log` | 90일 | 감지 창이 30일이라 그보다 넉넉히 남긴다. 기준값 조정에도 쓴다 |
+| `spam_reports` | 처리된 것만 180일 | `pending`은 아무리 오래돼도 지우지 않는다 — 검토가 밀린 것일 뿐이다 |
+| `user_warnings` | 영구 | 왜 경고했는지 근거를 남겨야 한다. 양도 적다 |
+
+2026-08-04 실측: `jd_bump_log`가 하루 약 123행(연 4.5만행), `spam_reports`가 하루 약 8행.
+지금 규모에서는 정리하지 않아도 부담이 없지만, 상한 없이 늘어나는 구조를 남겨두지 않는다.
+
+`spam_reports`를 지우면 `user_warnings.report_id`가 NULL이 된다(`ON DELETE SET NULL`).
+경고 이력은 지역·건수·숨긴 공고 제목을 자체적으로 들고 있어 후보가 사라져도 문구가 깨지지 않는다.
+
 ## 5. 처리 흐름
 
 ### 5.1 경고 발송 (issue_warning)
