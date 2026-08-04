@@ -132,11 +132,21 @@ const PersonalSignup = () => {
       });
       if (error) throw error;
       if (data.user) {
-        const { data: existingUser } = await supabase
-          .from('users')
-          .select('id, user_type')
-          .eq('number', formatted)
-          .maybeSingle();
+        // 이미 가입된 번호/유형 확인 (서버에서 유형만 조회)
+        let existingUser: { user_type: string } | null = null;
+        try {
+          const resp = await fetch('/api/check-phone-exists', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone: formatted }),
+          });
+          if (resp.ok) {
+            const j = await resp.json();
+            if (j.exists) existingUser = { user_type: j.user_type };
+          }
+        } catch {
+          /* ignore */
+        }
         if (existingUser) {
           if (existingUser.user_type === 'jobseeker') {
             await supabase.auth.signOut();

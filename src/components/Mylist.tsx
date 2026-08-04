@@ -90,10 +90,11 @@ const Mylist: React.FC<MylistProps> = ({
     }
     const fetchApplicationCounts = async () => {
       const ids = regularPosts.map((p) => p.id);
-      const { data } = await supabase.from('job_application').select('jd_id').in('jd_id', ids);
+      // 개별 지원 행 노출 없이 집계값만 (get_application_counts RPC)
+      const { data } = await supabase.rpc('get_application_counts', { jd_ids: ids });
       const counts: Record<number, number> = {};
-      (data || []).forEach((b: { jd_id: number }) => {
-        counts[b.jd_id] = (counts[b.jd_id] || 0) + 1;
+      (data || []).forEach((b: { jd_id: number; cnt: number }) => {
+        counts[b.jd_id] = Number(b.cnt);
       });
       setApplicationCounts(counts);
     };

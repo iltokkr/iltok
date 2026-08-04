@@ -58,119 +58,29 @@ const ApplicantsPage: React.FC = () => {
           return;
         }
 
-        const { data: postData, error: postError } = await supabase
-          .from('jd')
-          .select('id, title, 1depth_region, 2depth_region, uploader_id')
-          .eq('id', postIdNum)
-          .single();
-
-        if (postError || !postData) {
-          setError('공고를 찾을 수 없습니다.');
+        // 지원자 이름·전화번호는 서버(service_role)에서 소유자 검증 후에만 내려준다.
+        // (클라이언트가 users 테이블을 직접 조회하던 연락처 유출 경로 제거)
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          setError('로그인이 필요합니다.');
           setIsLoading(false);
           return;
         }
 
-        if (postData.uploader_id !== auth?.user?.id) {
-          setError('접근 권한이 없습니다.');
+        const resp = await fetch(`/api/my/applicants/${postIdNum}`, {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
+
+        if (!resp.ok) {
+          const j = await resp.json().catch(() => ({}));
+          setError(j.error || '데이터를 불러오는데 실패했습니다.');
           setIsLoading(false);
           return;
         }
 
+        const { post: postData, applicants } = await resp.json();
         setPost(postData);
-
-        const { data: applicationData } = await supabase
-          .from('job_application')
-          .select('users_id')
-          .eq('jd_id', postIdNum);
-
-        const userIds = (applicationData || []).map((b) => b.users_id);
-
-        if (userIds.length === 0) {
-          setApplicants([]);
-          setIsLoading(false);
-          return;
-        }
-
-        const { data: usersData } = await supabase
-          .from('users')
-          .select('id, name, number')
-          .in('id', userIds);
-
-        const userMap = new Map((usersData || []).map((u) => [u.id, { name: u.name || '-', number: u.number || '' }]));
-
-        let profileMap = new Map<string, { korean_name: string; id: string; gender?: string; birth_year?: number; birth_month?: number; birth_day?: number; nationality?: string; visa_status?: string; preferred_regions?: string[] }>();
-        try {
-          const { data: profilesData } = await supabase
-            .from('job_seeker_profiles')
-            .select('user_id, korean_name, id, gender, birth_year, birth_month, birth_day, nationality, visa_status, preferred_regions')
-            .in('user_id', userIds);
-          profileMap = new Map(
-            (profilesData || []).map((p) => {
-              let regions: string[] = [];
-              if (p.preferred_regions) {
-                try {
-                  regions = typeof p.preferred_regions === 'string' ? JSON.parse(p.preferred_regions) : (p.preferred_regions as string[]);
-                } catch {
-                  regions = [];
-                }
-              }
-              return [
-                p.user_id,
-                {
-                  korean_name: p.korean_name || '',
-                  id: p.id,
-                  gender: p.gender || '',
-                  birth_year: p.birth_year,
-                  birth_month: p.birth_month,
-                  birth_day: p.birth_day,
-                  nationality: p.nationality || '',
-                  visa_status: p.visa_status || '',
-                  preferred_regions: Array.isArray(regions) ? regions : [],
-                },
-              ];
-            })
-          );
-        } catch {
-          // job_seeker_profiles 테이블이 없을 수 있음
-        }
-
-        const calcAge = (y?: number, m?: number, d?: number): number | null => {
-          if (!y) return null;
-          const today = new Date();
-          const birth = new Date(y, (m || 1) - 1, d || 1);
-          let age = today.getFullYear() - birth.getFullYear();
-          const monthDiff = today.getMonth() - birth.getMonth();
-          if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) age--;
-          return age >= 0 ? age : null;
-        };
-
-        const formatPhone = (n?: string) => {
-          if (!n) return '-';
-          const cleaned = n.replace(/\D/g, '');
-          if (cleaned.startsWith('82') && cleaned.length >= 11) return `0${cleaned.slice(2)}`;
-          return n;
-        };
-
-        setApplicants(
-          userIds.map((uid) => {
-            const profile = profileMap.get(uid);
-            const user = userMap.get(uid);
-            const regions = profile?.preferred_regions;
-            const regionStr = Array.isArray(regions) && regions.length > 0 ? regions.join(', ') : '-';
-            return {
-              users_id: uid,
-              name: user?.name,
-              korean_name: profile?.korean_name,
-              profile_id: profile?.id,
-              gender: profile?.gender || '-',
-              age: calcAge(profile?.birth_year, profile?.birth_month, profile?.birth_day),
-              nationality: profile?.nationality || '-',
-              visa_status: profile?.visa_status || '-',
-              phone: formatPhone(user?.number),
-              preferred_regions: regionStr,
-            };
-          })
-        );
+        setApplicants(applicants);
       } catch (err) {
         console.error(err);
         setError('데이터를 불러오는데 실패했습니다.');

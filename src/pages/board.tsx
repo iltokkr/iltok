@@ -311,18 +311,13 @@ const BoardPage: React.FC = () => {
       // 기본 쿼리: 채용정보(board_type 0)는 제휴 제외 일반 공고만, 그 외는 기존대로
       let baseQuery = supabase
         .from('jd')
-        .select(`
-          ${listColumns(currentBoardType)},
-          users!inner (
-            is_accept
-          )
-        `, { count: 'exact' })
+        .select(`${listColumns(currentBoardType)}, user_public!inner(is_accept)`, { count: 'exact' })
         .eq('board_type', currentBoardType)
         .not('uploader_id', 'is', null)
         .or('is_hidden.is.null,is_hidden.eq.false'); // 숨김 처리된 게시글 제외
 
       if (currentBoardType === '0') {
-        baseQuery = baseQuery.eq('users.is_accept', true)
+        baseQuery = baseQuery.eq('user_public.is_accept', true)
           .eq('ad', false)
           .or('is_ads.is.null,is_ads.eq.false'); // 제휴(is_ads) 제외 - 프리미엄 섹션으로 분리
       } else {
@@ -386,19 +381,18 @@ const BoardPage: React.FC = () => {
         }
       }
 
-      // 지원 수 가져오기 (job_application)
+      // 지원 수 가져오기 (개별 지원 행 노출 없이 집계값만 — get_application_counts RPC)
       let bookmarkCountsData: Record<number, number> = {};
       if (jobIds.length > 0) {
-        const { data } = await supabase
-          .from('job_application')
-          .select('jd_id')
-          .in('jd_id', jobIds);
-        
+        const { data } = await supabase.rpc('get_application_counts', { jd_ids: jobIds });
         if (data) {
-          bookmarkCountsData = data.reduce((acc: Record<number, number>, item: any) => {
-            acc[item.jd_id] = (acc[item.jd_id] || 0) + 1;
-            return acc;
-          }, {});
+          bookmarkCountsData = (data as { jd_id: number; cnt: number }[]).reduce(
+            (acc: Record<number, number>, item) => {
+              acc[item.jd_id] = Number(item.cnt);
+              return acc;
+            },
+            {}
+          );
         }
       }
 
@@ -452,13 +446,11 @@ const BoardPage: React.FC = () => {
               ad,
               is_urgent,
               is_ads,
-              users!inner (
-                is_accept
-              )
+              user_public!inner(is_accept)
             `)
             .eq('ad', true)
             .eq('board_type', currentBoardType)
-            .eq('users.is_accept', true)
+            .eq('user_public.is_accept', true)
             .or('is_hidden.is.null,is_hidden.eq.false')
             .or(`ad_until.is.null,ad_until.gte.${new Date().toISOString()}`);
 
@@ -510,13 +502,10 @@ const BoardPage: React.FC = () => {
           // 제휴(is_ads) 게시물 - 프리미엄 섹션 상단 고정용
           let partnerQuery = supabase
             .from('jd')
-            .select(`
-              ${listColumns(currentBoardType)},
-              users!inner (is_accept)
-            `)
+            .select(`${listColumns(currentBoardType)}, user_public!inner(is_accept)`)
             .eq('board_type', currentBoardType)
             .eq('is_ads', true)
-            .eq('users.is_accept', true)
+            .eq('user_public.is_accept', true)
             .not('uploader_id', 'is', null)
             .or('is_hidden.is.null,is_hidden.eq.false')
             .or(`ad_until.is.null,ad_until.gte.${new Date().toISOString()}`);

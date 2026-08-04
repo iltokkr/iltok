@@ -166,16 +166,19 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
     }
 
     const fetchBookmarkCounts = async () => {
-      const { data, error } = await supabase
-        .from('job_application')
-        .select('jd_id')
-        .in('jd_id', visibleJobIdsKey.split(',').map(Number));
+      // 개별 지원 행 노출 없이 집계값만 (get_application_counts RPC)
+      const { data, error } = await supabase.rpc('get_application_counts', {
+        jd_ids: visibleJobIdsKey.split(',').map(Number),
+      });
 
       if (data && !error) {
-        const counts = data.reduce((acc: Record<number, number>, item: { jd_id: number }) => {
-          acc[item.jd_id] = (acc[item.jd_id] || 0) + 1;
-          return acc;
-        }, {});
+        const counts = (data as { jd_id: number; cnt: number }[]).reduce(
+          (acc: Record<number, number>, item) => {
+            acc[item.jd_id] = Number(item.cnt);
+            return acc;
+          },
+          {} as Record<number, number>
+        );
         setBookmarkCounts(counts);
       }
     };

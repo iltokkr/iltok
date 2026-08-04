@@ -92,13 +92,15 @@ const BusinessSignup = () => {
     setFormErrors((prev) => ({ ...prev, userId: '' }));
     setUserIdChecked(null);
     try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('id')
-        .eq('user_id', id)
-        .maybeSingle();
-      if (error) throw error;
-      if (data) {
+      // 아이디 중복확인은 서버에서 boolean 만 받는다(users 직접 조회 제거)
+      const resp = await fetch('/api/check-userid-exists', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: id }),
+      });
+      if (!resp.ok) throw new Error('lookup failed');
+      const { exists } = await resp.json();
+      if (exists) {
         setUserIdChecked(false);
         setFormErrors((prev) => ({ ...prev, userId: '이미 사용 중인 아이디입니다.' }));
       } else {
@@ -146,11 +148,21 @@ const BusinessSignup = () => {
       });
       if (error) throw error;
       if (data.user) {
-        const { data: existingUser } = await supabase
-          .from('users')
-          .select('id, user_type')
-          .eq('number', formatted)
-          .maybeSingle();
+        // 이미 가입된 번호/유형 확인 (서버에서 유형만 조회)
+        let existingUser: { user_type: string } | null = null;
+        try {
+          const resp = await fetch('/api/check-phone-exists', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone: formatted }),
+          });
+          if (resp.ok) {
+            const j = await resp.json();
+            if (j.exists) existingUser = { user_type: j.user_type };
+          }
+        } catch {
+          /* ignore */
+        }
         if (existingUser) {
           if (existingUser.user_type === 'business') {
             await supabase.auth.signOut();

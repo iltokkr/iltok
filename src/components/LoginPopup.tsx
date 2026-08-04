@@ -180,8 +180,22 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose, initialUserType = 'bus
         }
       }
 
-      const { data: existing } = await supabase
-        .from('users').select('number').eq('number', formattedPhone).maybeSingle();
+      // 전화번호 가입 여부는 서버에서 boolean 만 받는다.
+      // (users 테이블을 잠그면서 클라이언트 직접 조회 → 전화번호 열거 경로 제거)
+      let existing = false;
+      try {
+        const resp = await fetch('/api/check-phone-exists', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone: formattedPhone }),
+        });
+        if (resp.ok) {
+          const j = await resp.json();
+          existing = !!j.exists;
+        }
+      } catch {
+        /* 조회 실패 시 기존 동작대로 신규로 간주 */
+      }
       setIsNewUser(!existing);
 
       const { error } = await supabase.auth.signInWithOtp({ phone: formattedPhone });
@@ -338,15 +352,23 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose, initialUserType = 'bus
     try {
       const formattedPhone = formatPhone(phone);
 
-      // 등록된 기업회원 휴대폰인지 먼저 확인
-      const { data: existing } = await supabase
-        .from('users')
-        .select('user_id, user_type')
-        .eq('number', formattedPhone)
-        .in('user_type', ['business', 'both'])
-        .maybeSingle();
+      // 등록된 기업회원 휴대폰인지 먼저 확인 (서버에서 유형만 조회)
+      let isBusinessPhone = false;
+      try {
+        const resp = await fetch('/api/check-phone-exists', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone: formattedPhone }),
+        });
+        if (resp.ok) {
+          const j = await resp.json();
+          isBusinessPhone = !!j.exists && ['business', 'both'].includes(j.user_type);
+        }
+      } catch {
+        /* ignore */
+      }
 
-      if (!existing) {
+      if (!isBusinessPhone) {
         setError('등록되지 않은 휴대폰 번호입니다.');
         return;
       }
