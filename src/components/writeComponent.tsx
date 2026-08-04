@@ -770,11 +770,6 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
       delete (submissionData as any).birth_month;
       delete (submissionData as any).birth_day;
 
-      // contact_name, contact_phone은 jd 테이블에 컬럼이 있을 때만 사용 (add_contact_fields.sql 마이그레이션 필요)
-      // 컬럼 미존재 시 에러 방지를 위해 항상 제외
-      delete (submissionData as any).contact_name;
-      delete (submissionData as any).contact_phone;
-
       // contents_preview 는 생성 열(generated always as left(contents,100) stored)이라
       // 값을 써 보내면 Postgres 가 거부한다:
       //   column "contents_preview" can only be updated to DEFAULT
