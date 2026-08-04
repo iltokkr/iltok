@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useContext, useCallback, useRef } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { AuthContext } from '@/contexts/AuthContext';
 import { FiBell } from 'react-icons/fi';
@@ -27,6 +27,33 @@ const REACTIONS = ['👍', '❤️', '😂', '😮'];
 
 // chatId -> emoji -> { count, mine(내가 눌렀는지) }
 type ReactionMap = Record<number, Record<string, { count: number; mine: boolean }>>;
+
+// 채널은 게시판 최상단에 있어서, 빈 상태로 먼저 그려졌다가 메시지·이모지가
+// 뒤늦게 도착하면 그만큼 아래 목록이 통째로 밀린다(뒤로가기 시 "상단이 반짝"거리는 원인).
+// 직전 화면을 sessionStorage 에 담아두고 첫 페인트 전에 그대로 복원해 밀림을 없앤다.
+const CACHE_KEY = 'boardChatCache';
+const CACHE_TTL = 10 * 60 * 1000;
+
+interface ChatCache {
+  savedAt: number;
+  messages: ChatMessage[];
+  reactions: ReactionMap;
+}
+
+function readCache(): ChatCache | null {
+  try {
+    const raw = sessionStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const cache = JSON.parse(raw) as ChatCache;
+    if (!cache?.messages?.length || Date.now() - cache.savedAt > CACHE_TTL) return null;
+    return cache;
+  } catch {
+    return null;
+  }
+}
+
+// SSR 에서는 layout effect 를 쓸 수 없어 경고가 나므로 브라우저에서만 사용한다.
+const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 // 본문 속 URL 을 자동으로 링크로 변환
 function linkify(text: string): React.ReactNode {
@@ -67,7 +94,8 @@ const BoardChat: React.FC = () => {
   const listRef = useRef<HTMLDivElement>(null);
 
   // 브라우저별 익명 식별자 (반응 1인 1회 보장용)
-  useEffect(() => {
+  // 캐시 복원과 함께 첫 페인트 전에 확정해야 이모지 활성 상태가 나중에 바뀌지 않는다.
+  useIsoLayoutEffect(() => {
     let id = localStorage.getItem('bc_client_id');
     if (!id) {
       id =
@@ -77,6 +105,12 @@ const BoardChat: React.FC = () => {
       localStorage.setItem('bc_client_id', id);
     }
     setClientId(id);
+
+    const cache = readCache();
+    if (cache) {
+      setMessages(cache.messages);
+      setReactions(cache.reactions);
+    }
   }, []);
 
   // 메시지 로드 (새로고침/진입 시)
@@ -89,7 +123,9 @@ const BoardChat: React.FC = () => {
 
     if (!error && data) {
       // 화면엔 오래된 것 → 최신 순(아래로 쌓임)으로 표시
-      setMessages([...data].reverse());
+      const next = [...data].reverse();
+      // 캐시와 동일하면 상태를 건드리지 않는다 (불필요한 재렌더·높이 변동 방지)
+      setMessages((prev) => (JSON.stringify(prev) === JSON.stringify(next) ? prev : next));
     }
   }, []);
 
@@ -145,12 +181,25 @@ const BoardChat: React.FC = () => {
         cell.count += 1;
         if (clientId && r.client_id === clientId) cell.mine = true;
       }
-      setReactions(map);
+      setReactions((prev) => (JSON.stringify(prev) === JSON.stringify(map) ? prev : map));
     })();
     return () => {
       active = false;
     };
   }, [messages, clientId]);
+
+  // 다음 진입(뒤로가기 포함) 때 곧바로 그릴 수 있게 화면 상태를 보관
+  useEffect(() => {
+    if (messages.length === 0) return;
+    try {
+      sessionStorage.setItem(
+        CACHE_KEY,
+        JSON.stringify({ savedAt: Date.now(), messages, reactions } satisfies ChatCache)
+      );
+    } catch {
+      // 저장 실패(용량 초과 등)는 무시 — 캐시가 없으면 기존대로 조회한다
+    }
+  }, [messages, reactions]);
 
   // 반응 토글 (로그인 불필요 — 브라우저별 client_id 기준)
   const toggleReaction = useCallback(
