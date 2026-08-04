@@ -10,6 +10,7 @@ import { AuthContext } from '@/contexts/AuthContext';
 import { HiOutlineCheckCircle } from 'react-icons/hi';
 import supabase from '@/lib/supabase';
 import { getPostingRestrictionMessage } from '@/lib/postingRestriction';
+import { compressImage } from '@/lib/imageCompress';
 
 interface JobForm {
   id?: number;
@@ -273,6 +274,10 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
   const [showDailyLimitModal, setShowDailyLimitModal] = useState(false);
   const auth = useContext(AuthContext);
   const [userPhone, setUserPhone] = useState<string>('');
+  // 상세내용 위 이미지는 관리자만 넣을 수 있다. 실제 차단은 DB 트리거(sql/jd_content_image_guard.sql)가 한다.
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [contentImageUploading, setContentImageUploading] = useState(false);
+  const [contentImageError, setContentImageError] = useState('');
 
   // 제목 유효성 검사 함수
   const validateTitle = (value: string): boolean => {
@@ -299,6 +304,48 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
     return urlPatterns.some(pattern => pattern.test(value));
   };
 
+  // 상세내용 위 이미지 업로드 (관리자 전용). 세로로 긴 광고 이미지를 그대로 쓰므로 폭만 1200으로 줄인다.
+  const handleContentImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setContentImageError('');
+
+    if (!file.type.startsWith('image/')) {
+      setContentImageError('이미지 파일만 올릴 수 있습니다.');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setContentImageError('이미지 크기는 10MB 이하여야 합니다.');
+      return;
+    }
+
+    setContentImageUploading(true);
+    try {
+      const compressed = await compressImage(file, 1200, 0.8);
+      const fileExt = (compressed.name.split('.').pop() || 'jpg').toLowerCase();
+      const filePath = `content/${auth?.user?.id}-${Date.now()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('job_content_images')
+        .upload(filePath, compressed, { upsert: false });
+
+      if (uploadError) {
+        console.error('content_image upload error:', uploadError);
+        setContentImageError('업로드에 실패했습니다. 잠시 후 다시 시도해주세요.');
+        return;
+      }
+
+      const { data: urlData } = supabase.storage.from('job_content_images').getPublicUrl(filePath);
+      setFormData(prev => ({ ...prev, content_image: urlData.publicUrl }));
+    } catch (err) {
+      console.error('content_image upload failed:', err);
+      setContentImageError('업로드에 실패했습니다. 잠시 후 다시 시도해주세요.');
+    } finally {
+      setContentImageUploading(false);
+      e.target.value = '';
+    }
+  };
+
   useEffect(() => {
     if (auth?.user) {
       setCurrentUserId(auth.user.id);
@@ -316,8 +363,11 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
 
   useEffect(() => {
     if (auth?.user?.id) {
-      supabase.from('users').select('number').eq('id', auth.user.id).single()
-        .then(({ data }) => { if (data?.number) setUserPhone(data.number); });
+      supabase.from('users').select('number, is_admin').eq('id', auth.user.id).single()
+        .then(({ data }) => {
+          if (data?.number) setUserPhone(data.number);
+          setIsAdmin(!!data?.is_admin);
+        });
     }
   }, [auth?.user?.id]);
 
@@ -696,7 +746,10 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
             uploader_id: user.id,
             ...(isEditing ? {} : { ad: false }),
         is_ads: formData.board_type === '0' ? (formData.is_ads ?? false) : false,
-        content_image: formData.board_type === '0' && (formData.is_ads && formData.content_image) ? formData.content_image.trim() || null : null,
+        // 관리자이거나 제휴(is_ads) 글일 때만 상세내용 위 이미지를 저장한다.
+        content_image: formData.board_type === '0' && (isAdmin || formData.is_ads) && formData.content_image
+          ? formData.content_image.trim() || null
+          : null,
         // 구직정보인 경우 배열 데이터를 JSON 문자열로 변환
         work_conditions: formData.board_type === '1' ? JSON.stringify(formData.work_conditions) : null,
         desired_regions: formData.board_type === '1' ? JSON.stringify(formData.desired_regions) : null,
@@ -1569,6 +1622,39 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
                 </div>
               </>
             )}
+          </>
+        )}
+
+        {/* 상세내용 위 이미지 — 관리자 전용 (채용정보만) */}
+        {isAdmin && formData.board_type === '0' && (
+          <>
+            <h2 className={style.sectionTitle}>상세 이미지 <span className={style.adminOnlyTag}>관리자 전용</span></h2>
+            <div className={style.subSection}>
+              <p className={style.adminOnlyHint}>
+                상세 내용 위에 표시됩니다. 세로로 긴 광고 이미지를 그대로 올리면 됩니다.
+              </p>
+              {formData.content_image ? (
+                <div className={style.contentImagePreview}>
+                  <img src={formData.content_image} alt="상세 이미지 미리보기" />
+                  <button
+                    type="button"
+                    className={style.contentImageRemove}
+                    onClick={() => setFormData(prev => ({ ...prev, content_image: '' }))}
+                  >
+                    이미지 제거
+                  </button>
+                </div>
+              ) : (
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleContentImageChange}
+                  disabled={contentImageUploading}
+                />
+              )}
+              {contentImageUploading && <div className={style.adminOnlyHint}>업로드 중...</div>}
+              {contentImageError && <div className={style.errorText}>{contentImageError}</div>}
+            </div>
           </>
         )}
 

@@ -7,6 +7,7 @@ import JobFilter from '@/components/JobFilter';
 import JobList from '@/components/JobList';
 import Pagination from '@/components/Pagination';
 import Footer from '@/components/Footer';
+import MainCarousel from '@/components/MainCarousel';
 import AdPopup from '@/components/AdPopup';
 import styles from '@/styles/Board.module.css';
 import { createClient } from '@supabase/supabase-js'
@@ -252,6 +253,7 @@ const BoardPage: React.FC = () => {
   const [regularJobs, setRegularJobs] = useState<Job[]>([]);
   const [adJobs, setAdJobs] = useState<AdJob[]>([]);
   const [partnerJobs, setPartnerJobs] = useState<Job[]>([]); // 제휴(is_ads) - 프리미엄 상단 고정용
+  const [showAdPopup, setShowAdPopup] = useState(false); // 배너 클릭 시 광고 안내 팝업
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
@@ -841,7 +843,34 @@ const BoardPage: React.FC = () => {
 
       <Header/>
       <MainMenu currentBoardType={boardType} />
-      {boardType === '0' && <BoardChat />}
+      {boardType === '0' && (
+        <>
+          <MainCarousel
+            images={[
+              {
+                src: '/banner_23030.png',
+                mobileSrc: '/banner_23030_mo.png',
+                action: 'navigate',
+                navigateTo: '/jd/23030'
+              },
+              {
+                src: '/50.png',
+                mobileSrc: '/50.png',
+                action: 'popup'
+              },
+              {
+                src: '/job.png',
+                mobileSrc: '/job.png',
+                action: 'navigate',
+                navigateTo: '/write?board_type=1'
+              }
+            ]}
+            onAdPopupOpen={() => setShowAdPopup(true)}
+          />
+          {showAdPopup && <AdPopup onClose={() => setShowAdPopup(false)} />}
+          <BoardChat />
+        </>
+      )}
       <div className={styles.layout} ref={contentRef}>
         <JobFilter
           boardType={boardType}
