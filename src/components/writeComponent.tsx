@@ -775,6 +775,13 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
       delete (submissionData as any).contact_name;
       delete (submissionData as any).contact_phone;
 
+      // contents_preview 는 생성 열(generated always as left(contents,100) stored)이라
+      // 값을 써 보내면 Postgres 가 거부한다:
+      //   column "contents_preview" can only be updated to DEFAULT
+      // 수정 모드는 select('*') 로 기존 행 전체를 formData 에 담고 그대로 되돌려
+      // 보내므로 이 컬럼이 딸려 들어간다. contents 가 바뀌면 DB 가 알아서 갱신한다.
+      delete (submissionData as any).contents_preview;
+
       let response;
       if (isEditing) {
         response = await supabase
