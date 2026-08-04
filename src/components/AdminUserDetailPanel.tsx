@@ -50,6 +50,9 @@ const AdminUserDetailPanel: React.FC<Props> = ({
   const togglePostOpen = (id: number) =>
     setOpenPostIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
 
+  // 묶음별로 몇 건까지 펼쳤는지 (기본 2건, 나머지는 접어둔다)
+  const [expandedGroups, setExpandedGroups] = useState<number[]>([]);
+
   const posts = detail?.posts ?? [];
 
   // 본문을 펼쳐 둔 공고들끼리 문장을 대조한다.
@@ -87,6 +90,97 @@ const AdminUserDetailPanel: React.FC<Props> = ({
     }
     return { grouped: Array.from(map.entries()).sort((a, b) => b[1].length - a[1].length), loners };
   }, [posts]);
+
+  // 묶음마다 그 안에서만 문장을 대조한다.
+  // 묶음은 어차피 비교하라고 묶어놓은 것이라, 펼치는 수고 없이 바로 나란히 보여준다.
+  const groupDiffs = useMemo(() => {
+    const byGroup = new Map<number, Map<number, { text: string; shared: boolean }[]>>();
+    for (const [groupNo, items] of groups.grouped) {
+      const marked = markSharedSentences(
+        items.map((p) => p.contents ?? ''),
+        { keepDigits: true }
+      );
+      const inner = new Map<number, { text: string; shared: boolean }[]>();
+      items.forEach((p, i) => inner.set(p.id, marked[i] ?? []));
+      byGroup.set(groupNo, inner);
+    }
+    return byGroup;
+  }, [groups.grouped]);
+
+  /** 유사 묶음 안의 공고 한 칸 — 검토 대기 카드와 같은 모양으로 나란히 놓는다 */
+  const renderGroupColumn = (
+    post: (typeof posts)[number],
+    sentences: { text: string; shared: boolean }[]
+  ) => (
+    <div key={post.id} className={styles.postCol}>
+      <div className={styles.postColHeader}>
+        <label className={styles.postColCheck}>
+          <input
+            type="checkbox"
+            checked={selectedJdIds.includes(post.id)}
+            onChange={() => onToggleJd(post.id)}
+          />
+          <span className={styles.postColTitle}>{post.title}</span>
+        </label>
+        <div className={styles.postColMeta}>
+          {post.updatedTime && (
+            <span className={styles.postColMetaRow}>
+              <span className={styles.postColMetaLabel}>등록</span>
+              {formatDateShort(post.updatedTime)}
+            </span>
+          )}
+          {post.salaryText && (
+            <span className={styles.postColMetaRow}>
+              <span className={styles.postColMetaLabel}>급여</span>
+              {post.salaryText}
+            </span>
+          )}
+          {post.worktimeText && (
+            <span className={styles.postColMetaRow}>
+              <span className={styles.postColMetaLabel}>근무</span>
+              {post.worktimeText}
+            </span>
+          )}
+          {post.contactPhone && (
+            <span className={styles.postColMetaRow}>
+              <span className={styles.postColMetaLabel}>연락처</span>
+              {post.contactPhone}
+            </span>
+          )}
+          {post.locationDetail && (
+            <span className={styles.postColMetaRow}>
+              <span className={styles.postColMetaLabel}>주소</span>
+              {post.locationDetail}
+            </span>
+          )}
+        </div>
+        <a
+          className={styles.postOpenLink}
+          href={`/jd/${post.id}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          공고 열기
+        </a>
+      </div>
+      <div className={styles.postSentences}>
+        {sentences.length === 0 ? (
+          <p className={styles.mutedNote}>(본문이 비어 있습니다)</p>
+        ) : (
+          sentences.map((s, i) => (
+            <p
+              key={i}
+              className={`${styles.sentence} ${
+                s.shared ? styles.sentenceShared : styles.sentenceUnique
+              }`}
+            >
+              {s.text}
+            </p>
+          ))
+        )}
+      </div>
+    </div>
+  );
 
   const renderPostItem = (post: (typeof posts)[number]) => {
     const selected = selectedJdIds.includes(post.id);
@@ -262,14 +356,13 @@ const AdminUserDetailPanel: React.FC<Props> = ({
             <p className={styles.userDetailSectionTitle}>
               채용공고 ({posts.length}건)
               <span className={styles.sectionHint}>
-                제목을 누르면 본문이 펼쳐집니다 · 체크는 경고 시 숨길 공고를 고르는 것입니다
+                체크한 공고가 경고 시 숨겨집니다
               </span>
             </p>
 
-            {openedPosts.length >= 2 && (
+            {groups.grouped.length > 0 && (
               <p className={styles.diffLegend}>
-                본문 {openedPosts.length}건을 대조 중입니다 ·{' '}
-                <span className={styles.legendShared}>빨강</span> 다른 공고에도 있는 문장 ·{' '}
+                <span className={styles.legendShared}>빨강</span> 묶음 안 다른 공고에도 있는 문장 ·{' '}
                 <span className={styles.legendUnique}>초록</span> 이 공고에만 있는 문장
               </p>
             )}
@@ -283,32 +376,44 @@ const AdminUserDetailPanel: React.FC<Props> = ({
                     같은 지역에 내용이 비슷한 공고 묶음은 없습니다.
                   </p>
                 ) : (
-                  groups.grouped.map(([groupNo, items]) => (
-                    <div key={groupNo} className={styles.postGroup}>
-                      <div className={styles.postGroupHeader}>
-                        <span className={styles.similarGroupBadge}>
-                          {items[0].region} · 내용 유사 {items.length}건
-                        </span>
-                        <span className={styles.postGroupActions}>
+                  groups.grouped.map(([groupNo, items]) => {
+                    const diff = groupDiffs.get(groupNo);
+                    const expanded = expandedGroups.includes(groupNo);
+                    const visible = expanded ? items : items.slice(0, 2);
+                    return (
+                      <div key={groupNo} className={styles.postGroup}>
+                        <div className={styles.postGroupHeader}>
+                          <span className={styles.similarGroupBadge}>
+                            {items[0].region} · 내용 유사 {items.length}건
+                          </span>
+                          <span className={styles.postGroupActions}>
+                            <button
+                              type="button"
+                              className={styles.postGroupSelect}
+                              onClick={() => onSelectMany(items.map((i) => i.id))}
+                            >
+                              숨김 대상으로 선택
+                            </button>
+                          </span>
+                        </div>
+
+                        {/* 묶음은 비교하라고 묶어놓은 것이라 펼치지 않고 바로 나란히 보여준다 */}
+                        <div className={styles.postsGrid}>
+                          {visible.map((post) => renderGroupColumn(post, diff?.get(post.id) ?? []))}
+                        </div>
+
+                        {!expanded && items.length > 2 && (
                           <button
                             type="button"
-                            className={styles.postGroupSelect}
-                            onClick={() => setOpenPostIds(items.map((i) => i.id))}
+                            className={styles.showMorePostsBtn}
+                            onClick={() => setExpandedGroups((g) => [...g, groupNo])}
                           >
-                            본문 비교
+                            나머지 {items.length - 2}건 보기
                           </button>
-                          <button
-                            type="button"
-                            className={styles.postGroupSelect}
-                            onClick={() => onSelectMany(items.map((i) => i.id))}
-                          >
-                            숨김 대상으로 선택
-                          </button>
-                        </span>
+                        )}
                       </div>
-                      <ul className={styles.postCheckList}>{items.map(renderPostItem)}</ul>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
 
                 {groups.loners.length > 0 && (
