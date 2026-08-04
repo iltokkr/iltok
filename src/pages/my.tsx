@@ -252,7 +252,9 @@ const My: React.FC = () => {
                 phoneNumber={userData?.number || null}
                 businessNumber={userData?.business_number || null}
                 businessAddress={userData?.business_address || null}
-                userType={userData?.user_type || null}
+                // 'both' 계정은 DB값 그대로 넘기면 Mylist의 business 체크에 걸려
+                // 회원정보 블록이 숨겨지므로, 확정된 effectiveUserType을 넘긴다.
+                userType={effectiveUserType}
                 userId={userData?.user_id || null}
                 email={userData?.email || null}
               />
@@ -272,7 +274,7 @@ const My: React.FC = () => {
           phoneNumber={userData?.number || null}
           businessNumber={userData?.business_number || null}
           businessAddress={userData?.business_address || null}
-          userType={userData?.user_type || null}
+          userType={effectiveUserType}
         />
         )}
       </main>
