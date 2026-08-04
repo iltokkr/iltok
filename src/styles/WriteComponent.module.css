@@ -1601,7 +1601,8 @@
 .contentImagePreview {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  /* 상세 페이지(JobDetail .contentImageWrap)가 가운데 정렬이라 미리보기도 맞춘다 */
+  align-items: center;
   gap: 10px;
 }
 

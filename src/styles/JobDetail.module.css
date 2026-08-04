@@ -124,6 +124,11 @@
 /* 상세 내용 위 이미지 (is_ads 등) */
 .contentImageWrap {
   margin-bottom: 16px;
+  /* text-align 은 이미지가 인라인일 때만 듣는다. display 값과 무관하게 가운데로
+     오도록 flex 를 쓰고, 부모가 폭을 늘려주지 않는 경우에 대비해 width 도 고정. */
+  display: flex;
+  justify-content: center;
+  width: 100%;
   text-align: center;
 }
 .contentImage {
