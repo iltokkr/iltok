@@ -313,9 +313,8 @@
 }
 
 .jobCardTop {
-  padding: 10px 14px;
+  padding: 7px 12px;
   background: #fff;
-  min-height: 44px;
   display: flex;
   align-items: flex-start;
   gap: 6px;
@@ -342,7 +341,7 @@
 }
 
 .jobCardBottom {
-  padding: 10px 14px;
+  padding: 7px 12px;
   background: var(--color-bg);
   display: flex;
   flex-wrap: wrap;
@@ -482,7 +481,7 @@
 }
 
 [data-board-type="0"][data-view-mode="card"] .jobItem {
-  padding: 0 0 8px 0;
+  padding: 0 0 4px 0;
   flex-wrap: wrap;
 }
 

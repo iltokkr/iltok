@@ -98,7 +98,8 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
   const [hideResumeCta, setHideResumeCta] = useState(false);
 
   // 모바일 뷰 모드 (리스트: 많은 공고, 카드: 읽기 편함)
-  const [mobileViewMode, setMobileViewMode] = useState<'list' | 'card'>('list');
+  // 기본값은 카드. 저장된 선택이 있으면 아래 useEffect 가 덮어쓴다.
+  const [mobileViewMode, setMobileViewMode] = useState<'list' | 'card'>('card');
   useEffect(() => {
     const saved = localStorage.getItem('jobListMobileView') as 'list' | 'card' | null;
     if (saved === 'list' || saved === 'card') setMobileViewMode(saved);
@@ -617,7 +618,9 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
     const salaryParts = getFormattedSalaryParts(job);
     const salary = formatSalary(job);
     const workTime = formatWorkTime(job);
-    const ageLimit = job.age_limit || null;
+    // "무관"은 라벨 없이 값만 보이면 무엇에 대한 무관인지 알 수 없고,
+    // 제한이 없다는 뜻이라 알릴 내용도 없다. 실제 제한("45세이하" 등)만 띄운다.
+    const ageLimit = job.age_limit && job.age_limit !== '무관' ? job.age_limit : null;
 
     return (
       <li key={`${isAd ? 'ad-' : ''}${job.id}`} className={`${styles.jobItem} ${isRead(job.id) ? styles.readPost : ''} ${!job.salary_type || !job.salary_detail ? 'no-salary' : ''} ${job.is_urgent ? styles.urgentItem : ''}`}>
