@@ -6,6 +6,7 @@ import Header from '@/components/Header';
 import MainMenu from '@/components/MainMenu';
 import Footer from '@/components/Footer';
 import Mylist from '@/components/Mylist';
+import BoardChat from '@/components/BoardChat';
 import PersonalService from '@/components/PersonalService';
 import ResumeList from '@/components/ResumeList';
 import styles from '@/styles/My.module.css';
@@ -179,6 +180,8 @@ const My: React.FC = () => {
       <Header />
       <MainMenu showMenuItems={true} currentSection={isBusiness ? (activeSection === 'info' ? 'info' : 'ads') : isJobseeker ? (activeSection === 'info' ? 'info' : activeSection === 'resume' ? 'resume' : 'applications') : undefined} />
       <main className={styles.main}>
+        {/* 소식·공지 — 내용 대부분이 기업회원 대상이라 게시판 최상단에서 이곳으로 옮겼다. */}
+        {isBusiness && <BoardChat />}
         {(isBusiness || isJobseeker) && (
           <div className={styles.sectionTabs}>
             {isBusiness && (
