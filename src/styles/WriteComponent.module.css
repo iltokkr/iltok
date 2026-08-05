@@ -1592,10 +1592,117 @@
   vertical-align: middle;
 }
 
+.premiumOnlyTag {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
+  font-size: 12px;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
 .adminOnlyHint {
   color: var(--color-text-secondary);
   font-size: 13px;
   margin: 0 0 10px;
+}
+
+/* 프리미엄이 아닌 이용자에게 보여주는 잠긴 업로드 자리 — 누르면 등록안내가 열린다 */
+.contentImageLocked {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 28px 20px;
+  border: 1.5px dashed var(--color-border);
+  border-radius: 12px;
+  background: var(--color-bg);
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.contentImageLocked:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.contentImageLockedIcon {
+  width: 28px;
+  height: 28px;
+  color: var(--color-text-muted);
+}
+
+.contentImageLockedMain {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.contentImageLockedSub {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  text-align: center;
+  word-break: keep-all;
+}
+
+/* 파일 선택 — 브라우저 기본 버튼 대신 눌러야 할 자리를 크게 잡아준다 */
+.contentImagePicker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 28px 20px;
+  border: 1.5px dashed var(--color-border);
+  border-radius: 10px;
+  background: var(--color-bg);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.contentImagePicker:hover {
+  border-color: var(--color-primary);
+  background: var(--color-primary-bg);
+}
+
+.contentImagePicker input[type='file'] {
+  display: none;
+}
+
+.contentImagePickerIcon {
+  width: 28px;
+  height: 28px;
+  color: var(--color-text-muted);
+  transition: color 0.15s;
+}
+
+.contentImagePicker:hover .contentImagePickerIcon {
+  color: var(--color-primary);
+}
+
+.contentImagePickerMain {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.contentImagePickerSub {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+/* 업로드 중에는 다시 못 누르게 */
+.contentImagePickerBusy {
+  cursor: progress;
+  opacity: 0.65;
+  pointer-events: none;
 }
 
 .contentImagePreview {

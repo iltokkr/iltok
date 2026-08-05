@@ -10,6 +10,8 @@ import { AuthContext } from '@/contexts/AuthContext';
 import { HiOutlineCheckCircle } from 'react-icons/hi';
 import supabase from '@/lib/supabase';
 import { getPostingRestrictionMessage } from '@/lib/postingRestriction';
+import TitleGuide from '@/components/TitleGuide';
+import AdPopup from '@/components/AdPopup';
 import { compressImage } from '@/lib/imageCompress';
 
 interface JobForm {
@@ -47,6 +49,9 @@ interface JobForm {
   // 광고(is_ads) 글: 상세내용만 노출, 상세 위 이미지
   is_ads?: boolean;
   content_image?: string;
+  // 프리미엄 노출 여부. ad_auto=true 는 cron 이 매일 돌리는 무료 자동 프리미엄이라 유료와 구분한다.
+  ad?: boolean;
+  ad_auto?: boolean;
   // 구직정보 전용 필드
   korean_name: string;
   english_name: string;
@@ -274,10 +279,12 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
   const [showDailyLimitModal, setShowDailyLimitModal] = useState(false);
   const auth = useContext(AuthContext);
   const [userPhone, setUserPhone] = useState<string>('');
-  // 상세내용 위 이미지는 관리자만 넣을 수 있다. 실제 차단은 DB 트리거(sql/jd_content_image_guard.sql)가 한다.
+  // 상세내용 위 이미지는 관리자·유료 프리미엄만 넣을 수 있다.
+  // 실제 차단은 DB 트리거(sql/jd_content_image_guard.sql)와 스토리지 정책이 한다.
   const [isAdmin, setIsAdmin] = useState(false);
   const [contentImageUploading, setContentImageUploading] = useState(false);
   const [contentImageError, setContentImageError] = useState('');
+  const [showAdGuide, setShowAdGuide] = useState(false);
 
   // 제목 유효성 검사 함수
   const validateTitle = (value: string): boolean => {
@@ -370,6 +377,12 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
         });
     }
   }, [auth?.user?.id]);
+
+  // 유료 프리미엄 공고에만 상세 이미지 업로드를 연다.
+  // ad_auto=true 는 refresh-premium cron 이 매일 50건씩 무료로 올렸다 내리는 자동 프리미엄이므로 제외한다.
+  const isPaidPremium =
+    formData.board_type === '0' && formData.ad === true && formData.ad_auto !== true;
+  const canEditContentImage = isAdmin || isPaidPremium;
 
   const formatPhoneDisplay = (number: string) => {
     if (!number) return '';
@@ -518,6 +531,8 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
       jobData.work_start_time2 = jobData.work_start_time2 || '17:00';
       jobData.work_end_time2 = jobData.work_end_time2 || '02:00';
       jobData.is_ads = jobData.is_ads ?? false;
+      jobData.ad = jobData.ad ?? false;
+      jobData.ad_auto = jobData.ad_auto ?? false;
       jobData.content_image = jobData.content_image ?? '';
       jobData.contact_name = jobData.contact_name ?? '';
       jobData.contact_phone = jobData.contact_phone ?? '';
@@ -746,8 +761,8 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
             uploader_id: user.id,
             ...(isEditing ? {} : { ad: false }),
         is_ads: formData.board_type === '0' ? (formData.is_ads ?? false) : false,
-        // 관리자이거나 제휴(is_ads) 글일 때만 상세내용 위 이미지를 저장한다.
-        content_image: formData.board_type === '0' && (isAdmin || formData.is_ads) && formData.content_image
+        // 관리자·유료 프리미엄·제휴(is_ads) 글일 때만 상세내용 위 이미지를 저장한다.
+        content_image: formData.board_type === '0' && (canEditContentImage || formData.is_ads) && formData.content_image
           ? formData.content_image.trim() || null
           : null,
         // 구직정보인 경우 배열 데이터를 JSON 문자열로 변환
@@ -1092,6 +1107,8 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
               <div className={style.titleCharCount}>{formData.title.length}/40 [최소2자]</div>
               {titleInvalid && <div className={style.errorText}>제목에는 한글, 영문, 중국어, 숫자, 일부 특수문자(- + # () [] % &amp; . ㈜ ㈔ /)만 사용할 수 있습니다.</div>}
               {errors.title && !titleInvalid && <div className={style.errorText}>제목을 입력해주세요</div>}
+              {/* 채용정보에만 — 구직정보·자유게시판은 제목 성격이 달라 안내가 맞지 않는다 */}
+              {formData.board_type === '0' && <TitleGuide title={formData.title} />}
             </div>
           </div>
         </div>
@@ -1627,10 +1644,50 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
           </>
         )}
 
-        {/* 상세내용 위 이미지 — 관리자 전용 (채용정보만) */}
-        {isAdmin && formData.board_type === '0' && (
+        {/* 상세내용 위 이미지 — 관리자·유료 프리미엄만 활성 (채용정보만) */}
+        {formData.board_type === '0' && !canEditContentImage && (
           <>
-            <h2 className={style.sectionTitle}>상세 이미지 <span className={style.adminOnlyTag}>관리자 전용</span></h2>
+            <h2 className={style.sectionTitle}>
+              상세 이미지 <span className={style.premiumOnlyTag}>프리미엄 전용</span>
+            </h2>
+            <div className={style.subSection}>
+              <button
+                type="button"
+                className={style.contentImageLocked}
+                onClick={() => setShowAdGuide(true)}
+              >
+                <svg
+                  className={style.contentImageLockedIcon}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <rect x="4" y="10" width="16" height="11" rx="2" />
+                  <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                </svg>
+                <span className={style.contentImageLockedMain}>
+                  프리미엄 채용정보에만 제공되는 기능입니다
+                </span>
+                <span className={style.contentImageLockedSub}>
+                  상세 내용 위에 홍보 이미지를 노출할 수 있습니다 · 등록안내 보기
+                </span>
+              </button>
+            </div>
+          </>
+        )}
+
+        {formData.board_type === '0' && canEditContentImage && (
+          <>
+            <h2 className={style.sectionTitle}>
+              상세 이미지{' '}
+              <span className={isAdmin ? style.adminOnlyTag : style.premiumOnlyTag}>
+                {isAdmin ? '관리자 전용' : '프리미엄 전용'}
+              </span>
+            </h2>
             <div className={style.subSection}>
               <p className={style.adminOnlyHint}>
                 상세 내용 위에 표시됩니다. 세로로 긴 광고 이미지를 그대로 올리면 됩니다.
@@ -1647,14 +1704,37 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
                   </button>
                 </div>
               ) : (
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleContentImageChange}
-                  disabled={contentImageUploading}
-                />
+                <label
+                  className={`${style.contentImagePicker} ${contentImageUploading ? style.contentImagePickerBusy : ''}`}
+                >
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleContentImageChange}
+                    disabled={contentImageUploading}
+                  />
+                  <svg
+                    className={style.contentImagePickerIcon}
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <rect x="3" y="3" width="18" height="18" rx="2" />
+                    <circle cx="8.5" cy="8.5" r="1.5" />
+                    <path d="M21 15l-5-5L5 21" />
+                  </svg>
+                  <span className={style.contentImagePickerMain}>
+                    {contentImageUploading ? '업로드 중...' : '이미지 선택'}
+                  </span>
+                  <span className={style.contentImagePickerSub}>
+                    세로로 긴 광고 이미지 · JPG · PNG
+                  </span>
+                </label>
               )}
-              {contentImageUploading && <div className={style.adminOnlyHint}>업로드 중...</div>}
               {contentImageError && <div className={style.errorText}>{contentImageError}</div>}
             </div>
           </>
@@ -1754,7 +1834,10 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
           router.push('/board');
         }} />
       )}
-      
+
+      {/* 상세 이미지 잠금 영역에서 여는 광고 등록 안내 */}
+      {showAdGuide && <AdPopup onClose={() => setShowAdGuide(false)} />}
+
       {/* 급여 범위 초과 경고 모달 */}
       {showSalaryWarningModal && (
         <div className={style.salaryWarningOverlay}>

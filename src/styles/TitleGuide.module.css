@@ -1,0 +1,212 @@
+/* 제목 작성 안내 — 공고 등록 폼의 제목 입력란 아래
+ * 색상은 globals.css 변수만 사용한다 */
+
+.wrap {
+  margin-top: 6px;
+}
+
+/* ── 입력 중 한 줄 힌트 ── */
+.liveHint {
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 0 0 6px;
+  word-break: keep-all;
+}
+
+/* 초록·빨강 대신 사이트 블루 계열로 간다.
+ * 권장은 파랑, 비권장은 힘을 뺀 회색. 경고색처럼 튀지 않게 한다. */
+.good {
+  color: var(--color-primary);
+}
+
+.ok {
+  color: var(--color-text-secondary);
+}
+
+.warn {
+  color: var(--color-accent-indigo);
+}
+
+/* ── 토글 버튼 ── */
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  line-height: 1.4;
+}
+
+.toggle:hover {
+  border-color: var(--color-primary);
+}
+
+.toggleIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--color-primary);
+}
+
+/* ── 펼친 패널 ── */
+.panel {
+  margin-top: 8px;
+  padding: 14px 16px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+}
+
+.rules {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 제목 왼쪽이 비어 보이지 않게 체크 표시를 붙인다 */
+.rules li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--color-text);
+  line-height: 1.55;
+}
+
+.ruleIcon {
+  flex-shrink: 0;
+  width: 15px;
+  height: 15px;
+  margin-top: 3px;
+  color: var(--color-primary);
+}
+
+.ruleBody {
+  min-width: 0;
+}
+
+.rules strong {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 3px;
+}
+
+.desc {
+  display: block;
+  font-size: 12.5px;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  word-break: keep-all;
+}
+
+.desc code {
+  padding: 1px 5px;
+  margin: 0 1px;
+  font-size: 12px;
+  background: var(--color-bg-input);
+  border-radius: 4px;
+  color: var(--color-text);
+}
+
+/* 좋은 수치는 강조하고, 나쁜 수치는 힘을 뺀다 */
+.up {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.down {
+  color: var(--color-text-muted);
+  font-weight: 700;
+}
+
+/* ── 예시 ── */
+.example {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.exRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.exTag {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 100px;
+  white-space: nowrap;
+  margin-top: 1px;
+}
+
+/* 가장 나쁜 예 — 괄호 강조에 조건까지 나열한 경우 */
+.exWorst {
+  color: var(--color-text-secondary);
+  background: var(--color-bg-input);
+  border: 1px solid var(--color-border);
+}
+
+.exBad {
+  color: var(--color-text-muted);
+  background: var(--color-bg-input);
+}
+
+.exGood {
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.exBadText {
+  font-size: 12.5px;
+  color: var(--color-text-muted);
+  text-decoration: line-through;
+  line-height: 1.5;
+  word-break: break-all;
+}
+
+.exGoodText {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text);
+  line-height: 1.5;
+  word-break: break-all;
+}
+
+.source {
+  margin: 12px 0 0;
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 480px) {
+  .panel {
+    padding: 12px 14px;
+  }
+
+  .exRow {
+    flex-direction: column;
+    gap: 4px;
+  }
+}

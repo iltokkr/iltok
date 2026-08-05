@@ -84,6 +84,39 @@
   transform: scale(1.05);
 }
 
+.tabs {
+  display: flex;
+  gap: 8px;
+  padding: 16px 24px 0;
+  background: var(--color-bg);
+}
+
+.tab {
+  flex: 1;
+  height: 40px;
+  padding: 0 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.tab:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.tabActive,
+.tabActive:hover {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
 .infoSection {
   padding: 24px;
   background: var(--color-bg);
@@ -213,6 +246,27 @@
   font-weight: 700;
 }
 
+/* 혜택이 2개 이상일 때 한 문장으로 읽히지 않게 줄마다 점을 찍는다 */
+.benefitItem {
+  display: block;
+  padding-left: 10px;
+  text-indent: -10px;
+  word-break: keep-all;
+}
+
+.benefitItem::before {
+  content: '· ';
+  color: var(--color-text-muted);
+}
+
+.infoNote {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  line-height: 1.45;
+}
+
 .discountPrice {
   color: var(--color-primary);
   font-size: 16px;
@@ -243,24 +297,32 @@
 
 .stepItem {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 6px;
+  max-width: 100%;
   background: #eef3fb;
-  border-radius: 20px;
+  border-radius: 14px;
   padding: 5px 12px;
+  box-sizing: border-box;
 }
 
 .stepBadge {
+  flex-shrink: 0;
   font-size: 13px;
   font-weight: 700;
+  line-height: 1.45;
   color: var(--color-primary);
 }
 
+/* 긴 문구는 칩 안에서 줄바꿈시킨다. 한국어는 어절 단위로 끊는다. */
 .stepText {
+  min-width: 0;
   font-size: 13px;
   font-weight: 600;
+  line-height: 1.45;
   color: var(--color-text);
-  white-space: nowrap;
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 .stepArrow {
@@ -284,6 +346,16 @@
 
   .title {
     font-size: 17px;
+  }
+
+  .tabs {
+    padding: 14px 20px 0;
+    gap: 6px;
+  }
+
+  .tab {
+    height: 38px;
+    font-size: 12px;
   }
 
   .infoSection {
