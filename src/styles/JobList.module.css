@@ -586,6 +586,40 @@
     flex: 0 0 auto;
   }
 
+  /* 모바일 리스트 모드: 우측 임금 열을 숨겨 제목이 폭을 다 쓰게 한다.
+     카드 모드는 .jobContent 자체가 숨겨지고, PC 와 다른 게시판은 그대로 둔다. */
+  [data-board-type="0"][data-view-mode="list"] .jobContent .salaryTypeCol,
+  [data-board-type="0"][data-view-mode="list"] .jobContent .salaryDetailCol {
+    display: none;
+  }
+
+  /* 임금 열을 숨겼으니 그 자리(calc(100% - 100px))도 회수해 제목이 끝까지 쓰게 한다 */
+  [data-board-type="0"][data-view-mode="list"] .jobContent .title {
+    max-width: 100%;
+    padding-right: 0;
+  }
+
+  /* 제목 한 줄 고정 + 넘치면 말줄임 */
+  [data-board-type="0"][data-view-mode="list"] .title a {
+    white-space: nowrap;
+    max-height: none;
+  }
+
+  [data-board-type="0"][data-view-mode="list"] .titleText {
+    display: block;
+    -webkit-line-clamp: unset;
+    max-height: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: normal;
+  }
+
+  /* 공고 사이 간격을 2px 늘린다 (기본 2px -> 4px) */
+  [data-board-type="0"][data-view-mode="list"] .listWrap.listText {
+    gap: 4px;
+  }
+
   .timeBookmarkContainer {
     min-width: auto;
   }
