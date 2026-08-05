@@ -761,9 +761,12 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
             uploader_id: user.id,
             ...(isEditing ? {} : { ad: false }),
         is_ads: formData.board_type === '0' ? (formData.is_ads ?? false) : false,
-        // 관리자·유료 프리미엄·제휴(is_ads) 글일 때만 상세내용 위 이미지를 저장한다.
-        content_image: formData.board_type === '0' && (canEditContentImage || formData.is_ads) && formData.content_image
-          ? formData.content_image.trim() || null
+        // 폼 상태를 그대로 보낸다. 대상이 아니면 새 URL 을 고를 UI 자체가 없으므로
+        // 값은 "기존 그대로" 아니면 "제거해서 빈 값" 둘 중 하나다.
+        // 여기서 일괄 null 로 만들면 만료된 광고주가 문구만 고쳐도 이미지가 날아간다.
+        // 실제 권한 판정은 DB 트리거 jd_guard_content_image 가 한다.
+        content_image: formData.board_type === '0'
+          ? (formData.content_image?.trim() || null)
           : null,
         // 구직정보인 경우 배열 데이터를 JSON 문자열로 변환
         work_conditions: formData.board_type === '1' ? JSON.stringify(formData.work_conditions) : null,
@@ -1645,7 +1648,7 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
         )}
 
         {/* 상세내용 위 이미지 — 관리자·유료 프리미엄만 활성 (채용정보만) */}
-        {formData.board_type === '0' && !canEditContentImage && (
+        {formData.board_type === '0' && !canEditContentImage && !formData.content_image && (
           <>
             <h2 className={style.sectionTitle}>
               상세 이미지 <span className={style.premiumOnlyTag}>프리미엄 채용정보 전용</span>
@@ -1680,14 +1683,18 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
           </>
         )}
 
-        {formData.board_type === '0' && canEditContentImage && (
+        {/* 프리미엄이 끝나도 이미지가 남아 있으면 이 블록을 그대로 보여준다.
+            새로 올릴 수는 없고(picker 는 안 나온다) 제거만 된다. */}
+        {formData.board_type === '0' && (canEditContentImage || formData.content_image) && (
           <>
             <h2 className={style.sectionTitle}>
               상세 이미지 <span className={style.premiumOnlyTag}>프리미엄 채용정보 전용</span>
             </h2>
             <div className={style.subSection}>
               <p className={style.adminOnlyHint}>
-                상세 내용 위에 표시됩니다. 세로로 긴 광고 이미지를 그대로 올리면 됩니다.
+                {canEditContentImage
+                  ? '상세 내용 위에 표시됩니다. 세로로 긴 광고 이미지를 그대로 올리면 됩니다.'
+                  : '프리미엄 기간이 끝나 새 이미지를 올릴 수는 없습니다. 제거만 가능합니다.'}
               </p>
               {formData.content_image ? (
                 <div className={style.contentImagePreview}>
