@@ -1579,19 +1579,7 @@
   }
 }
 
-/* 상세 이미지 (관리자 전용) */
-.adminOnlyTag {
-  display: inline-block;
-  margin-left: 8px;
-  padding: 3px 10px;
-  border-radius: 999px;
-  background: var(--color-primary-light);
-  color: var(--color-primary-dark);
-  font-size: 12px;
-  font-weight: 700;
-  vertical-align: middle;
-}
-
+/* 상세 이미지 (관리자·유료 프리미엄 전용) */
 .premiumOnlyTag {
   display: inline-block;
   margin-left: 8px;

@@ -311,7 +311,7 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
     return urlPatterns.some(pattern => pattern.test(value));
   };
 
-  // 상세내용 위 이미지 업로드 (관리자 전용). 세로로 긴 광고 이미지를 그대로 쓰므로 폭만 1200으로 줄인다.
+  // 상세내용 위 이미지 업로드 (관리자·유료 프리미엄). 세로로 긴 광고 이미지를 그대로 쓰므로 폭만 1200으로 줄인다.
   const handleContentImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -1648,7 +1648,7 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
         {formData.board_type === '0' && !canEditContentImage && (
           <>
             <h2 className={style.sectionTitle}>
-              상세 이미지 <span className={style.premiumOnlyTag}>프리미엄 전용</span>
+              상세 이미지 <span className={style.premiumOnlyTag}>프리미엄 채용정보 전용</span>
             </h2>
             <div className={style.subSection}>
               <button
@@ -1683,10 +1683,7 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
         {formData.board_type === '0' && canEditContentImage && (
           <>
             <h2 className={style.sectionTitle}>
-              상세 이미지{' '}
-              <span className={isAdmin ? style.adminOnlyTag : style.premiumOnlyTag}>
-                {isAdmin ? '관리자 전용' : '프리미엄 전용'}
-              </span>
+              상세 이미지 <span className={style.premiumOnlyTag}>프리미엄 채용정보 전용</span>
             </h2>
             <div className={style.subSection}>
               <p className={style.adminOnlyHint}>
