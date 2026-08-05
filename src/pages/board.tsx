@@ -469,21 +469,10 @@ const BoardPage: React.FC = () => {
           // board_type이 0일 때는 users 테이블과 join하고 is_accept가 true인 것만 가져옴
           adQuery = supabase
             .from('jd')
-            .select(`
-              id,
-              updated_time,
-              title,
-              salary_type,
-              salary_detail,
-              1depth_region,
-              2depth_region,
-              1depth_category,
-              2depth_category,
-              ad,
-              is_urgent,
-              is_ads,
-              user_public!inner(is_accept)
-            `)
+            // 컬럼을 따로 나열하면 listColumns 에 뭔가 추가될 때 이 쿼리만 빠진다.
+            // 실제로 work_start_time/work_end_time 이 없어 프리미엄 카드에만
+            // 근무시간이 표시되지 않았다. 목록과 같은 정의를 쓴다.
+            .select(`${listColumns(currentBoardType)}, user_public!inner(is_accept)`)
             .eq('ad', true)
             .eq('board_type', currentBoardType)
             .eq('user_public.is_accept', true)
