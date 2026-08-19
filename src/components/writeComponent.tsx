@@ -693,7 +693,8 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
       }
 
       // 채용정보만 하루 2건 제한 적용 (구직정보, 자유게시판은 제한 없음)
-      if (formData.board_type === '0' && !isEditing) {
+      // 관리자 계정은 제한에서 제외한다.
+      if (formData.board_type === '0' && !isEditing && !isAdmin) {
         const todayStart = new Date();
         todayStart.setHours(0, 0, 0, 0);
         const { count } = await supabase
@@ -1804,7 +1805,7 @@ const WritePage: React.FC<WritePageProps> = ({ hideBoardTypeSelector = false }) 
         {/* 제출 버튼 */}
         <div className={`${style.formGroup} ${style.ft}`}>
           <button type="submit" className={style.submitButton}>
-            {isEditing ? '수정하기' : `등록하기 (하루 2건 · 잔여 ${Math.max(0, 2 - todayUploadCount)}건)`}
+            {isEditing ? '수정하기' : isAdmin ? '등록하기' : `등록하기 (하루 2건 · 잔여 ${Math.max(0, 2 - todayUploadCount)}건)`}
           </button>
         </div>
       </form>
