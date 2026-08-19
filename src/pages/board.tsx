@@ -902,6 +902,12 @@ const BoardPage: React.FC = () => {
                 mobileSrc: '/banner_23030_mo.png',
                 action: 'navigate',
                 navigateTo: '/jd/23030'
+              },
+              {
+                src: '/banner_23185.png',
+                mobileSrc: '/banner_23185_mo.png',
+                action: 'navigate',
+                navigateTo: '/jd/23185'
               }
             ]}
           />
