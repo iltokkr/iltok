@@ -98,8 +98,8 @@ const JobList: React.FC<JobListProps> = ({ jobs, adJobs, currentPage, totalPages
   const [hideResumeCta, setHideResumeCta] = useState(false);
 
   // 모바일 뷰 모드 (리스트: 많은 공고, 카드: 읽기 편함)
-  // 기본값은 카드. 저장된 선택이 있으면 아래 useEffect 가 덮어쓴다.
-  const [mobileViewMode, setMobileViewMode] = useState<'list' | 'card'>('card');
+  // 기본값은 리스트. 저장된 선택이 있으면 아래 useEffect 가 덮어쓴다.
+  const [mobileViewMode, setMobileViewMode] = useState<'list' | 'card'>('list');
   useEffect(() => {
     const saved = localStorage.getItem('jobListMobileView') as 'list' | 'card' | null;
     if (saved === 'list' || saved === 'card') setMobileViewMode(saved);
