@@ -15,11 +15,18 @@ export const AuthProvider: React.FC<PropsWithChildren> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // 같은 사용자(id 동일)면 기존 객체를 그대로 유지한다.
+  // onAuthStateChange는 토큰 갱신·탭 포커스마다 새 user 객체를 주는데, 그걸 매번 state에
+  // 넣으면 [user]에 의존하는 effect(my.tsx·BoardChat·JobList·board.tsx)가 전부 재실행돼
+  // 같은 쿼리를 사용자당 하루 100~200번씩 반복 호출했다.
+  const applyUser = (next: User | null) =>
+    setUser((prev) => (prev?.id === next?.id ? prev : next));
+
   useEffect(() => {
     // 현재 세션 확인
     const checkSession = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
+      applyUser(user);
       setIsLoading(false);
     };
 
@@ -28,7 +35,7 @@ export const AuthProvider: React.FC<PropsWithChildren> = ({ children }) => {
     // 세션 변경 리스너 설정
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        setUser(session?.user ?? null);
+        applyUser(session?.user ?? null);
         setIsLoading(false);
       }
     );
