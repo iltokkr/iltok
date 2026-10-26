@@ -65,6 +65,7 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose, initialUserType = 'bus
   // 비밀번호 찾기
   const [forgotInput, setForgotInput] = useState('');
   const [forgotSent, setForgotSent] = useState(false);
+  const [forgotMaskedEmail, setForgotMaskedEmail] = useState<string | null>(null);
 
   // 아이디 찾기
   const [foundUserId, setFoundUserId] = useState<string | null>(null);
@@ -93,6 +94,7 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose, initialUserType = 'bus
     setAuthNum('');
     setForgotInput('');
     setForgotSent(false);
+    setForgotMaskedEmail(null);
     setFoundUserId(null);
     setFindIdNoAccount(false);
   };
@@ -323,16 +325,16 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose, initialUserType = 'bus
     setLoading(true);
     setError(null);
     try {
-      const isEmail = forgotInput.includes('@');
+      // 아이디인지 이메일인지는 서버가 판단한다. 아이디가 이메일 형태인 회원이 있어서
+      // 여기서 '@' 로 갈라버리면 등록 이메일이 아닌 곳으로 요청이 나간다.
       const res = await fetch('/api/send-password-reset', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(
-          isEmail ? { email: forgotInput.trim() } : { user_id: forgotInput.trim() }
-        ),
+        body: JSON.stringify({ identifier: forgotInput.trim() }),
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) { setError(json.error || '오류가 발생했습니다.'); return; }
+      setForgotMaskedEmail(json.maskedEmail ?? null);
       setForgotSent(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : '오류가 발생했습니다.');
@@ -680,7 +682,11 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose, initialUserType = 'bus
                   <div className={styles.successIcon}>✓</div>
                   <p className={styles.successTitle}>이메일을 발송했습니다</p>
                   <p className={styles.successDesc}>
-                    등록된 이메일로 비밀번호 재설정 링크를 보냈습니다.<br />
+                    {forgotMaskedEmail ? (
+                      <><strong>{forgotMaskedEmail}</strong>으로<br />비밀번호 재설정 링크를 보냈습니다.<br /></>
+                    ) : (
+                      <>등록된 이메일로 비밀번호 재설정 링크를 보냈습니다.<br /></>
+                    )}
                     메일함을 확인해주세요. (스팸함도 확인)
                   </p>
                   <button className={styles.btnLogin} style={{ marginTop: 20 }}
