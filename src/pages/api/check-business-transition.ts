@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { createClient } from '@supabase/supabase-js';
+import { phoneVariants } from '@/lib/phoneVariants';
 import path from 'path';
 import fs from 'fs';
 import { config as loadEnv } from 'dotenv';
@@ -48,8 +49,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { data } = await supabase
       .from('users')
       .select('password_set, user_type')
-      .eq('number', phone)
+      .in('number', phoneVariants(phone))
       .in('user_type', ['business', 'both'])
+      .limit(1)
       .maybeSingle();
 
     return res.status(200).json({

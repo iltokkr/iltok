@@ -225,9 +225,12 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose, initialUserType = 'bus
 
       if (data.user) {
         if (isNewUser) {
+          // 행이 없을 때만 만든다(ignoreDuplicates). isNewUser 는 번호 조회 결과라 틀릴 수 있다 —
+          // 조회 실패 시 신규로 간주하고, 예전엔 번호 저장 형식이 달라도 신규로 판정했다.
+          // 그때 덮어쓰기(upsert)를 하면 기존 기업회원의 user_type 이 탭 유형(jobseeker)으로 바뀐다.
           await supabase.from('users').upsert(
             { id: data.user.id, number: formattedPhone, user_type: userType, policy_term: true },
-            { onConflict: 'id' }
+            { onConflict: 'id', ignoreDuplicates: true }
           );
         }
       }

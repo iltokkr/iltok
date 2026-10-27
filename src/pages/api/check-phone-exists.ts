@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { createClient } from '@supabase/supabase-js';
+import { phoneVariants } from '@/lib/phoneVariants';
 import path from 'path';
 import fs from 'fs';
 import { config as loadEnv } from 'dotenv';
@@ -56,7 +57,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { data, error } = await supabase
       .from('users')
       .select('user_type')
-      .eq('number', phone)
+      // 저장 형식이 섞여 있어 정확 일치로 찾으면 기존 회원을 신규로 판정한다 (lib/phoneVariants.ts)
+      .in('number', phoneVariants(phone))
       .limit(1)
       .maybeSingle();
 
