@@ -224,15 +224,18 @@ const PersonalSignup = () => {
       const formattedPhone = formatPhoneForApi(phone);
       const residence = region2 ? `${region1} ${region2}` : region1;
 
-      const { data: existingUser } = await supabase
-        .from('users')
-        .select('user_type')
-        .eq('id', user.id)
-        .maybeSingle();
+      // users 행을 직접 읽으면 OTP 요청 때 트리거가 만든 빈 행(business)을 기업회원으로 착각한다.
+      const existingResp = await fetch('/api/check-phone-exists', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: formattedPhone }),
+      });
+      if (!existingResp.ok) throw new Error('잠시 후 다시 시도해주세요.');
+      const existingUser = await existingResp.json();
 
-      // 기존이 기업(business)이거나 이미 both면 both 유지/승격, 그 외에는 jobseeker
+      // 실제 기업회원이거나 이미 both면 both 유지/승격, 그 외에는 jobseeker
       const newUserType =
-        existingUser?.user_type === 'business' || existingUser?.user_type === 'both'
+        existingUser.user_type === 'business' || existingUser.user_type === 'both'
           ? 'both'
           : 'jobseeker';
       const userData = {
