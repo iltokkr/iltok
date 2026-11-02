@@ -56,7 +56,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const supabase = createClient(supabaseUrl, serviceRoleKey);
     const { data, error } = await supabase
       .from('users')
-      .select('user_type')
+      .select('id, user_type, policy_term, is_accept')
       // 저장 형식이 섞여 있어 정확 일치로 찾으면 기존 회원을 신규로 판정한다 (lib/phoneVariants.ts)
       .in('number', phoneVariants(phone))
       .limit(1)
@@ -66,6 +66,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.error('check-phone-exists error:', error);
       return res.status(500).json({ error: 'Lookup failed' });
     }
+
+    // OTP 를 요청하는 순간 DB 트리거가 빈 users 행(user_type=business)을 만든다. 이건 가입이 아니다.
+    // 다만 약관 동의 없이 휴대폰 로그인만으로 활동해 온 회원도 많아서 활동 기록까지 본다.
+    if (data && data.policy_term !== true && !data.is_accept) {
+      const [posts, applications] = await Promise.all([
+        supabase.from('jd').select('id', { count: 'exact', head: true }).eq('uploader_id', data.id),
+        supabase.from('job_application').select('id', { count: 'exact', head: true }).eq('users_id', data.id),
+      ]);
+      if (posts.error || applications.error) {
+        console.error('check-phone-exists activity error:', posts.error ?? applications.error);
+        return res.status(500).json({ error: 'Lookup failed' });
+      }
+      if (!posts.count && !applications.count) {
+        return res.status(200).json({ exists: false, user_type: null });
+      }
+    }
+
     return res.status(200).json({ exists: !!data, user_type: data?.user_type ?? null });
   } catch (err) {
     console.error('check-phone-exists:', err);

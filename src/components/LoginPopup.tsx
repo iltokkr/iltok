@@ -184,7 +184,8 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose, initialUserType = 'bus
 
       // 전화번호 가입 여부는 서버에서 boolean 만 받는다.
       // (users 테이블을 잠그면서 클라이언트 직접 조회 → 전화번호 열거 경로 제거)
-      let existing = false;
+      // 조회 실패 시 기존 회원으로 간주한다. 신규로 간주하면 회원 유형을 덮어쓸 수 있다.
+      let existing = true;
       try {
         const resp = await fetch('/api/check-phone-exists', {
           method: 'POST',
@@ -196,7 +197,7 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose, initialUserType = 'bus
           existing = !!j.exists;
         }
       } catch {
-        /* 조회 실패 시 기존 동작대로 신규로 간주 */
+        /* 위 기본값 유지 */
       }
       setIsNewUser(!existing);
 
@@ -225,13 +226,14 @@ const LoginPopup: React.FC<LoginPopupProps> = ({ onClose, initialUserType = 'bus
 
       if (data.user) {
         if (isNewUser) {
-          // 행이 없을 때만 만든다(ignoreDuplicates). isNewUser 는 번호 조회 결과라 틀릴 수 있다 —
-          // 조회 실패 시 신규로 간주하고, 예전엔 번호 저장 형식이 달라도 신규로 판정했다.
-          // 그때 덮어쓰기(upsert)를 하면 기존 기업회원의 user_type 이 탭 유형(jobseeker)으로 바뀐다.
+          // OTP 요청 때 트리거가 만든 빈 행(user_type=business, policy_term=null)을 탭 유형으로 채운다.
+          // policy_term 조건으로 가입을 마친 회원의 유형은 덮어쓰지 않는다.
+          const newUser = { number: formattedPhone, user_type: userType, policy_term: true };
           await supabase.from('users').upsert(
-            { id: data.user.id, number: formattedPhone, user_type: userType, policy_term: true },
+            { id: data.user.id, ...newUser },
             { onConflict: 'id', ignoreDuplicates: true }
           );
+          await supabase.from('users').update(newUser).eq('id', data.user.id).is('policy_term', null);
         }
       }
 
